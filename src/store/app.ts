@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { RADIAL_DEFAULT } from '@/data/quickMenu';
 
 /* ────────────────────────────────────────────────────────────
  * 앱 전역 상태 — Figma 프로토타입 변수를 그대로 옮김
@@ -39,7 +40,7 @@ const INITIAL = {
   attendanceTime: null,
   assignmentSubmitted: false,
   submittedFile: null,
-  quickMenu: ['qr', 'student-id', 'meal', 'map', 'rental'],
+  quickMenu: RADIAL_DEFAULT,
   readNotifications: [] as string[],
 };
 

@@ -2,7 +2,8 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Icon, Text, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { quickItem, RADIAL_DEFAULT, type QuickItem } from '@/data/quickMenu';
+import { quickItem, type QuickItem } from '@/data/quickMenu';
+import { useApp } from '@/store/app';
 import s from './RadialMenu.module.css';
 
 /**
@@ -11,7 +12,8 @@ import s from './RadialMenu.module.css';
  */
 export function RadialMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const nav = useNav();
-  const items = RADIAL_DEFAULT.map(quickItem).filter(Boolean) as QuickItem[];
+  const ids = useApp((st) => st.quickMenu);
+  const items = ids.map(quickItem).filter(Boolean).slice(0, 8) as QuickItem[];
   const R = 118;
 
   const go = (q: QuickItem) => {

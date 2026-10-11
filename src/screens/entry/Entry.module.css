@@ -1,0 +1,536 @@
+/* ── 공통 헤더 ─────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 52px;
+  padding: 2px var(--wivu-layout-inset) 2px var(--wivu-layout-inset);
+}
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-12);
+  min-width: 0;
+}
+.backCircle {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-subtle);
+  color: var(--wivu-color-icon-primary);
+  transition: background-color var(--wivu-duration-press) ease;
+}
+.backCircle:active {
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-icon-brand);
+}
+.progress {
+  display: flex;
+  gap: 6px;
+}
+.progress > span {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--wivu-color-border-default);
+  transition: background-color 0.3s ease;
+}
+.progress > span[data-on='true'] {
+  background: var(--wivu-color-bg-brand);
+}
+.textLink {
+  padding: 10px 4px;
+  color: var(--wivu-color-text-secondary);
+}
+.textLink[data-tone='brand'] {
+  color: var(--wivu-color-text-brand);
+}
+.textLink[data-tone='tertiary'] {
+  color: var(--wivu-color-text-tertiary);
+}
+
+/* ── 본문 레이아웃 ─────────────────────────── */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 16px var(--wivu-layout-inset) 0;
+}
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.heroTitle {
+  white-space: pre-line;
+}
+
+/* ── 소개(온보딩) ──────────────────────────── */
+.intro {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 16px var(--wivu-layout-inset) 0;
+}
+.introVisual {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  margin: 20px -20px 12px;
+}
+.fitOuter {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: visible;
+}
+.illust {
+  position: absolute;
+  left: -14px;
+  top: -14px;
+  width: 380px;
+  height: 380px;
+  pointer-events: none;
+  user-select: none;
+}
+.floatCard {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px 10px 10px;
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-surface);
+  box-shadow: 0 8px 24px rgba(20, 41, 102, 0.12);
+}
+.floatIcon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+}
+.banner {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px 12px 12px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 8px 24px rgba(20, 41, 102, 0.12);
+  backdrop-filter: blur(10px);
+}
+.appIcon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--wivu-color-bg-brand);
+  flex-shrink: 0;
+}
+.pill {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding-inline: 12px;
+  border-radius: 999px;
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+}
+.quickPreview {
+  position: absolute;
+  left: 16px;
+  top: 244px;
+  width: 320px;
+  padding: 14px 16px 16px;
+  border-radius: 20px;
+  background: var(--wivu-color-bg-surface);
+  box-shadow: 0 8px 24px rgba(20, 41, 102, 0.12);
+}
+.slots {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+.slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 48px;
+}
+.slotCircle {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-icon-primary);
+}
+.slotAdd {
+  background: var(--wivu-color-bg-subtle);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-strong);
+}
+.introFoot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding-bottom: calc(max(var(--safe-bottom), 12px) + 8px);
+}
+
+/* ── 학교 선택 ─────────────────────────────── */
+.fakeSearch {
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding-inline: var(--wivu-space-16);
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-subtle);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+  color: var(--wivu-color-text-placeholder);
+  text-align: left;
+  width: 100%;
+}
+.listHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 28px 0 12px;
+}
+.locBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--wivu-color-text-tertiary);
+}
+.schoolList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.schoolRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 7px 16px;
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-surface);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+  text-align: left;
+  transition: background-color var(--wivu-duration-press) ease, transform var(--wivu-duration-press) ease;
+}
+.schoolRow:active {
+  background: var(--wivu-color-bg-subtle);
+  transform: scale(0.99);
+}
+.schoolRow[data-selected='true'] {
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-brand);
+}
+.initial {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-text-brand);
+  flex-shrink: 0;
+}
+.initial[data-selected='true'] {
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+}
+.schoolMain {
+  flex: 1;
+  min-width: 0;
+}
+.regionGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.regionBtn {
+  height: 48px;
+  border-radius: var(--wivu-radius-12);
+  background: var(--wivu-color-bg-subtle);
+  text-align: center;
+  transition: background-color var(--wivu-duration-press) ease;
+}
+.regionBtn[aria-pressed='true'] {
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+}
+.locCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-brand-soft);
+  text-align: left;
+}
+
+/* 검색 */
+.chipRow {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 12px calc(var(--wivu-layout-inset) * -1) 0;
+  padding: 0 var(--wivu-layout-inset);
+}
+.filterChip {
+  flex-shrink: 0;
+  height: 36px;
+  padding-inline: 14px;
+  border-radius: 999px;
+  background: var(--wivu-color-bg-subtle);
+  color: var(--wivu-color-text-secondary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.filterChip[aria-pressed='true'] {
+  background: var(--wivu-color-primitive-ink-900);
+  color: var(--wivu-color-text-on-brand);
+}
+.searchHead {
+  margin: 20px 0 12px;
+}
+.footNote {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  padding: 20px 0 8px;
+}
+
+/* ── 로그인 ────────────────────────────────── */
+.schoolCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-subtle);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+}
+.schoolIcon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+}
+.infoBox {
+  padding: 16px;
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-subtle);
+}
+.errorLine {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 4px;
+}
+.hintLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bottom {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 24px 0 calc(max(var(--safe-bottom), 12px) + 4px);
+}
+.bottom > button:last-child {
+  align-self: center;
+}
+
+/* ── 연동 중 ───────────────────────────────── */
+.ringWrap {
+  position: relative;
+  width: 136px;
+  height: 136px;
+  margin: 72px auto 0;
+}
+.ringLogo {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 32px;
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--wivu-color-bg-subtle);
+}
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.stepDot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-top: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  color: #fff;
+}
+.stepDot[data-state='done'] {
+  background: var(--wivu-color-bg-brand);
+}
+.stepDot[data-state='active'] {
+  border: 2.5px solid var(--wivu-color-bg-brand-soft);
+  border-top-color: var(--wivu-color-bg-brand);
+  animation: spin 0.8s linear infinite;
+}
+.stepDot[data-state='todo'] {
+  border: 1.5px dashed var(--wivu-color-border-strong);
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.secure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: auto;
+  padding: 24px 0 calc(max(var(--safe-bottom), 12px) + 12px);
+}
+
+/* ── 초기 설정: 알림 ───────────────────────── */
+.notiPreview {
+  display: grid;
+  place-items: center;
+  margin-top: 24px;
+  padding: 28px 16px;
+  border-radius: var(--wivu-radius-24);
+  background: var(--wivu-color-bg-brand-soft);
+}
+.notiBanner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px 12px 12px;
+  border-radius: 18px;
+  background: var(--wivu-color-bg-surface);
+  box-shadow: 0 8px 24px rgba(20, 41, 102, 0.12);
+}
+
+/* ── 초기 설정: 퀵메뉴 ─────────────────────── */
+.quickGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.quickTile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 92px;
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-subtle);
+  color: var(--wivu-color-text-tertiary);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform var(--wivu-duration-press) ease;
+}
+.quickTile:active {
+  transform: scale(0.96);
+}
+.quickTile[aria-pressed='true'] {
+  background: var(--wivu-color-bg-brand-soft);
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-brand);
+  color: var(--wivu-color-text-primary);
+}
+.quickTile[data-full='true'][aria-pressed='false'] {
+  opacity: 0.55;
+}
+.quickIcon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-surface);
+}
+.order {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+}
+
+/* ── 스플래시 ──────────────────────────────── */
+.splash {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+.splashField {
+  position: absolute;
+  left: 50%;
+  top: calc(50% - 46px);
+  width: 352px;
+  height: 352px;
+  margin: -176px 0 0 -176px;
+}
+.splashLogo {
+  position: absolute;
+  left: 50%;
+  top: calc(50% - 46px);
+  transform: translate(-50%, -50%);
+}
+.splashTag {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% + 172px);
+  text-align: center;
+}
+.splashFoot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(max(var(--safe-bottom), 12px) + 66px);
+  text-align: center;
+}
