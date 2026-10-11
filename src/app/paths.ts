@@ -20,6 +20,7 @@ export const P = {
   homeFreeDay: '/home/free-day', // 433:9519 공강 홈 (목 9/10)
   notifications: '/notifications', // 428:8938
   meal: '/meal', // 429:8987
+  notices: '/notices', // (코드 추가) 학사 공지 목록
   academicNotice: (id = 'n1') => `/notices/${id}`, // 430:9007
   campusMap: '/map', // 431:9033
 

@@ -39,6 +39,8 @@ for (const it of items) {
         .replace(/stroke-width="3\.2"/g, 'stroke-width="4"')
         .replace(/stroke-linecap="butt"/g, 'stroke-linecap="round"');
     }
+    // 헤더/알림: Figma 아이콘에 '알림 점'이 그려져 있어 항상 안 읽음처럼 보임 → 점(세 번째 path)을 빼고 상태로 표시
+    if (key === 'bell') inner = inner.split('\n').filter((l, i, arr) => !(l.includes('fill="currentColor"') && l.includes('<path') && i === arr.length - 1)).join('\n');
     icons[key] = { viewBox, body: inner.replace(/\s*\n\s*/g, ''), figma: it.figmaName };
   } else if (it.file.startsWith('logo') || it.file.startsWith('splash')) {
     logos[it.file.replace('.svg', '')] = { viewBox, body: inner.replace(/\s*\n\s*/g, '') };

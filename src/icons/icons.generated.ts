@@ -192,7 +192,7 @@ export const icons = {
   },
   "bell": {
     "viewBox": "0 0 24 24",
-    "body": "<path d=\"M5.75 15.5H17.75C16.75 14.5 15.75 12.5 15.75 10.5C15.75 7 13.95 4.5 11.75 4.5C9.55 4.5 7.75 7 7.75 10.5C7.75 12.5 6.75 14.5 5.75 15.5Z\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M9.75 18.5C9.75 19.5 10.75 20 11.75 20C12.75 20 13.75 19.5 13.75 18.5\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M16.75 7C17.5784 7 18.25 6.32843 18.25 5.5C18.25 4.67157 17.5784 4 16.75 4C15.9216 4 15.25 4.67157 15.25 5.5C15.25 6.32843 15.9216 7 16.75 7Z\" fill=\"currentColor\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "body": "<path d=\"M5.75 15.5H17.75C16.75 14.5 15.75 12.5 15.75 10.5C15.75 7 13.95 4.5 11.75 4.5C9.55 4.5 7.75 7 7.75 10.5C7.75 12.5 6.75 14.5 5.75 15.5Z\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M9.75 18.5C9.75 19.5 10.75 20 11.75 20C12.75 20 13.75 19.5 13.75 18.5\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
     "figma": "헤더/알림"
   },
   "menu": {
