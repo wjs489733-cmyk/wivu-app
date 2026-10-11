@@ -1,0 +1,7 @@
+node_modules
+dist
+dist-single
+artifact
+shots
+*.tsbuildinfo
+.DS_Store

@@ -1,0 +1,295 @@
+{
+  "space": {
+    "2": {
+      "$value": {
+        "value": 2,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "4": {
+      "$value": {
+        "value": 4,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "8": {
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "12": {
+      "$value": {
+        "value": 12,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "16": {
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "20": {
+      "$value": {
+        "value": 20,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "24": {
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "32": {
+      "$value": {
+        "value": 32,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "$type": "dimension"
+  },
+  "radius": {
+    "4": {
+      "$value": {
+        "value": 4,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "6": {
+      "$value": {
+        "value": 6,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.wivu": {
+          "source": "code",
+          "note": "칩·태그 (매뉴얼: 칩 999 또는 6)"
+        }
+      }
+    },
+    "8": {
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "12": {
+      "$value": {
+        "value": 12,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "14": {
+      "$value": {
+        "value": 14,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "16": {
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "24": {
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.wivu": {
+          "source": "code",
+          "note": "홈 히어로 카드 (Figma RAW 24)"
+        }
+      }
+    },
+    "$type": "dimension",
+    "full": {
+      "$value": {
+        "value": 999,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    }
+  },
+  "layout": {
+    "$type": "dimension",
+    "screen-width": {
+      "$value": {
+        "value": 392,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "screen-height": {
+      "$value": {
+        "value": 852,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "gutter": {
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      },
+      "$description": "카드 좌우",
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "inset": {
+      "$value": {
+        "value": 20,
+        "unit": "px"
+      },
+      "$description": "텍스트 좌측 / 오른쪽 정렬선 392−20",
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "section-gap": {
+      "$value": {
+        "value": 32,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "tabbar-height": {
+      "$value": {
+        "value": 84,
+        "unit": "px"
+      },
+      "$description": "탭바 본체 (홈 범프 제외, 홈 인디케이터 포함)",
+      "$extensions": {
+        "com.wivu": {
+          "source": "code",
+          "note": "Figma 135는 범프·인디케이터 포함 영역"
+        }
+      }
+    },
+    "navbar-height": {
+      "$value": {
+        "value": 52,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.wivu": {
+          "source": "code",
+          "note": "상단 내비 바"
+        }
+      }
+    },
+    "statusbar-height": {
+      "$value": {
+        "value": 54,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.wivu": {
+          "source": "code",
+          "note": "iPhone 15 상태바"
+        }
+      }
+    },
+    "home-indicator": {
+      "$value": {
+        "value": 34,
+        "unit": "px"
+      },
+      "$extensions": {
+        "com.wivu": {
+          "source": "code",
+          "note": "홈 인디케이터 영역"
+        }
+      }
+    }
+  }
+}

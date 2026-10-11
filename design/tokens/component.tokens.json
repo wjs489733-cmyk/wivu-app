@@ -1,0 +1,115 @@
+{
+  "button": {
+    "l": {
+      "height": {
+        "$type": "dimension",
+        "$value": {
+          "value": 52,
+          "unit": "px"
+        }
+      },
+      "padding-x": {
+        "$type": "dimension",
+        "$value": "{space.20}"
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{space.8}"
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{radius.14}"
+      },
+      "icon": {
+        "$type": "dimension",
+        "$value": {
+          "value": 20,
+          "unit": "px"
+        }
+      }
+    },
+    "m": {
+      "height": {
+        "$type": "dimension",
+        "$value": {
+          "value": 44,
+          "unit": "px"
+        }
+      },
+      "padding-x": {
+        "$type": "dimension",
+        "$value": "{space.16}"
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{space.8}"
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{radius.12}"
+      },
+      "icon": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      }
+    },
+    "s": {
+      "height": {
+        "$type": "dimension",
+        "$value": {
+          "value": 32,
+          "unit": "px"
+        }
+      },
+      "padding-x": {
+        "$type": "dimension",
+        "$value": "{space.12}"
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{space.4}"
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{radius.full}"
+      },
+      "icon": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        }
+      }
+    }
+  },
+  "card": {
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.16}"
+    },
+    "padding": {
+      "$type": "dimension",
+      "$value": "{space.16}"
+    },
+    "border": {
+      "$type": "color",
+      "$value": "{color.border.default}"
+    }
+  },
+  "chip": {
+    "height": {
+      "$type": "dimension",
+      "$value": {
+        "value": 24,
+        "unit": "px"
+      }
+    },
+    "radius": {
+      "$type": "dimension",
+      "$value": "{radius.6}"
+    }
+  }
+}

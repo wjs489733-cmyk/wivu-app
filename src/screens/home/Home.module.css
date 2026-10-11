@@ -1,0 +1,228 @@
+/* ── 헤더: '2026년 9월' Title 3 + 학교명 · 프로필 30 + 알림 ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 8px 0 var(--wivu-layout-inset);
+}
+.month {
+  display: flex;
+  align-items: baseline;
+  gap: var(--wivu-space-8);
+  min-width: 0;
+}
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-right: 4px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-text-brand);
+}
+
+/* ── 주간 스트립 (44×52, 선택 = 브랜드 r14) ── */
+.week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding: 4px var(--wivu-layout-gutter) 16px;
+}
+.day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 52px;
+  margin-inline: 4px;
+  border-radius: var(--wivu-radius-14);
+  transition: background-color 0.2s ease;
+}
+.day[aria-selected='true'] {
+  background: var(--wivu-color-bg-brand);
+}
+
+/* ── 히어로 캐러셀 (카드 = 폭−48, 다음 카드 살짝 노출) ── */
+.carousel {
+  display: flex;
+  gap: var(--wivu-space-12);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--wivu-layout-gutter);
+  padding-inline: var(--wivu-layout-gutter);
+  overscroll-behavior-x: contain;
+}
+.carousel::after {
+  content: '';
+  flex: 0 0 4px;
+}
+.hero {
+  flex: 0 0 calc(100% - 48px);
+  scroll-snap-align: start;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+}
+.heroTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.heroTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  margin-bottom: 8px;
+}
+.heroActions {
+  display: flex;
+  gap: var(--wivu-space-8);
+  margin-top: auto;
+  padding-top: 24px;
+}
+.brandDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand);
+}
+.doneChip,
+.nextChip {
+  background: rgba(255, 255, 255, 0.14);
+}
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 0 14px;
+}
+.dots > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand-soft-pressed);
+  transition: background-color 0.2s ease, width 0.2s ease;
+}
+.dots > span[data-on='true'] {
+  background: var(--wivu-color-bg-brand);
+}
+
+/* ── 공강 히어로 ── */
+.freeWrap {
+  padding: 0 var(--wivu-layout-gutter) 16px;
+}
+.freeHero {
+  padding: var(--wivu-space-20) var(--wivu-space-20) var(--wivu-space-20);
+  border-radius: var(--wivu-radius-24);
+}
+.freeChip {
+  color: var(--wivu-color-text-brand);
+}
+
+/* ── 과제 / 다음 강의실 ── */
+.quick {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--wivu-space-12);
+  padding-inline: var(--wivu-layout-gutter);
+}
+.quickCard {
+  display: flex;
+  flex-direction: column;
+  min-height: 150px;
+  text-align: left;
+}
+.quickFoot {
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+/* ── 타임라인 ── */
+.timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 32px;
+  bottom: 32px;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--wivu-color-bg-brand-soft-pressed);
+}
+.flowRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px 64px minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 64px;
+  padding-block: 6px;
+}
+.node {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  margin-left: 11px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand);
+  box-shadow: 0 0 0 3px var(--wivu-color-bg-surface);
+}
+.node[data-done='true'] {
+  background: var(--wivu-color-border-strong);
+}
+.flowMain {
+  min-width: 0;
+  padding-right: 8px;
+}
+
+/* ── 학식 ── */
+.meal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.meal + .meal {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--wivu-color-border-default);
+}
+.mealHead {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-8);
+}
+
+/* ── 학사 공지 행 ── */
+.noticeRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 55px;
+  padding-block: 16px;
+}
+.noticeRow + .noticeRow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--wivu-color-border-default);
+}
+.noticeRow:active {
+  opacity: 0.7;
+}

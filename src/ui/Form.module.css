@@ -1,0 +1,222 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-8);
+}
+.control {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-8);
+  height: 56px;
+  padding-inline: var(--wivu-space-16);
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-subtle);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+  transition: box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.control:focus-within {
+  background: var(--wivu-color-bg-surface);
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-brand);
+}
+.control[data-error='true'] {
+  background: var(--wivu-color-bg-surface);
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-status-error);
+}
+.input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  caret-color: var(--wivu-color-text-brand);
+}
+.input::placeholder,
+.searchInput::placeholder,
+.textarea::placeholder {
+  color: var(--wivu-color-text-placeholder);
+}
+.input:focus-visible,
+.searchInput:focus-visible,
+.textarea:focus-visible {
+  outline: none;
+}
+.reveal {
+  color: var(--wivu-color-text-tertiary);
+  padding: 8px 0 8px 8px;
+}
+.clear,
+.clearRound {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--wivu-color-border-strong);
+  color: #fff;
+  flex-shrink: 0;
+}
+.message {
+  padding-left: 4px;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 160px;
+  resize: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  padding: 0;
+}
+
+/* search */
+.search {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-8);
+  height: 44px;
+  padding-inline: 12px;
+  border-radius: var(--wivu-radius-12);
+  background: var(--wivu-color-bg-subtle);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+}
+.search:focus-within {
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-brand);
+  background: var(--wivu-color-bg-surface);
+}
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.searchInput::-webkit-search-cancel-button {
+  display: none;
+}
+
+/* checkbox */
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.box {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--wivu-radius-6);
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-strong);
+  color: #fff;
+  transition: background-color 0.15s ease;
+  flex-shrink: 0;
+}
+.box[data-round='true'] {
+  border-radius: 50%;
+}
+.box[data-checked='true'] {
+  background: var(--wivu-color-bg-brand);
+  box-shadow: none;
+}
+.check:has(input:focus-visible) .box {
+  outline: 2px solid var(--wivu-color-border-brand);
+  outline-offset: 2px;
+}
+
+/* switch */
+.switch {
+  position: relative;
+  width: 44px;
+  height: 26px;
+  border-radius: var(--wivu-radius-full);
+  background: var(--wivu-color-border-strong);
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+.switch[data-on='true'] {
+  background: var(--wivu-color-bg-brand);
+}
+.knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(16, 24, 40, 0.2);
+  transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.switch[data-on='true'] .knob {
+  transform: translateX(18px);
+}
+
+/* text tabs: '시간표 | 캘린더' (Title 1, 비활성 tertiary) */
+.textTabs {
+  display: flex;
+  align-items: baseline;
+  gap: var(--wivu-space-12);
+}
+.textTab {
+  color: var(--wivu-color-text-placeholder);
+  transition: color 0.15s ease;
+}
+.textTab[aria-selected='true'] {
+  color: var(--wivu-color-text-primary);
+}
+
+/* segmented */
+.segmented {
+  display: flex;
+  padding: 3px;
+  border-radius: var(--wivu-radius-12);
+  background: var(--wivu-color-bg-subtle);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+}
+.segment {
+  flex: 1;
+  text-align: center;
+  height: 34px;
+  border-radius: 9px;
+  color: var(--wivu-color-text-tertiary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.segment[aria-selected='true'] {
+  background: var(--wivu-color-bg-surface);
+  color: var(--wivu-color-text-primary);
+  box-shadow: var(--wivu-elevation-card);
+}
+
+/* option row */
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-12);
+  width: 100%;
+  padding: 14px var(--wivu-space-16);
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-surface);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+  text-align: left;
+  transition: box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.option[data-selected='true'] {
+  background: var(--wivu-color-bg-brand-soft);
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-brand);
+}
+.radio {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-strong);
+  flex-shrink: 0;
+  transition: box-shadow 0.15s ease;
+}
+.radio[data-checked='true'] {
+  box-shadow: inset 0 0 0 7px var(--wivu-color-bg-brand);
+}

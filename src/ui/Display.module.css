@@ -1,0 +1,162 @@
+/* ── Chip / Tag ─────────────────────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wivu-space-4);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.chip_s {
+  height: 22px;
+  padding-inline: var(--wivu-space-8);
+  border-radius: var(--wivu-radius-6);
+}
+.chip_m {
+  height: 28px;
+  padding-inline: var(--wivu-space-12);
+  border-radius: var(--wivu-radius-full);
+}
+.pill {
+  border-radius: var(--wivu-radius-full);
+}
+.tone_brand {
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-text-brand);
+}
+.tone_pulse {
+  background: var(--wivu-color-bg-pulse-soft);
+  color: var(--wivu-color-icon-pulse);
+}
+.tone_neutral {
+  background: var(--wivu-color-bg-subtle);
+  color: var(--wivu-color-text-secondary);
+}
+.tone_outline {
+  background: var(--wivu-color-bg-surface);
+  color: var(--wivu-color-text-secondary);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+}
+.tone_danger {
+  background: var(--wivu-color-status-error);
+  color: var(--wivu-color-text-on-brand);
+}
+.tone_dangerSoft {
+  background: color-mix(in srgb, var(--wivu-color-status-error) 10%, white);
+  color: var(--wivu-color-text-error);
+}
+.tone_warningSoft {
+  background: color-mix(in srgb, var(--wivu-color-status-warning) 12%, white);
+  color: var(--wivu-color-status-warning);
+}
+.tone_onBrand {
+  background: var(--wivu-color-bg-on-brand-chip);
+  color: var(--wivu-color-text-on-brand);
+}
+.tone_white {
+  background: var(--wivu-color-bg-surface);
+  color: var(--wivu-color-text-primary);
+}
+.selectable {
+  cursor: pointer;
+  transition: background-color var(--wivu-duration-press) ease;
+}
+.selected {
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+  box-shadow: none;
+}
+.dotMark {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ── Badge ──────────────────────────────────── */
+.badgeNew {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--wivu-radius-4);
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+  flex-shrink: 0;
+}
+.badgeCount {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding-inline: 5px;
+  border-radius: var(--wivu-radius-full);
+  background: var(--wivu-color-status-error);
+  color: var(--wivu-color-text-on-brand);
+}
+.badgeDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--wivu-color-status-error);
+  flex-shrink: 0;
+}
+
+/* ── Avatar ─────────────────────────────────── */
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.avatarStack {
+  display: inline-flex;
+}
+.avatarStack > * + * {
+  margin-left: -8px;
+}
+.avatarStack > * {
+  box-shadow: 0 0 0 2px var(--wivu-color-bg-surface);
+}
+
+/* ── Progress ───────────────────────────────── */
+.progress {
+  position: relative;
+  height: 6px;
+  border-radius: var(--wivu-radius-full);
+  background: var(--wivu-color-bg-subtle);
+  overflow: hidden;
+}
+.progressFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: var(--wivu-color-bg-brand);
+  transition: width 0.6s var(--wivu-easing-out);
+}
+
+/* ── Divider ────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: var(--wivu-color-border-default);
+  flex-shrink: 0;
+}
+.sectionDivider {
+  height: 1px;
+  margin-block: var(--wivu-space-16);
+  background: var(--wivu-color-border-default);
+  flex-shrink: 0;
+}
+
+/* ── Spinner / Ring ─────────────────────────── */
+.spinner {
+  border-radius: 50%;
+  border: 3px solid var(--wivu-color-bg-brand-soft);
+  border-top-color: var(--wivu-color-bg-brand);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

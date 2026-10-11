@@ -1,0 +1,74 @@
+.boxes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.box {
+  display: grid;
+  place-items: center;
+  height: 76px;
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-brand-soft);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.box[data-filled='true'],
+.box[data-current='true'] {
+  background: var(--wivu-color-bg-surface);
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-brand);
+}
+.box[data-status='error'] {
+  background: var(--wivu-color-bg-surface);
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-status-error);
+}
+.box[data-status='success'] {
+  background: var(--wivu-color-bg-brand);
+  box-shadow: none;
+}
+.box[data-status='success'] .dot {
+  background: #fff;
+}
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--wivu-color-text-primary);
+}
+.box[data-status='error'] .dot {
+  background: var(--wivu-color-status-error);
+}
+.caret {
+  width: 2px;
+  height: 28px;
+  border-radius: 1px;
+  background: var(--wivu-color-text-brand);
+  animation: blink 1s steps(1) infinite;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 56px;
+  column-gap: 12px;
+}
+.key {
+  display: grid;
+  place-items: center;
+  border-radius: var(--wivu-radius-14);
+  color: var(--wivu-color-text-primary);
+  transition: background-color 0.1s ease;
+}
+.key:active:not(:disabled) {
+  background: var(--wivu-color-bg-subtle);
+}
+.extra {
+  display: grid;
+  padding-block: 4px;
+}
+.extra > * {
+  height: 100%;
+}

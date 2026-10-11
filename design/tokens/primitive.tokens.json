@@ -1,0 +1,383 @@
+{
+  "color": {
+    "primitive": {
+      "$type": "color",
+      "$description": "Figma: WivU/Color Primitives — 화면에서 직접 쓰지 않는다",
+      "white": {
+        "1000": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              1,
+              1,
+              1
+            ],
+            "alpha": 1,
+            "hex": "#FFFFFF"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        }
+      },
+      "black": {
+        "1000": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0,
+              0,
+              0
+            ],
+            "alpha": 1,
+            "hex": "#000000"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        }
+      },
+      "ink": {
+        "900": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.0627,
+              0.0941,
+              0.1569
+            ],
+            "alpha": 1,
+            "hex": "#101828"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        },
+        "950": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.051,
+              0.1059,
+              0.2588
+            ],
+            "alpha": 1,
+            "hex": "#0D1B42"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        }
+      },
+      "gray": {
+        "50": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.9686,
+              0.9804,
+              1
+            ],
+            "alpha": 1,
+            "hex": "#F7FAFF"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        },
+        "100": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.9608,
+              0.9608,
+              0.9608
+            ],
+            "alpha": 1,
+            "hex": "#F5F5F5"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        },
+        "200": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.9294,
+              0.9294,
+              0.9412
+            ],
+            "alpha": 1,
+            "hex": "#EDEDF0"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        },
+        "300": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.898,
+              0.9098,
+              0.9373
+            ],
+            "alpha": 1,
+            "hex": "#E5E8EF"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        },
+        "350": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.851,
+              0.851,
+              0.851
+            ],
+            "alpha": 1,
+            "hex": "#D9D9D9"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        },
+        "400": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.7843,
+              0.8078,
+              0.8471
+            ],
+            "alpha": 1,
+            "hex": "#C8CED8"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        },
+        "450": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.6353,
+              0.6549,
+              0.6863
+            ],
+            "alpha": 1,
+            "hex": "#A2A7AF"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        },
+        "500": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.6039,
+              0.6392,
+              0.698
+            ],
+            "alpha": 1,
+            "hex": "#9AA3B2"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        },
+        "600": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.3725,
+              0.4,
+              0.451
+            ],
+            "alpha": 1,
+            "hex": "#5F6673"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        }
+      },
+      "brand": {
+        "100": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.9098,
+              0.9412,
+              1
+            ],
+            "alpha": 1,
+            "hex": "#E8F0FF"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        },
+        "200": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.8353,
+              0.8784,
+              0.9922
+            ],
+            "alpha": 1,
+            "hex": "#D5E0FD"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        },
+        "500": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.298,
+              0.502,
+              0.9412
+            ],
+            "alpha": 1,
+            "hex": "#4C80F0"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        }
+      },
+      "error": {
+        "500": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.9412,
+              0.298,
+              0.3922
+            ],
+            "alpha": 1,
+            "hex": "#F04C64"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        }
+      },
+      "warning": {
+        "500": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.851,
+              0.549,
+              0.149
+            ],
+            "alpha": 1,
+            "hex": "#D98C26"
+          },
+          "$extensions": {
+            "com.figma": {
+              "source": "figma"
+            }
+          }
+        }
+      },
+      "accent": {
+        "lime": {
+          "100": {
+            "$value": {
+              "colorSpace": "srgb",
+              "components": [
+                0.9373,
+                1,
+                0.9412
+              ],
+              "alpha": 1,
+              "hex": "#EFFFF0"
+            },
+            "$extensions": {
+              "com.figma": {
+                "source": "figma"
+              }
+            }
+          },
+          "500": {
+            "$value": {
+              "colorSpace": "srgb",
+              "components": [
+                0.7176,
+                0.9529,
+                0.302
+              ],
+              "alpha": 1,
+              "hex": "#B7F34D"
+            },
+            "$extensions": {
+              "com.figma": {
+                "source": "figma"
+              }
+            }
+          },
+          "700": {
+            "$value": {
+              "colorSpace": "srgb",
+              "components": [
+                0.4706,
+                0.7137,
+                0.1451
+              ],
+              "alpha": 1,
+              "hex": "#78B625"
+            },
+            "$extensions": {
+              "com.figma": {
+                "source": "figma"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

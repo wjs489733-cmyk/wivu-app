@@ -1,0 +1,203 @@
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 상태바 + 헤더 고정 영역 (사전 승인된 '상태바 고정' 규칙) */
+.top {
+  position: relative;
+  z-index: 3;
+  flex: none;
+  background: inherit;
+  transition: box-shadow 0.2s ease;
+}
+.top[data-scrolled='true'][data-hairline='true'] {
+  box-shadow: 0 1px 0 var(--wivu-color-border-default);
+}
+
+.scroll {
+  position: relative;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.scroll::-webkit-scrollbar {
+  display: none;
+}
+.noScroll {
+  overflow: hidden;
+}
+
+.footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+}
+
+/* ── Status bar (프레임 모드에서만 내용 표시) ───────────────── */
+.statusBar {
+  height: var(--status-h);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 26px 10px 44px;
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 22px;
+  letter-spacing: -0.02em;
+  font-family: -apple-system, 'SF Pro Text', var(--wivu-font-family-base);
+}
+.statusIcons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.homeIndicator {
+  position: absolute;
+  left: 50%;
+  bottom: 8px;
+  width: 134px;
+  height: 5px;
+  margin-left: -67px;
+  border-radius: 3px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* ── Top nav (상세 화면: 뒤로 · 가운데 타이틀 Title 3 · 오른쪽 액션) ── */
+.topNav {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: var(--wivu-layout-navbar-height);
+  padding-inline: 8px;
+}
+.navSide {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.navSideRight {
+  justify-content: flex-end;
+}
+.navTitle {
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+.iconButton {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  color: var(--wivu-color-icon-primary);
+  position: relative;
+  transition: color var(--wivu-duration-press) ease, background-color var(--wivu-duration-press) ease;
+}
+.iconButton:active {
+  color: var(--wivu-color-icon-brand);
+}
+.iconButtonDot {
+  position: absolute;
+  top: 10px;
+  right: 11px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--wivu-color-status-error);
+  box-shadow: 0 0 0 1.5px var(--wivu-color-bg-surface);
+}
+.textAction {
+  padding: 10px 12px;
+  color: var(--wivu-color-text-brand);
+}
+.textAction:disabled {
+  color: var(--wivu-color-text-placeholder);
+}
+
+/* ── Large header (탭 루트: 왼쪽 큰 타이틀 Title 1, 오른쪽 24 아이콘) ── */
+.largeHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 56px;
+  padding: 4px 8px 4px var(--wivu-layout-inset);
+}
+
+/* ── Tab bar (Compact: 탭 62 + 홈 인디케이터, 가운데 홈 범프) ── */
+.tabBar {
+  position: relative;
+  padding-top: 21px;
+  pointer-events: none;
+}
+.tabBg {
+  position: absolute;
+  inset: 21px 0 0 0;
+  background: var(--wivu-color-border-default);
+}
+.tabBump {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 93px;
+  height: 93px;
+  margin-left: -46.5px;
+  border-radius: 50%;
+  background: var(--wivu-color-border-default);
+}
+.tabRow {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  height: 62px;
+  pointer-events: auto;
+}
+.tabSafe {
+  position: relative;
+  height: max(var(--safe-bottom), 12px);
+  pointer-events: auto;
+}
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--wivu-color-text-tertiary);
+  transition: color 0.15s ease;
+}
+.tab[aria-current='page'] {
+  color: var(--wivu-color-text-brand);
+}
+.tabHome {
+  transform: translateY(-6px);
+}
+.tabLabel {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+}
+
+/* ── Bottom CTA bar (탭바 없는 하위 화면) ─────────────────── */
+.ctaBar {
+  display: flex;
+  gap: var(--wivu-space-8);
+  padding: 12px var(--wivu-layout-gutter) calc(max(var(--safe-bottom), 12px) + 8px);
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), var(--wivu-color-bg-surface) 24%);
+}
+.ctaBar > * {
+  flex: 1 1 0;
+}

@@ -1,0 +1,370 @@
+{
+  "color": {
+    "bg": {
+      "canvas": {
+        "$type": "color",
+        "$value": "{color.primitive.gray.100}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "surface": {
+        "$type": "color",
+        "$value": "{color.primitive.white.1000}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "subtle": {
+        "$type": "color",
+        "$value": "{color.primitive.gray.50}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "brand": {
+        "$type": "color",
+        "$value": "{color.primitive.brand.500}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "brand-soft": {
+        "$type": "color",
+        "$value": "{color.primitive.brand.100}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "brand-pressed": {
+        "$type": "color",
+        "$value": "{color.primitive.ink.950}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "brand-soft-pressed": {
+        "$type": "color",
+        "$value": "{color.primitive.brand.200}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "disabled": {
+        "$type": "color",
+        "$value": "{color.primitive.gray.300}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "pulse": {
+        "$type": "color",
+        "$value": "{color.primitive.accent.lime.500}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "pulse-soft": {
+        "$type": "color",
+        "$value": "{color.primitive.accent.lime.100}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "pulse-pressed": {
+        "$type": "color",
+        "$value": "{color.primitive.accent.lime.700}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "qr-dark": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0588,
+            0.0706,
+            0.102
+          ],
+          "alpha": 1,
+          "hex": "#0F121A"
+        },
+        "$extensions": {
+          "com.wivu": {
+            "source": "code",
+            "note": "QR 화면 배경 (Figma RAW #0F121A)"
+          }
+        }
+      },
+      "scrim": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0627,
+            0.0941,
+            0.1569
+          ],
+          "alpha": 0.4,
+          "hex": "#101828"
+        },
+        "$extensions": {
+          "com.wivu": {
+            "source": "code",
+            "note": "바텀시트·모달 딤"
+          }
+        }
+      },
+      "on-brand-ghost": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            1,
+            1
+          ],
+          "alpha": 0.2,
+          "hex": "#FFFFFF"
+        },
+        "$extensions": {
+          "com.wivu": {
+            "source": "code",
+            "note": "파란 카드 위 20% 흰 버튼 (Button v4 OnBrandGhost)"
+          }
+        }
+      },
+      "on-brand-chip": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            1,
+            1
+          ],
+          "alpha": 0.18,
+          "hex": "#FFFFFF"
+        },
+        "$extensions": {
+          "com.wivu": {
+            "source": "code",
+            "note": "히어로 카드 상태 칩 (Figma RAW #FFFFFF@18)"
+          }
+        }
+      }
+    },
+    "text": {
+      "primary": {
+        "$type": "color",
+        "$value": "{color.primitive.ink.900}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "secondary": {
+        "$type": "color",
+        "$value": "{color.primitive.gray.600}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "tertiary": {
+        "$type": "color",
+        "$value": "{color.primitive.gray.500}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "placeholder": {
+        "$type": "color",
+        "$value": "{color.primitive.gray.450}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "on-brand": {
+        "$type": "color",
+        "$value": "{color.primitive.white.1000}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "brand": {
+        "$type": "color",
+        "$value": "{color.primitive.brand.500}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "error": {
+        "$type": "color",
+        "$value": "{color.primitive.error.500}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "on-pulse": {
+        "$type": "color",
+        "$value": "{color.primitive.ink.900}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "on-brand-muted": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            1,
+            1
+          ],
+          "alpha": 0.85,
+          "hex": "#FFFFFF"
+        },
+        "$extensions": {
+          "com.wivu": {
+            "source": "code",
+            "note": "히어로 카드 메타 (Figma RAW #FFFFFF@85)"
+          }
+        }
+      }
+    },
+    "icon": {
+      "primary": {
+        "$type": "color",
+        "$value": "{color.primitive.ink.900}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "secondary": {
+        "$type": "color",
+        "$value": "{color.primitive.gray.500}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "brand": {
+        "$type": "color",
+        "$value": "{color.primitive.brand.500}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "pulse": {
+        "$type": "color",
+        "$value": "{color.primitive.accent.lime.700}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      }
+    },
+    "border": {
+      "default": {
+        "$type": "color",
+        "$value": "{color.primitive.gray.300}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "strong": {
+        "$type": "color",
+        "$value": "{color.primitive.gray.400}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "brand": {
+        "$type": "color",
+        "$value": "{color.primitive.brand.500}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "pulse": {
+        "$type": "color",
+        "$value": "{color.primitive.accent.lime.500}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      }
+    },
+    "status": {
+      "error": {
+        "$type": "color",
+        "$value": "{color.primitive.error.500}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      },
+      "warning": {
+        "$type": "color",
+        "$value": "{color.primitive.warning.500}",
+        "$extensions": {
+          "com.figma": {
+            "source": "figma"
+          }
+        }
+      }
+    }
+  }
+}

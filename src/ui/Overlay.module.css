@@ -1,0 +1,152 @@
+.layer {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--wivu-color-bg-scrim);
+}
+
+/* ── Sheet ───────────────────────────────────── */
+.sheet {
+  position: relative;
+  max-height: calc(100% - var(--status-h) - 12px);
+  overflow-y: auto;
+  background: var(--wivu-color-bg-surface);
+  border-radius: var(--wivu-radius-24) var(--wivu-radius-24) 0 0;
+  padding: 0 var(--wivu-layout-inset) calc(max(var(--safe-bottom), 12px) + 12px);
+  box-shadow: var(--wivu-elevation-overlay);
+  touch-action: none;
+}
+.handleArea {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 14px;
+  cursor: grab;
+  touch-action: none;
+}
+.handle {
+  width: 36px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--wivu-color-border-default);
+}
+
+/* ── Toast ───────────────────────────────────── */
+.toastHost {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(max(var(--safe-bottom), 12px) + 108px);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+.toast {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wivu-space-8);
+  max-width: calc(100% - 40px);
+  padding: 12px 18px;
+  border-radius: var(--wivu-radius-full);
+  background: rgba(16, 24, 40, 0.92);
+  color: var(--wivu-color-text-on-brand);
+  box-shadow: var(--wivu-elevation-overlay);
+  backdrop-filter: blur(8px);
+}
+
+/* ── iOS system alert ────────────────────────── */
+.layer:has(.alert),
+.layer:has(.dialog) {
+  justify-content: center;
+  align-items: center;
+}
+.alert {
+  position: relative;
+  width: 270px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(242, 242, 247, 0.96);
+  backdrop-filter: blur(20px);
+  font-family: -apple-system, 'SF Pro Text', var(--wivu-font-family-base);
+  color: #000;
+  text-align: center;
+}
+.alertBody {
+  padding: 19px 16px 15px;
+}
+.alertTitle {
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 600;
+}
+.alertMessage {
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 18px;
+}
+.alertActions {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  border-top: 0.5px solid rgba(60, 60, 67, 0.36);
+}
+.alertActions[data-count='3'] {
+  grid-auto-flow: row;
+}
+.alertAction {
+  height: 44px;
+  font-size: 17px;
+  color: #007aff;
+  text-align: center;
+}
+.alertAction + .alertAction {
+  border-left: 0.5px solid rgba(60, 60, 67, 0.36);
+}
+.alertAction[data-bold='true'] {
+  font-weight: 600;
+}
+.alertAction[data-destructive='true'] {
+  color: #ff3b30;
+}
+.alertAction:active {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* ── App dialog ──────────────────────────────── */
+.dialog {
+  position: relative;
+  width: calc(100% - 48px);
+  max-width: 320px;
+  padding: 24px 20px 20px;
+  border-radius: var(--wivu-radius-24);
+  background: var(--wivu-color-bg-surface);
+  box-shadow: var(--wivu-elevation-overlay);
+  text-align: center;
+}
+.dialogActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--wivu-space-8);
+  margin-top: var(--wivu-space-20);
+}
+.dialogBtn {
+  height: var(--wivu-button-m-height);
+  border-radius: var(--wivu-radius-12);
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+}
+.dialogBtn[data-destructive='true'] {
+  background: var(--wivu-color-status-error);
+}
+.dialogCancel {
+  background: var(--wivu-color-bg-subtle);
+  color: var(--wivu-color-text-secondary);
+}

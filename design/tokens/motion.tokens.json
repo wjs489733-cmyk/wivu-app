@@ -1,0 +1,85 @@
+{
+  "duration": {
+    "$type": "duration",
+    "push": {
+      "$value": {
+        "value": 300,
+        "unit": "ms"
+      },
+      "$description": "상세 PUSH LEFT 0.3s",
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "modal": {
+      "$value": {
+        "value": 300,
+        "unit": "ms"
+      },
+      "$description": "입력·모달 MOVE_IN TOP",
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "dissolve": {
+      "$value": {
+        "value": 250,
+        "unit": "ms"
+      },
+      "$description": "완료·상태 DISSOLVE",
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "press": {
+      "$value": {
+        "value": 120,
+        "unit": "ms"
+      },
+      "$extensions": {
+        "com.wivu": {
+          "source": "code",
+          "note": "버튼 눌림"
+        }
+      }
+    }
+  },
+  "easing": {
+    "$type": "cubicBezier",
+    "standard": {
+      "$value": [
+        0.32,
+        0.72,
+        0,
+        1
+      ],
+      "$description": "iOS 내비게이션 커브 근사",
+      "$extensions": {
+        "com.wivu": {
+          "source": "code",
+          "note": "iOS 전환 근사"
+        }
+      }
+    },
+    "out": {
+      "$value": [
+        0.16,
+        1,
+        0.3,
+        1
+      ],
+      "$extensions": {
+        "com.wivu": {
+          "source": "code",
+          "note": "등장"
+        }
+      }
+    }
+  }
+}

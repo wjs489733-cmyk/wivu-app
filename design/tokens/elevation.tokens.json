@@ -1,0 +1,113 @@
+{
+  "elevation": {
+    "$type": "shadow",
+    "card": {
+      "$value": {
+        "color": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0627,
+            0.0941,
+            0.1569
+          ],
+          "alpha": 0.08,
+          "hex": "#101828"
+        },
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 2,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 8,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        }
+      },
+      "$description": "Subtle depth for actionable cards",
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "overlay": {
+      "$value": {
+        "color": {
+          "colorSpace": "srgb",
+          "components": [
+            0.0627,
+            0.0941,
+            0.1569
+          ],
+          "alpha": 0.14,
+          "hex": "#101828"
+        },
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 8,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 24,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        }
+      },
+      "$description": "Depth for modals and overlays",
+      "$extensions": {
+        "com.figma": {
+          "source": "figma"
+        }
+      }
+    },
+    "fab": {
+      "$value": {
+        "color": {
+          "colorSpace": "srgb",
+          "components": [
+            0.298,
+            0.502,
+            0.9412
+          ],
+          "alpha": 0.35,
+          "hex": "#4C80F0"
+        },
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 6,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 16,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        }
+      },
+      "$extensions": {
+        "com.wivu": {
+          "source": "code",
+          "note": "게시판 글쓰기 FAB (Figma RAW)"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,188 @@
+/* ── Card ───────────────────────────────────── */
+.card {
+  position: relative;
+  border-radius: var(--wivu-card-radius);
+  padding: var(--wivu-card-padding);
+  min-width: 0;
+}
+.outline {
+  background: var(--wivu-color-bg-surface);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+}
+.soft {
+  background: var(--wivu-color-bg-brand-soft);
+}
+.subtle {
+  background: var(--wivu-color-bg-subtle);
+}
+.pulse {
+  background: var(--wivu-color-bg-pulse-soft);
+}
+.brand {
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+  border-radius: var(--wivu-radius-24);
+  padding: var(--wivu-space-20);
+}
+.ink {
+  background: var(--wivu-color-bg-brand-pressed);
+  color: var(--wivu-color-text-on-brand);
+  border-radius: var(--wivu-radius-24);
+  padding: var(--wivu-space-20);
+}
+.elevated {
+  background: var(--wivu-color-bg-surface);
+  box-shadow: var(--wivu-elevation-card);
+}
+.flush {
+  padding: 0;
+}
+.pressable {
+  cursor: pointer;
+  transition: transform var(--wivu-duration-press) ease, filter var(--wivu-duration-press) ease;
+  width: 100%;
+  display: block;
+}
+.pressable:active {
+  transform: scale(0.985);
+  filter: brightness(0.97);
+}
+
+/* ── Tile ───────────────────────────────────── */
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--wivu-space-8);
+  padding: var(--wivu-space-16) var(--wivu-space-4) var(--wivu-space-12);
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-subtle);
+  text-align: center;
+  min-width: 0;
+  transition: transform var(--wivu-duration-press) ease;
+}
+.tile:active {
+  transform: scale(0.97);
+}
+.tileIcon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-surface);
+  color: var(--wivu-color-icon-primary);
+}
+.tileOutline {
+  background: var(--wivu-color-bg-surface);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+  border-radius: var(--wivu-radius-14);
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--wivu-space-8);
+  padding: var(--wivu-space-16) var(--wivu-space-8);
+}
+.tileDot {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+/* ── Section ────────────────────────────────── */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-12);
+}
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wivu-space-12);
+  padding-inline: var(--wivu-layout-inset);
+  min-height: 26px;
+}
+.sectionBody {
+  padding-inline: var(--wivu-layout-gutter);
+}
+.moreLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wivu-space-2);
+  color: var(--wivu-color-text-tertiary);
+  margin-right: -4px;
+  padding: 4px 0 4px 8px;
+}
+.moreLink:active {
+  color: var(--wivu-color-text-secondary);
+}
+
+/* ── List ───────────────────────────────────── */
+.listGroup {
+  background: var(--wivu-color-bg-surface);
+  border-radius: var(--wivu-radius-16);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+  padding-inline: var(--wivu-space-16);
+  overflow: hidden;
+}
+.listGroupPlain {
+  padding-inline: var(--wivu-layout-inset);
+}
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-12);
+  width: 100%;
+  min-height: 56px;
+  padding-block: 14px;
+  text-align: left;
+}
+.row + .row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--wivu-color-border-default);
+}
+.rowPressable {
+  cursor: pointer;
+}
+.rowPressable:active {
+  background: var(--wivu-color-bg-subtle);
+  box-shadow: 0 0 0 16px var(--wivu-color-bg-subtle);
+  clip-path: inset(0 -16px);
+}
+.rowMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.rowTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-8);
+  min-width: 0;
+}
+.rowTrailing {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-8);
+  flex-shrink: 0;
+  color: var(--wivu-color-text-tertiary);
+}
+.leadingBox {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--wivu-radius-12);
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-icon-brand);
+  flex-shrink: 0;
+}

@@ -1,0 +1,54 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0 24px calc(max(var(--safe-bottom), 12px) + 20px);
+}
+.center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 40px;
+}
+.badge {
+  position: relative;
+  width: 104px;
+  height: 104px;
+}
+.halo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+.circle {
+  position: absolute;
+  inset: 12px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-surface);
+}
+.info {
+  width: 100%;
+  margin-top: 52px;
+  padding: 20px;
+  border-radius: var(--wivu-radius-16);
+  background: rgba(255, 255, 255, 0.15);
+}
+.actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+.link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 44px;
+  color: var(--wivu-color-text-on-brand);
+}

@@ -1,0 +1,83 @@
+.layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3; /* 탭바(footer z4) 아래 → 홈 탭을 다시 눌러 닫을 수 있게 */
+}
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--wivu-color-bg-scrim);
+}
+.dial {
+  position: absolute;
+  left: 50%;
+  bottom: calc(max(var(--safe-bottom), 12px) + 62px - 40px);
+  width: 320px;
+  height: 320px;
+  margin-left: -160px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-surface);
+  box-shadow: var(--wivu-elevation-overlay);
+  transform-origin: 50% 100%;
+}
+.spokes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.spokes line {
+  stroke: var(--wivu-color-border-default);
+  stroke-width: 1;
+}
+.inner {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 164px;
+  height: 164px;
+  margin: -82px 0 0 -82px;
+  border-radius: 50%;
+  background: var(--wivu-color-border-default);
+}
+.item {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 64px;
+  margin: -30px 0 0 -32px;
+}
+.itemIcon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-surface);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+  color: var(--wivu-color-icon-primary);
+  transition: transform 0.12s ease, background-color 0.12s ease;
+}
+.item:active .itemIcon {
+  transform: scale(0.92);
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-icon-brand);
+}
+.add {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 92px;
+  height: 92px;
+  margin: -46px 0 0 -46px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-surface);
+  border: 1.5px dashed var(--wivu-color-border-brand);
+}

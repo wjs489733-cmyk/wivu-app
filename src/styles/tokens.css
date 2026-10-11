@@ -1,0 +1,132 @@
+/**
+ * 자동 생성 — 수정 금지
+ * 원본: design/tokens/*.tokens.json (W3C DTCG) ← Figma WivU_Prototyping_v3-codex
+ */
+
+:root {
+  --wivu-button-l-height: 52px;
+  --wivu-button-l-icon: 20px;
+  --wivu-button-m-height: 44px;
+  --wivu-button-m-icon: 16px;
+  --wivu-button-s-height: 32px;
+  --wivu-button-s-icon: 16px;
+  --wivu-chip-height: 24px;
+  --wivu-elevation-card: 0px 2px 8px 0px rgba(16, 24, 40, 0.08); /** Subtle depth for actionable cards */
+  --wivu-elevation-overlay: 0px 8px 24px 0px rgba(16, 24, 40, 0.14); /** Depth for modals and overlays */
+  --wivu-elevation-fab: 0px 6px 16px 0px rgba(76, 128, 240, 0.35);
+  --wivu-space-2: 2px;
+  --wivu-space-4: 4px;
+  --wivu-space-8: 8px;
+  --wivu-space-12: 12px;
+  --wivu-space-16: 16px;
+  --wivu-space-20: 20px;
+  --wivu-space-24: 24px;
+  --wivu-space-32: 32px;
+  --wivu-radius-4: 4px;
+  --wivu-radius-6: 6px;
+  --wivu-radius-8: 8px;
+  --wivu-radius-12: 12px;
+  --wivu-radius-14: 14px;
+  --wivu-radius-16: 16px;
+  --wivu-radius-24: 24px;
+  --wivu-radius-full: 999px;
+  --wivu-layout-screen-width: 392px;
+  --wivu-layout-screen-height: 852px;
+  --wivu-layout-gutter: 16px; /** 카드 좌우 */
+  --wivu-layout-inset: 20px; /** 텍스트 좌측 / 오른쪽 정렬선 392−20 */
+  --wivu-layout-section-gap: 32px;
+  --wivu-layout-tabbar-height: 84px; /** 탭바 본체 (홈 범프 제외, 홈 인디케이터 포함) */
+  --wivu-layout-navbar-height: 52px;
+  --wivu-layout-statusbar-height: 54px;
+  --wivu-layout-home-indicator: 34px;
+  --wivu-duration-push: 300ms; /** 상세 PUSH LEFT 0.3s */
+  --wivu-duration-modal: 300ms; /** 입력·모달 MOVE_IN TOP */
+  --wivu-duration-dissolve: 250ms; /** 완료·상태 DISSOLVE */
+  --wivu-duration-press: 120ms;
+  --wivu-easing-standard: cubic-bezier(0.32, 0.72, 0, 1); /** iOS 내비게이션 커브 근사 */
+  --wivu-easing-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --wivu-color-primitive-white-1000: #FFFFFF;
+  --wivu-color-primitive-black-1000: #000000;
+  --wivu-color-primitive-ink-900: #101828;
+  --wivu-color-primitive-ink-950: #0D1B42;
+  --wivu-color-primitive-gray-50: #F7FAFF;
+  --wivu-color-primitive-gray-100: #F5F5F5;
+  --wivu-color-primitive-gray-200: #EDEDF0;
+  --wivu-color-primitive-gray-300: #E5E8EF;
+  --wivu-color-primitive-gray-350: #D9D9D9;
+  --wivu-color-primitive-gray-400: #C8CED8;
+  --wivu-color-primitive-gray-450: #A2A7AF;
+  --wivu-color-primitive-gray-500: #9AA3B2;
+  --wivu-color-primitive-gray-600: #5F6673;
+  --wivu-color-primitive-brand-100: #E8F0FF;
+  --wivu-color-primitive-brand-200: #D5E0FD;
+  --wivu-color-primitive-brand-500: #4C80F0;
+  --wivu-color-primitive-error-500: #F04C64;
+  --wivu-color-primitive-warning-500: #D98C26;
+  --wivu-color-primitive-accent-lime-100: #EFFFF0;
+  --wivu-color-primitive-accent-lime-500: #B7F34D;
+  --wivu-color-primitive-accent-lime-700: #78B625;
+  --wivu-color-bg-qr-dark: #0F121A;
+  --wivu-color-bg-scrim: rgba(16, 24, 40, 0.4);
+  --wivu-color-bg-on-brand-ghost: rgba(255, 255, 255, 0.2);
+  --wivu-color-bg-on-brand-chip: rgba(255, 255, 255, 0.18);
+  --wivu-color-text-on-brand-muted: rgba(255, 255, 255, 0.85);
+  --wivu-font-family-base: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-button-l-padding-x: var(--wivu-space-20);
+  --wivu-button-l-gap: var(--wivu-space-8);
+  --wivu-button-l-radius: var(--wivu-radius-14);
+  --wivu-button-m-padding-x: var(--wivu-space-16);
+  --wivu-button-m-gap: var(--wivu-space-8);
+  --wivu-button-m-radius: var(--wivu-radius-12);
+  --wivu-button-s-padding-x: var(--wivu-space-12);
+  --wivu-button-s-gap: var(--wivu-space-4);
+  --wivu-button-s-radius: var(--wivu-radius-full);
+  --wivu-card-radius: var(--wivu-radius-16);
+  --wivu-card-padding: var(--wivu-space-16);
+  --wivu-chip-radius: var(--wivu-radius-6);
+  --wivu-color-bg-canvas: var(--wivu-color-primitive-gray-100);
+  --wivu-color-bg-surface: var(--wivu-color-primitive-white-1000);
+  --wivu-color-bg-subtle: var(--wivu-color-primitive-gray-50);
+  --wivu-color-bg-brand: var(--wivu-color-primitive-brand-500);
+  --wivu-color-bg-brand-soft: var(--wivu-color-primitive-brand-100);
+  --wivu-color-bg-brand-pressed: var(--wivu-color-primitive-ink-950);
+  --wivu-color-bg-brand-soft-pressed: var(--wivu-color-primitive-brand-200);
+  --wivu-color-bg-disabled: var(--wivu-color-primitive-gray-300);
+  --wivu-color-bg-pulse: var(--wivu-color-primitive-accent-lime-500);
+  --wivu-color-bg-pulse-soft: var(--wivu-color-primitive-accent-lime-100);
+  --wivu-color-bg-pulse-pressed: var(--wivu-color-primitive-accent-lime-700);
+  --wivu-color-text-primary: var(--wivu-color-primitive-ink-900);
+  --wivu-color-text-secondary: var(--wivu-color-primitive-gray-600);
+  --wivu-color-text-tertiary: var(--wivu-color-primitive-gray-500);
+  --wivu-color-text-placeholder: var(--wivu-color-primitive-gray-450);
+  --wivu-color-text-on-brand: var(--wivu-color-primitive-white-1000);
+  --wivu-color-text-brand: var(--wivu-color-primitive-brand-500);
+  --wivu-color-text-error: var(--wivu-color-primitive-error-500);
+  --wivu-color-text-on-pulse: var(--wivu-color-primitive-ink-900);
+  --wivu-color-icon-primary: var(--wivu-color-primitive-ink-900);
+  --wivu-color-icon-secondary: var(--wivu-color-primitive-gray-500);
+  --wivu-color-icon-brand: var(--wivu-color-primitive-brand-500);
+  --wivu-color-icon-pulse: var(--wivu-color-primitive-accent-lime-700);
+  --wivu-color-border-default: var(--wivu-color-primitive-gray-300);
+  --wivu-color-border-strong: var(--wivu-color-primitive-gray-400);
+  --wivu-color-border-brand: var(--wivu-color-primitive-brand-500);
+  --wivu-color-border-pulse: var(--wivu-color-primitive-accent-lime-500);
+  --wivu-color-status-error: var(--wivu-color-primitive-error-500);
+  --wivu-color-status-warning: var(--wivu-color-primitive-warning-500);
+  --wivu-type-display: 700 28px/1.2857 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-title-1: 700 24px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-title-2: 700 18px/1.4444 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-title-3: 600 17px/1.4118 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-headline: 600 16px/1.5 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-subhead: 600 15px/1.4667 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-body: 400 15px/1.6 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-label: 600 14px/1.4286 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-callout: 400 14px/1.4286 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-caption-1-strong: 600 13px/1.3846 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-caption-1: 400 13px/1.3846 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-caption-2-strong: 600 12px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-caption-2: 400 12px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-micro: 600 11px/1.2727 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-number: 700 24px/1.25 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-card-border: var(--wivu-color-border-default);
+}

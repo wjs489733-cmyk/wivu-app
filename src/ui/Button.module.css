@@ -1,0 +1,102 @@
+/* Button v4 (Figma 474:3714) — L h52 r14 Headline / M h44 r12 Label / S h32 pill Caption 1 Strong */
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+  user-select: none;
+  transition:
+    transform var(--wivu-duration-press) ease,
+    filter var(--wivu-duration-press) ease,
+    background-color var(--wivu-duration-press) ease;
+}
+.button:active:not(:disabled) {
+  transform: scale(0.98);
+  filter: brightness(0.94);
+}
+.button:disabled {
+  cursor: default;
+}
+
+.l {
+  height: var(--wivu-button-l-height);
+  padding-inline: var(--wivu-button-l-padding-x);
+  gap: var(--wivu-button-l-gap);
+  border-radius: var(--wivu-button-l-radius);
+}
+.m {
+  height: var(--wivu-button-m-height);
+  padding-inline: var(--wivu-button-m-padding-x);
+  gap: var(--wivu-button-m-gap);
+  border-radius: var(--wivu-button-m-radius);
+}
+.s {
+  height: var(--wivu-button-s-height);
+  padding-inline: var(--wivu-button-s-padding-x);
+  gap: var(--wivu-button-s-gap);
+  border-radius: var(--wivu-button-s-radius);
+}
+.block {
+  display: flex;
+  width: 100%;
+}
+/* 가로 줄에서 남은 폭 나눠 갖기 (세로 배치에선 쓰지 않음) */
+.grow {
+  display: flex;
+  flex: 1 1 0%;
+  min-width: 0;
+}
+
+.primary {
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+}
+.soft {
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-text-brand);
+}
+.soft:active:not(:disabled) {
+  background: var(--wivu-color-bg-brand-soft-pressed);
+  filter: none;
+}
+.outline {
+  background: var(--wivu-color-bg-surface);
+  color: var(--wivu-color-text-primary);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+}
+.onBrand {
+  background: var(--wivu-color-bg-surface);
+  color: var(--wivu-color-text-brand);
+}
+.onBrandGhost {
+  background: var(--wivu-color-bg-on-brand-ghost);
+  color: var(--wivu-color-text-on-brand);
+}
+/* 코드 확장: 라임 카드 위 진한 버튼 (게시판 팀플 카드 '참여 신청') */
+.dark {
+  background: var(--wivu-color-primitive-ink-900);
+  color: var(--wivu-color-text-on-brand);
+}
+
+/* Figma 구멍 보완: Disabled는 bg/disabled 사용(흰 배경에서 보이도록), 모든 타입 공통 */
+.button:disabled {
+  background: var(--wivu-color-bg-disabled);
+  color: var(--wivu-color-text-placeholder);
+  box-shadow: none;
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
