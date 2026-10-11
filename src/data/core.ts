@@ -44,7 +44,7 @@ export const COURSES: Course[] = [
   { id: 'ux-research', name: 'UX 리서치', professor: '박OO', slots: [{ day: '금', start: '15:00', end: '16:50' }], room: '정보관 210호', building: '정보관', credits: 3, kind: '전공', color: 'pulse' },
   { id: 'design-management', name: '디자인경영', professor: '정OO', slots: [{ day: '월', start: '10:30', end: '11:45' }, { day: '수', start: '10:30', end: '11:45' }], room: '인문관 305호', building: '인문관', credits: 3, kind: '전공', color: 'subtle' },
   { id: 'motion-graphics', name: '모션그래픽스', professor: '최OO', slots: [{ day: '화', start: '14:00', end: '16:50' }], room: '디자인관 B103호', building: '디자인관', credits: 3, kind: '전공', color: 'subtle' },
-  { id: 'writing', name: '글쓰기와 소통', professor: '사이버 강의', slots: [], room: '사이버 강의', building: '온라인', credits: 2, kind: '교양', color: 'subtle', online: true },
+  { id: 'writing', name: '글쓰기와 소통', professor: '한OO', slots: [], room: '사이버 강의', building: '온라인', credits: 2, kind: '교양', color: 'subtle', online: true },
 ];
 export const TOTAL_CREDITS = COURSES.reduce((a, c) => a + c.credits, 0); // 17
 

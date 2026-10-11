@@ -1,0 +1,151 @@
+/* ── 모바일 학생증 (Figma 407:8067, 잉크 배경) ─────────────────── */
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-16);
+  padding: 12px var(--wivu-layout-gutter) 0;
+}
+
+/* 학생증 카드: 흰 r24 · p24 · gap20 */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-20);
+  padding: var(--wivu-space-24);
+  border-radius: var(--wivu-radius-24);
+  background: var(--wivu-color-bg-surface);
+}
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wivu-space-8);
+  min-width: 0;
+}
+.profile {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-16);
+}
+.photo {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 68px;
+  flex-shrink: 0;
+  border-radius: var(--wivu-radius-14);
+  background: var(--wivu-color-bg-subtle);
+}
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.divider {
+  height: 1px;
+  background: var(--wivu-color-border-default);
+}
+.qrArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.modeLabel {
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+.modeLabel > * {
+  margin-bottom: 12px;
+}
+.qr {
+  display: grid;
+  place-items: center;
+  width: 184px;
+  height: 184px;
+  color: var(--wivu-color-text-primary);
+}
+.timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--wivu-space-8);
+  margin-top: -4px;
+}
+
+.actions {
+  display: flex;
+  gap: var(--wivu-space-12);
+}
+
+/* 오늘 출입 기록: 잉크 위 흰 8% (Figma access log fill #FFFFFF@8) */
+.log {
+  padding: 4px 16px 8px;
+  border-radius: var(--wivu-radius-16);
+  background: rgba(255, 255, 255, 0.08);
+}
+.logHead {
+  padding: 12px 0 4px;
+  opacity: 0.85;
+}
+.logRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wivu-space-8);
+  min-height: 40px;
+  overflow: hidden;
+}
+.note {
+  padding: 0 8px;
+}
+
+/* NFC 시트 */
+.sheetHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: -4px;
+}
+.sheetHead > :last-child {
+  margin-right: -10px;
+}
+.nfcBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--wivu-space-8);
+  padding: 24px 8px 28px;
+}
+.nfcRing {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand-soft);
+  transition: background-color 0.25s ease;
+}
+.nfcRing[data-done='true'] {
+  background: var(--wivu-color-bg-brand);
+}
+.nfcPulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--wivu-color-border-brand);
+  animation: nfcPulse 1.4s ease-out infinite;
+}
+@keyframes nfcPulse {
+  from {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}

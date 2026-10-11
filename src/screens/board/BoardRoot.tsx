@@ -1,0 +1,139 @@
+import { useState } from 'react';
+import { Card, Chip, Icon, IconButton, LargeHeader, ListGroup, Screen, Section, SectionDivider, TabBar, Text, Tile } from '@/ui';
+import { useNav } from '@/nav/nav';
+import { P } from '@/app/paths';
+import { useApp } from '@/store/app';
+import { courseById } from '@/data/core';
+import { CAMPUS_BOARDS, MY_COURSE_CARDS, POPULAR, TEAM_FEATURED } from './data';
+import { useAllPosts, useBoard } from './store';
+import { BoardSearch, CompactRow, Fab, RecruitFoot, ApplyOverlay } from './parts';
+import { useApplyFlow } from './applyFlow';
+import s from './Board.module.css';
+
+/**
+ * 게시판 탭 루트 — Figma 418:8600 (Board_v4_01_Root)
+ * 검색은 같은 라우트 안 오버레이, 팀플 '참여 신청'은 확인 시트 → 신청 완료 상태로 이어진다.
+ */
+export function BoardRoot() {
+  const nav = useNav();
+  const school = useApp((st) => st.selectedSchool);
+  const seen = useBoard((st) => st.seen);
+  const posts = useAllPosts();
+  const apply = useApplyFlow();
+  const [search, setSearch] = useState(false);
+
+  const team = posts.find((p) => p.id === TEAM_FEATURED);
+  const popular = POPULAR.map((id) => posts.find((p) => p.id === id)).filter((p) => p !== undefined);
+
+  return (
+    <Screen
+      figma="418:8600"
+      header={
+        <LargeHeader
+          title="게시판"
+          actions={
+            <>
+              <IconButton icon="search" label="게시판 검색" onPress={() => setSearch(true)} />
+              <IconButton icon="bell" label="알림함" dot onPress={() => nav.push(P.notifications)} />
+            </>
+          }
+        />
+      }
+      footer={<TabBar active="board" />}
+      overlay={
+        <>
+          <Fab aboveTabBar onPress={() => nav.modal(P.boardWrite)} />
+          <ApplyOverlay flow={apply} />
+          <BoardSearch open={search} onClose={() => setSearch(false)} />
+        </>
+      }
+    >
+      <div className={s.verified}>
+        <Chip tone="brand" pill icon="check">
+          {school} 재학생 인증 게시판
+        </Chip>
+      </div>
+
+      <div className={s.rootSections}>
+        <Section title="내 수업 게시판" aside="수강 과목에 자동 참여" padded={false}>
+          <div className={s.courseRail}>
+            {MY_COURSE_CARDS.map((c) => {
+              const course = courseById(c.id);
+              const fresh = !!c.hot;
+              return (
+                <button key={c.id} type="button" className={s.courseCard} data-new={fresh} onClick={() => nav.push(P.boardCourse(c.id))}>
+                  <span className={s.courseIcon}>
+                    <Icon name="nav-board" size={20} />
+                  </span>
+                  <Text variant="subhead" className="truncate" style={{ maxWidth: '100%' }}>
+                    {course.name}
+                  </Text>
+                  <span className={s.courseMeta}>
+                    <Text variant="caption-2-strong" color={fresh ? 'brand' : 'tertiary'} tnum style={{ flexShrink: 0 }}>
+                      새 글 {c.newCount}
+                    </Text>
+                    {c.summary && (
+                      <Text variant="caption-2" color="secondary" className="truncate">
+                        {c.summary}
+                      </Text>
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </Section>
+
+        <SectionDivider />
+        <Section title="전체 게시판">
+          <div className={s.boardGrid}>
+            {CAMPUS_BOARDS.map((b) => (
+              <Tile key={b.id} variant="outline" icon={b.icon} label={b.name} dot={b.dot && !seen.includes(b.id)} onPress={() => nav.push(P.boardCourse(b.id))} />
+            ))}
+          </div>
+        </Section>
+
+        {team && (
+          <>
+            <SectionDivider />
+            <Section title="팀플 모집 중" more="전체 보기" onMore={() => nav.push(`${P.boardCourse('team')}?filter=${encodeURIComponent('모집 중')}`)}>
+              <Card variant="pulse" className={s.teamCard} onPress={() => nav.push(P.boardPost(team.id))} aria-label={`${team.title} 모집 글 보기`}>
+                <div className={s.teamHead}>
+                  <Chip tone="white" className={s.pulseChip}>
+                    {team.recruit?.courseId ? courseById(team.recruit.courseId).name : '팀플·스터디'}
+                  </Chip>
+                  <Text variant="caption-2-strong" color="error">
+                    {team.recruit?.deadline}
+                  </Text>
+                </div>
+                <Text variant="headline" as="p">
+                  {team.title}
+                </Text>
+                <Text variant="caption-1" color="secondary" as="p" className="truncate">
+                  {team.recruit?.note}
+                </Text>
+                <RecruitFoot post={team} onApply={apply.request} />
+              </Card>
+            </Section>
+          </>
+        )}
+
+        <SectionDivider />
+        <Section
+          title={
+            <span className={s.hotTitle}>
+              실시간 인기글
+              <Chip tone="danger">HOT</Chip>
+            </span>
+          }
+        >
+          <ListGroup>
+            {popular.map((p) => (
+              <CompactRow key={p.id} post={p} />
+            ))}
+          </ListGroup>
+        </Section>
+      </div>
+    </Screen>
+  );
+}

@@ -16,7 +16,7 @@ const NAMES = {
   '레이디얼/과제': 'quick-assignment', '레이디얼/출석': 'quick-attendance', '레이디얼/캘린더': 'quick-calendar',
   '상태/결석': 'status-absent', '상태/지각': 'status-late', '상태/출석완료': 'status-present',
   '액션/다운로드': 'download', '액션/더보기': 'more', '액션/체크': 'check', '액션/추가': 'plus', '액션/편집': 'edit',
-  '액션/화살표_아래': 'chevron-down', '액션/화살표_오른쪽': 'arrow-right', '액션/경고': 'warning', '액션/별점_채움': 'star-filled', '액션/별점_빈': 'star',
+  '액션/화살표_아래': 'arrow-down', '액션/화살표_오른쪽': 'arrow-right', '액션/경고': 'warning', '액션/별점_채움': 'star-filled', '액션/별점_빈': 'star',
   '액션/좋아요': 'like', '액션/댓글': 'comment', '액션/스크랩': 'bookmark', '액션/셰브론_오른쪽': 'chevron-right',
   '헤더/뒤로': 'back', '헤더/닫기': 'close', '헤더/알림': 'bell', '헤더/메뉴': 'menu', '헤더/검색': 'search', '헤더/설정': 'settings',
 };
@@ -43,6 +43,12 @@ for (const it of items) {
   } else if (it.file.startsWith('logo') || it.file.startsWith('splash')) {
     logos[it.file.replace('.svg', '')] = { viewBox, body: inner.replace(/\s*\n\s*/g, '') };
   }
+}
+
+// 코드 파생 아이콘 (Figma 세트에 없음 — 같은 선 규칙: 24 viewBox, stroke 2, round)
+const derived = { 'chevron-down': 'M6 9L12 15L18 9', 'chevron-left': 'M15 6L9 12L15 18', 'chevron-up': 'M6 15L12 9L18 15' };
+for (const [k, d] of Object.entries(derived)) {
+  icons[k] = { viewBox: '0 0 24 24', body: `<path d="${d}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`, figma: '코드 파생' };
 }
 
 const missing = Object.keys(NAMES).filter((n) => !items.some((i) => i.figmaName === n));

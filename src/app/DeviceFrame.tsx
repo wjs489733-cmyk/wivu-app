@@ -73,7 +73,8 @@ function LeftPanel() {
   const reset = useApp((st) => st.reset);
   const { pathname } = useLocation();
   const go = (path: string, fresh = false) => {
-    if (fresh) reset();
+    if (fresh) return restart();
+    reset();
     navigate(path, { replace: true, state: { t: 'fade', d: 0 } });
   };
   return (
@@ -159,19 +160,18 @@ function RightPanel() {
         <button type="button" className={`${s.action} t-label`} onClick={() => navigate(P.designSystem)}>
           <Icon name="materials" size={20} /> 디자인 시스템
         </button>
-        <button
-          type="button"
-          className={`${s.action} t-label`}
-          onClick={() => {
-            st.reset();
-            navigate(P.splash, { replace: true, state: { t: 'fade', d: 0 } });
-          }}
-        >
+        <button type="button" className={`${s.action} t-label`} onClick={restart}>
           <Icon name="arrow-right" size={20} /> 처음부터
         </button>
       </div>
     </aside>
   );
+}
+
+/** 전시용 '처음부터': 섹션별 로컬 상태까지 모두 비우도록 새로고침 후 스플래시로 */
+function restart() {
+  window.location.hash = '#/splash';
+  window.location.reload();
 }
 
 function MetaItem({ k, v, mono }: { k: string; v: string; mono?: boolean }) {

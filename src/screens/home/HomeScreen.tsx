@@ -19,6 +19,7 @@ import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
 import { USER } from '@/data/core';
 import { AttendanceSheet } from '@/screens/attendance/AttendanceSheet';
+import { NOTIFICATIONS } from '@/screens/info/data';
 import { RadialMenu } from './RadialMenu';
 import { FLOW_FREE_DAY, FLOW_TODAY, HOME_NOTICES, MEALS, WEEK, type FlowItem } from './data';
 import s from './Home.module.css';
@@ -30,6 +31,8 @@ import s from './Home.module.css';
 export function HomeScreen({ variant = 'today', openPin = false, pinError = false }: { variant?: 'today' | 'free-day'; openPin?: boolean; pinError?: boolean }) {
   const nav = useNav();
   const school = useApp((st) => st.selectedSchool);
+  const read = useApp((st) => st.readNotifications);
+  const unread = NOTIFICATIONS.some((n) => n.unread && !read.includes(n.id));
   const [radial, setRadial] = useState(false);
   const [pin, setPin] = useState(openPin);
   const freeDay = variant === 'free-day';
@@ -51,7 +54,7 @@ export function HomeScreen({ variant = 'today', openPin = false, pinError = fals
             <button type="button" className={`${s.avatar} t-caption-1-strong`} onClick={() => nav.push(P.my)} aria-label="마이·설정">
               {USER.initial}
             </button>
-            <IconButton icon="bell" label="알림함" onPress={() => nav.push(P.notifications)} />
+            <IconButton icon="bell" label={unread ? '알림함 · 읽지 않은 알림 있음' : '알림함'} dot={unread} onPress={() => nav.push(P.notifications)} />
           </div>
         </div>
       }
@@ -383,7 +386,7 @@ function Timeline({ items }: { items: FlowItem[] }) {
                 {done ? '서비스디자인 · 제출 완료' : it.meta}
               </Text>
             </span>
-            <Button variant="soft" size="s" onClick={() => it.to && (it.kind === 'academic' ? nav.tab(it.to) : nav.push(it.to))}>
+            <Button variant="soft" size="s" onClick={() => it.to && nav.push(it.to)}>
               {done ? '확인' : it.action}
             </Button>
           </li>

@@ -27,8 +27,9 @@ export function AttendanceSheet({ open, onClose, forceError = false }: { open: b
       setLeft(3);
       failedOnce.current = false;
     }
-    return () => timers.current.forEach(clearTimeout);
   }, [open]);
+  // 예약된 이동(QR 화면·완료 화면)은 시트가 닫혀도 실행돼야 하므로 언마운트 때만 정리
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   const later = (fn: () => void, ms: number) => timers.current.push(window.setTimeout(fn, ms));
 

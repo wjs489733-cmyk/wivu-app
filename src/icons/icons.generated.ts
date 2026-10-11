@@ -135,7 +135,7 @@ export const icons = {
     "body": "<path d=\"M4.0625 19.9375V16.9375L16.5625 4.4375C17.0625 3.9375 18.0625 3.9375 18.5625 4.4375L19.5625 5.4375C20.0625 5.9375 20.0625 6.9375 19.5625 7.4375L7.0625 19.9375H4.0625Z\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M14.5625 6.4375L17.5625 9.4375\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
     "figma": "액션/편집"
   },
-  "chevron-down": {
+  "arrow-down": {
     "viewBox": "0 0 24 24",
     "body": "<path d=\"M12 5V19\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M6 13L12 19L18 13\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
     "figma": "액션/화살표_아래"
@@ -234,6 +234,21 @@ export const icons = {
     "viewBox": "0 0 24 24",
     "body": "<path d=\"M9 6L15 12L9 18\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
     "figma": "액션/셰브론_오른쪽"
+  },
+  "chevron-down": {
+    "viewBox": "0 0 24 24",
+    "body": "<path d=\"M6 9L12 15L18 9\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "figma": "코드 파생"
+  },
+  "chevron-left": {
+    "viewBox": "0 0 24 24",
+    "body": "<path d=\"M15 6L9 12L15 18\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "figma": "코드 파생"
+  },
+  "chevron-up": {
+    "viewBox": "0 0 24 24",
+    "body": "<path d=\"M6 15L12 9L18 15\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>",
+    "figma": "코드 파생"
   }
 } as const;
 export type IconName = keyof typeof icons;

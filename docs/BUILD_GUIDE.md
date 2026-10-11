@@ -17,6 +17,7 @@ Playwright 브라우저: `/opt/pw-browsers/chromium` (스크립트에 이미 설
 ## 1. 소유 범위 (충돌 방지 — 반드시 지킬 것)
 
 - **내 섹션 폴더만 쓴다**: `src/screens/<section>/` 아래 파일 생성·수정.
+- 예외: Figma 스크린샷은 `design/figma/screens/<id>_<slug>.png`로 저장해도 됨.
 - **수정 금지**: `src/ui/**`, `src/app/**`, `src/nav/**`, `src/store/**`, `src/data/core.ts`, `src/data/quickMenu.ts`, `src/styles/**`, `src/icons/**`, `design/**`, 설정 파일, 다른 섹션 폴더.
   - 공통 컴포넌트가 부족하면 **내 폴더 안에 로컬 컴포넌트**로 만들고, 최종 보고에 "공통화 후보"로 적는다.
   - 전역 상태가 더 필요하면 **내 폴더 안에 zustand 스토어**(`store.ts`)를 만든다. 기존 `useApp`은 읽고/액션 호출만.

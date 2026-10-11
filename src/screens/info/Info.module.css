@@ -1,0 +1,265 @@
+/* 홈 › 알림·정보 공통 */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-16);
+  padding: 8px var(--wivu-layout-gutter) 0;
+}
+
+/* ── 알림함 (428:8938) ── */
+.filters {
+  display: flex;
+  gap: var(--wivu-space-8);
+  overflow-x: auto;
+  margin-inline: calc(-1 * var(--wivu-layout-gutter));
+  padding: 0 var(--wivu-layout-gutter);
+  scrollbar-width: none;
+}
+.filters::-webkit-scrollbar {
+  display: none;
+}
+.filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  height: 32px;
+  padding-inline: 12px;
+  border-radius: var(--wivu-radius-full);
+  background: var(--wivu-color-bg-subtle);
+  color: var(--wivu-color-text-secondary);
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+.filter[aria-pressed='true'] {
+  background: var(--wivu-color-text-primary);
+  color: var(--wivu-color-text-on-brand);
+}
+.filterCount {
+  color: var(--wivu-color-icon-brand);
+}
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.groupTitle {
+  padding: 0 4px 4px;
+}
+.noti {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--wivu-space-12);
+  width: 100%;
+  padding: 14px 12px;
+  border-radius: var(--wivu-radius-16);
+  text-align: left;
+  transition: background-color 0.25s ease, transform var(--wivu-duration-press) ease;
+}
+.noti[data-unread='true'] {
+  background: var(--wivu-color-bg-subtle);
+}
+.noti:active {
+  transform: scale(0.985);
+  background: var(--wivu-color-bg-subtle);
+}
+.notiIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: var(--wivu-color-icon-primary);
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
+}
+.notiMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.notiHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.notiHead > :first-child {
+  flex: 1 1 auto;
+}
+.unreadDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand);
+}
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 56px 0;
+  text-align: center;
+}
+
+/* ── 학식 (429:8987) ── */
+.days {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+.day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  height: 56px;
+  border-radius: var(--wivu-radius-14);
+  transition: background-color 0.2s ease;
+}
+.day[aria-selected='true'] {
+  background: var(--wivu-color-bg-brand);
+}
+.day:not([aria-selected='true']):active {
+  background: var(--wivu-color-bg-subtle);
+}
+.tip {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-12);
+  padding: 14px 16px 14px 14px;
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-brand-soft);
+}
+.tipIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-surface);
+  color: var(--wivu-color-icon-primary);
+}
+.fullDivider {
+  height: 1px;
+  margin-inline: calc(-1 * var(--wivu-layout-gutter));
+  background: var(--wivu-color-border-default);
+}
+.mealCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-12);
+  width: 100%;
+  padding: var(--wivu-space-16);
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-surface);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+  text-align: left;
+  transition: box-shadow 0.2s ease;
+}
+.mealCard[aria-expanded='true'] {
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-brand);
+}
+.mealHead {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-8);
+}
+.mealHead .chipActive {
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+}
+.mealHead > :nth-child(2) {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.crowd {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden;
+}
+.crowdHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 36px;
+}
+.bar {
+  flex: 1 1 0;
+  border-radius: 3px;
+  background: var(--wivu-color-bg-brand-soft);
+  transform-origin: bottom;
+}
+.bar[data-level='best'] {
+  background: var(--wivu-color-bg-brand);
+}
+.bar[data-level='busy'] {
+  background: color-mix(in srgb, var(--wivu-color-status-warning) 60%, transparent);
+}
+.axis {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ── 학사 공지 (430:9007) ── */
+.article {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-20);
+  padding: 8px var(--wivu-layout-inset) 0;
+}
+.chips {
+  display: flex;
+  gap: 6px;
+}
+.author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: var(--wivu-space-16);
+  border-bottom: 1px solid var(--wivu-color-border-default);
+}
+.authorIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-icon-primary);
+}
+.keyDates {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-12);
+  padding: var(--wivu-space-16);
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-subtle);
+}
+.keyRow {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--wivu-space-12);
+}
+.body {
+  white-space: pre-line;
+}
+.context {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border-radius: var(--wivu-radius-14);
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-icon-primary);
+}

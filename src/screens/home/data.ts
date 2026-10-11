@@ -15,13 +15,13 @@ export type FlowItem = { time: string; title: string; meta: string; action: stri
 
 export const FLOW_TODAY: FlowItem[] = [
   { time: '13:00', title: '브랜드디자인', meta: '디자인관 401호 · 다음 수업', action: '지도', to: P.campusMap, kind: 'class' },
-  { time: '14:00', title: '교내 취업박람회', meta: '학생회관 · 학사 일정', action: '일정', to: P.calendar, kind: 'academic' },
+  { time: '14:00', title: '교내 취업박람회', meta: '9.14(월) · 학생회관 · 학사 일정', action: '일정', to: P.calendarEvent('e1'), kind: 'academic' },
   { time: '23:59', title: '서비스 분석 리포트', meta: '서비스디자인 · 미제출 과제', action: '제출', to: P.assignment(), kind: 'assignment' },
 ];
 
 export const FLOW_FREE_DAY: FlowItem[] = [
   { time: '15:00', title: '팀플 회의', meta: '중앙도서관 그룹스터디룸 3', action: '지도', to: P.campusMap, kind: 'team' },
-  { time: '14:00', title: '교내 취업박람회', meta: '학생회관 · 학사 일정', action: '일정', to: P.calendar, kind: 'academic' },
+  { time: '14:00', title: '교내 취업박람회', meta: '9.14(월) · 학생회관 · 학사 일정', action: '일정', to: P.calendarEvent('e1'), kind: 'academic' },
   { time: '23:59', title: '서비스 분석 리포트', meta: '서비스디자인 · 미제출 과제', action: '제출', to: P.assignment(), kind: 'assignment' },
 ];
 

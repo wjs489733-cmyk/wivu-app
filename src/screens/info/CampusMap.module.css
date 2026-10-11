@@ -1,0 +1,306 @@
+/* 강의실 지도 — Figma 431:9033 (가상 캠퍼스) */
+.layer {
+  position: absolute;
+  inset: 0;
+  z-index: 5; /* Screen 상단(z3)·하단(z4) 위, 홈 인디케이터(z10) 아래 — 지도가 상태바 밑까지 깔림 */
+  overflow: hidden;
+  /* 지도 전용 색 — 모두 semantic 토큰에서 파생 */
+  --map-ground: color-mix(in srgb, var(--wivu-color-bg-brand) 8%, var(--wivu-color-bg-subtle));
+  --map-green: color-mix(in srgb, var(--wivu-color-bg-pulse-pressed) 20%, var(--wivu-color-bg-surface));
+  --map-road: var(--wivu-color-bg-surface);
+  --map-building: color-mix(in srgb, var(--wivu-color-border-strong) 72%, var(--wivu-color-bg-surface));
+  background: var(--map-ground);
+}
+.statusWrap {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* ── 지도 캔버스 (드래그로 이동) ── */
+.canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  touch-action: none;
+  cursor: grab;
+}
+.canvas:active {
+  cursor: grabbing;
+}
+.svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+.ground {
+  fill: var(--map-ground);
+}
+.green {
+  fill: var(--map-green);
+}
+.road {
+  fill: var(--map-road);
+}
+.routeCasing {
+  fill: none;
+  stroke: var(--wivu-color-bg-surface);
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.route {
+  fill: none;
+  stroke: var(--wivu-color-bg-brand);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.routeDone {
+  fill: none;
+  stroke: var(--wivu-color-border-strong);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.gate {
+  position: absolute;
+  transform: translate(-50%, 0);
+  pointer-events: none;
+}
+
+.building {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--map-building);
+  color: var(--wivu-color-text-secondary);
+  text-align: center;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform var(--wivu-duration-press) ease;
+}
+.building:active {
+  transform: scale(0.97);
+}
+.building[data-selected='true']:not([data-next='true']) {
+  box-shadow: 0 0 0 3px var(--wivu-color-bg-surface), 0 0 0 5px var(--wivu-color-border-brand);
+}
+.building[data-next='true'] {
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+}
+.building[data-selected='true']:not([data-next='true']) {
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-text-brand);
+}
+.pin {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding-inline: 10px;
+  border-radius: var(--wivu-radius-full);
+  background: var(--wivu-color-text-primary);
+  color: var(--wivu-color-text-on-brand);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.me {
+  position: absolute;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
+  pointer-events: none;
+}
+.halo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--wivu-color-bg-brand) 22%, transparent);
+  animation: halo 2.2s ease-out infinite;
+}
+.dot {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand);
+  box-shadow: 0 0 0 2px var(--wivu-color-bg-surface), var(--wivu-elevation-card);
+}
+@keyframes halo {
+  0% {
+    transform: scale(0.7);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* ── 상단 검색 바 ── */
+.top {
+  position: absolute;
+  left: var(--wivu-layout-gutter);
+  right: var(--wivu-layout-gutter);
+  top: calc(var(--status-h) + 4px);
+  z-index: 4;
+}
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 44px;
+  padding-inline: 0 4px;
+  border-radius: var(--wivu-radius-full);
+  background: var(--wivu-color-bg-surface);
+  box-shadow: var(--wivu-elevation-overlay);
+}
+.searchInput {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--wivu-color-text-primary);
+  outline: none;
+}
+.searchInput::placeholder {
+  color: var(--wivu-color-text-placeholder);
+}
+.results {
+  margin-top: 8px;
+  padding: 8px 0;
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-surface);
+  box-shadow: var(--wivu-elevation-overlay);
+  overflow: hidden;
+}
+.resultHead {
+  padding: 4px 16px 6px;
+}
+.result {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 16px;
+  text-align: left;
+}
+.result:active {
+  background: var(--wivu-color-bg-subtle);
+}
+.resultIcon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-icon-brand);
+}
+
+/* ── 하단: 내 위치 버튼 + 경로 시트 ── */
+.bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  pointer-events: none;
+}
+.bottom > * {
+  pointer-events: auto;
+}
+.fab {
+  align-self: flex-end;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: 0 var(--wivu-layout-inset) 16px 0;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-surface);
+  box-shadow: var(--wivu-elevation-overlay);
+  color: var(--wivu-color-icon-primary);
+}
+.fab:active {
+  transform: scale(0.94);
+}
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-16);
+  padding: 8px var(--wivu-layout-inset) calc(max(var(--safe-bottom), 12px) + 12px);
+  border-radius: var(--wivu-radius-24) var(--wivu-radius-24) 0 0;
+  background: var(--wivu-color-bg-surface);
+  box-shadow: var(--wivu-elevation-overlay);
+}
+.grabber {
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 20px;
+  margin-bottom: -8px;
+}
+.grabber::before {
+  content: '';
+  width: 36px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--wivu-color-border-strong);
+}
+.sheetHead {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-8);
+}
+.sheetInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.walk {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 56px;
+  height: 56px;
+  padding-inline: 8px;
+  border-radius: var(--wivu-radius-14);
+  background: var(--wivu-color-bg-subtle);
+}
+.actions {
+  display: flex;
+  gap: 10px;
+}
+.floors {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.floorRow {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  border-top: 1px solid var(--wivu-color-border-default);
+}

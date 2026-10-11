@@ -1,0 +1,185 @@
+/* ── QR 출석 인증 (Figma 408:8098 · bg/qr-dark) ───────────────── */
+
+/* 카메라 화면 흉내: 헤더와 이어지도록 위는 qr-dark, 뷰파인더 주변만 밝게 */
+.feed {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 60% at 50% 34%, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0) 70%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.05) 45%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+}
+.body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 20px;
+}
+.context {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-inline: var(--wivu-layout-inset);
+}
+
+/* 뷰파인더 248 · 모서리 브랜드 36×4 */
+.viewfinder {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 248px;
+  height: 248px;
+  margin-top: 40px;
+  border-radius: var(--wivu-radius-24);
+  overflow: hidden;
+  color: var(--wivu-color-text-on-brand);
+}
+.viewfinder:disabled {
+  cursor: default;
+}
+.corner {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border: 0 solid var(--wivu-color-border-brand);
+  transition: border-color 0.25s ease, transform 0.3s ease;
+}
+.corner[data-pos='tl'] {
+  top: 0;
+  left: 0;
+  border-top-width: 4px;
+  border-left-width: 4px;
+  border-top-left-radius: 14px;
+}
+.corner[data-pos='tr'] {
+  top: 0;
+  right: 0;
+  border-top-width: 4px;
+  border-right-width: 4px;
+  border-top-right-radius: 14px;
+}
+.corner[data-pos='bl'] {
+  bottom: 0;
+  left: 0;
+  border-bottom-width: 4px;
+  border-left-width: 4px;
+  border-bottom-left-radius: 14px;
+}
+.corner[data-pos='br'] {
+  bottom: 0;
+  right: 0;
+  border-bottom-width: 4px;
+  border-right-width: 4px;
+  border-bottom-right-radius: 14px;
+}
+.viewfinder[data-phase='scanning']:active .corner {
+  transform: scale(0.94);
+}
+.viewfinder[data-phase='recognized'] .corner,
+.viewfinder[data-phase='already'] .corner {
+  border-color: var(--wivu-color-border-pulse);
+}
+
+/* 카메라 속 강의실 출석 QR 포스터 */
+.poster {
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  border-radius: var(--wivu-radius-12);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--wivu-color-text-primary);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+.viewfinder[data-phase='already'] .poster {
+  opacity: 0.35;
+}
+
+.scanLine {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 20px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--wivu-color-bg-brand);
+  box-shadow: 0 0 12px 2px rgba(76, 128, 240, 0.6);
+  animation: scan 1.8s ease-in-out infinite alternate;
+}
+@keyframes scan {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(206px);
+  }
+}
+
+.check {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-pulse);
+  color: var(--wivu-color-text-on-pulse);
+  box-shadow: 0 0 0 10px rgba(183, 243, 77, 0.2);
+}
+
+/* NFC 모드 */
+.nfc {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 120px;
+  height: 120px;
+}
+.nfcCore {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+}
+.nfcWave {
+  position: absolute;
+  inset: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--wivu-color-border-brand);
+  animation: wave 1.4s ease-out infinite;
+}
+@keyframes wave {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.timerPill {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  margin-top: 28px;
+  padding-inline: 12px;
+  border-radius: var(--wivu-radius-full);
+  background: var(--wivu-color-bg-on-brand-chip);
+  color: var(--wivu-color-text-on-brand);
+}
+
+/* 하단 방법 패널 (흰 · 위 r24) */
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-16);
+  padding: 20px var(--wivu-layout-gutter) calc(max(var(--safe-bottom), 12px) + 12px);
+  border-radius: var(--wivu-radius-24) var(--wivu-radius-24) 0 0;
+  background: var(--wivu-color-bg-surface);
+}

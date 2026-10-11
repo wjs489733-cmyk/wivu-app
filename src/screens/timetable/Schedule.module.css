@@ -1,0 +1,186 @@
+/* ── 시간표 · 캘린더 공통 ─────────────────────────────────── */
+
+/* 학기 칩 행 (Figma: 칩 '2026-2학기' + '9월 2주차 · 17학점') */
+.semester {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-8);
+  padding: 0 var(--wivu-layout-inset) var(--wivu-space-12);
+}
+
+/* 정보 박스 (bg/subtle r16 p16, 행 간격 14 → 12) */
+.infoBox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-12);
+  padding: var(--wivu-space-16);
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-subtle);
+}
+.infoRow {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-8);
+  min-height: 24px;
+}
+.infoLabel {
+  flex: 0 0 32px;
+}
+.infoValue {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mapChip {
+  flex-shrink: 0;
+  height: 24px;
+  padding-inline: 10px;
+  border-radius: var(--wivu-radius-full);
+  background: var(--wivu-color-bg-surface);
+  color: var(--wivu-color-text-brand);
+  transition: background-color var(--wivu-duration-press) ease;
+}
+.mapChip:active {
+  background: var(--wivu-color-bg-brand-soft);
+}
+
+.catDot {
+  display: inline-block;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── 일정 행 ─────────────────────────────────────────────── */
+.eventRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-12);
+  width: 100%;
+  min-height: 66px;
+  padding-block: 14px;
+  text-align: left;
+}
+.eventRow + .eventRow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--wivu-color-border-default);
+}
+.eventRow:active {
+  background: var(--wivu-color-bg-subtle);
+  box-shadow: 0 0 0 16px var(--wivu-color-bg-subtle);
+  clip-path: inset(0 -16px);
+}
+.eventTime {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 48px;
+}
+.eventBar {
+  flex: 0 0 3px;
+  height: 36px;
+  border-radius: 2px;
+}
+.eventMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* ── 월간 달력 ───────────────────────────────────────────── */
+.month {
+  padding: 10px 0 8px;
+}
+.monthHead {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  height: 16px;
+  margin-bottom: 6px;
+}
+.monthBody {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.dayCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 50px;
+  padding-top: 4px;
+  color: var(--wivu-color-text-primary);
+}
+.dayCell[data-red='true'] {
+  color: var(--wivu-color-text-error);
+}
+.dayCell[data-out='true'] {
+  color: var(--wivu-color-text-placeholder);
+}
+.dayCell:disabled {
+  cursor: default;
+}
+.dayNum {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.dayCell[data-today='true'] .dayNum {
+  color: var(--wivu-color-text-brand);
+}
+.dayCell:not(:disabled):active .dayNum {
+  background: var(--wivu-color-bg-brand-soft);
+}
+.dayCell[aria-selected='true'] .dayNum {
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+}
+.dayDots {
+  display: flex;
+  gap: 3px;
+  height: 5px;
+  margin-top: 4px;
+}
+
+.smallIconBtn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 44px;
+  color: var(--wivu-color-icon-primary);
+}
+.smallIconBtn:disabled {
+  color: var(--wivu-color-text-placeholder);
+}
+.smallIconBtn:not(:disabled):active {
+  color: var(--wivu-color-icon-brand);
+}
+
+/* ── 빈 상태 ─────────────────────────────────────────────── */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--wivu-space-4);
+  padding: var(--wivu-space-24) var(--wivu-space-16);
+  border-radius: var(--wivu-radius-16);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+}
+.emptyIcon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: var(--wivu-space-4);
+  border-radius: 50%;
+  background: var(--wivu-color-bg-subtle);
+}
+.empty > button {
+  margin-top: var(--wivu-space-12);
+}

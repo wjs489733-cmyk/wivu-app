@@ -1,0 +1,292 @@
+/* ── 출석 탭 루트 (Figma 392:7302) ───────────────────────────── */
+
+/* 히어로 — 홈 히어로와 같은 규격(r24, p20, 최소 240) */
+.heroWrap {
+  padding: 0 var(--wivu-layout-gutter);
+}
+.hero {
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+}
+.heroTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--wivu-space-8);
+}
+.heroTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 20px;
+  margin-bottom: 8px;
+}
+.heroActions {
+  display: flex;
+  gap: var(--wivu-space-8);
+  margin-top: auto;
+  padding-top: 24px;
+}
+.brandDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand);
+}
+/* 잉크 카드 위 칩은 살짝 더 어둡게 (홈과 동일) */
+.doneChip {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+/* 요약 타일 3개 (bg/subtle r16) */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--wivu-space-12);
+  padding: 24px var(--wivu-layout-gutter) 0;
+}
+.statTile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 74px;
+  padding: 12px 16px;
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-subtle);
+}
+.statValue {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+/* 과목별 출석 행 */
+.courseRow {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-8);
+  width: 100%;
+  padding-block: 16px;
+  text-align: left;
+}
+.courseRow + .courseRow::before,
+.recordItem + .recordItem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--wivu-color-border-default);
+}
+.courseRow:active,
+.recordRow:active {
+  background: var(--wivu-color-bg-subtle);
+  box-shadow: 0 0 0 16px var(--wivu-color-bg-subtle);
+  clip-path: inset(0 -16px);
+}
+.courseHead {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-8);
+}
+.courseInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.courseTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* 최근 출석 기록 */
+.recordItem {
+  position: relative;
+  overflow: hidden;
+}
+.recordRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 66px;
+  padding-block: 14px;
+  text-align: left;
+}
+.recordDate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 40px;
+  flex-shrink: 0;
+}
+.recordMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.statusChip {
+  min-width: 44px;
+  height: 24px;
+  justify-content: center;
+}
+.expandLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-right: -4px;
+  padding: 4px 0 4px 8px;
+  color: var(--wivu-color-text-tertiary);
+}
+.expandLink:active {
+  color: var(--wivu-color-text-secondary);
+}
+/* 아이콘 세트의 chevron-down은 화살표형 → 셰브론(오른쪽)을 돌려 씀 */
+.expandIcon {
+  transform: rotate(90deg);
+  transition: transform 0.25s ease;
+}
+.expandLink[aria-expanded='true'] .expandIcon {
+  transform: rotate(-90deg);
+}
+.listFoot {
+  padding-top: 4px;
+}
+
+/* ── 과목 출석 상세 (Figma 406:8047) ─────────────────────────── */
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-24);
+  padding: 8px var(--wivu-layout-gutter) 0;
+}
+.detailHead {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--wivu-space-12);
+  padding-inline: 4px;
+}
+.detailInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.rate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+.banner {
+  display: flex;
+  gap: 10px;
+  padding: 16px;
+  border-radius: var(--wivu-radius-16);
+}
+.banner[data-tone='error'] {
+  /* status/error @8% — Figma warning banner */
+  background: color-mix(in srgb, var(--wivu-color-status-error) 8%, white);
+}
+.banner[data-tone='brand'] {
+  background: var(--wivu-color-bg-brand-soft);
+}
+.bannerText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.detailStats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--wivu-space-8);
+}
+.detailStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 12px 0;
+  border-radius: var(--wivu-radius-12);
+  background: var(--wivu-color-bg-subtle);
+}
+.fullDivider {
+  height: 1px;
+  margin-inline: calc(var(--wivu-layout-gutter) * -1);
+  background: var(--wivu-color-border-default);
+}
+.sessions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-12);
+}
+.sessionsTitle {
+  padding-inline: 4px;
+}
+.sessionRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-12);
+  min-height: 66px;
+  padding-block: 14px;
+}
+.sessionRow + .sessionRow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--wivu-color-border-default);
+}
+.sessionWeek {
+  width: 40px;
+  flex-shrink: 0;
+}
+.appealNote {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+/* 이의 신청 시트 */
+.sheetHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: -4px;
+}
+.sheetHead > :last-child {
+  margin-right: -10px;
+}
+.sheetBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-8);
+  margin-top: 20px;
+}
+.reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--wivu-space-8);
+}
+.reasonChip {
+  height: 36px;
+  padding-inline: 14px;
+}
+.sheetCta {
+  margin-top: 24px;
+}
