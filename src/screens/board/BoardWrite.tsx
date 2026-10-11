@@ -3,8 +3,9 @@ import { useSearchParams } from 'react-router';
 import { BottomSheet, Chip, Dialog, Icon, IconButton, OptionRow, Screen, Switch, Text, TextAction, TopNav, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { useApp } from '@/store/app';
-import { ASSIGNMENTS, USER, courseById } from '@/data/core';
+import { USER, courseById } from '@/data/core';
+import { dueShort, openAssignments } from '@/screens/courses/data';
+import { useIsSubmitted } from '@/screens/courses/store';
 import { boardById, CAMPUS_BOARDS, COURSE_BOARDS, isBoardId, type Attachment, type Board, type BoardId, type LinkedAssignment } from './data';
 import { useBoard } from './store';
 import { LocalIcon } from './icons';
@@ -30,7 +31,7 @@ export function BoardWrite() {
   const nav = useNav();
   const [params] = useSearchParams();
   const addPost = useBoard((st) => st.addPost);
-  const submitted = useApp((st) => st.assignmentSubmitted);
+  const isSubmitted = useIsSubmitted();
 
   const from = params.get('board');
   const initial: BoardId = from && isBoardId(from) && from !== 'guide' ? (from as BoardId) : 'service-design';
@@ -50,7 +51,8 @@ export function BoardWrite() {
   const ready = !!title.trim() && !!body.trim();
   const dirty = !!(title.trim() || body.trim() || files.length || linked);
   const exitTo = from && isBoardId(from) ? P.boardCourse(from) : P.board;
-  const assignments = ASSIGNMENTS.filter((a) => a.courseId === boardId);
+  // 과제 목록은 수강과목 데이터가 단일 기준 (진행 중인 과제만 연결)
+  const assignments = openAssignments().filter((a) => a.courseId === boardId);
 
   const pickBoard = (b: Board) => {
     setBoardId(b.id);
@@ -180,10 +182,10 @@ export function BoardWrite() {
                   key={a.id}
                   icon="assignment"
                   title={a.title}
-                  meta={`${courseById(a.courseId).name} · ${a.due} 마감 · ${submitted ? '제출 완료' : a.status}`}
+                  meta={`${courseById(a.courseId).name} · ${dueShort(a.due)} 마감 · ${isSubmitted(a.courseId, a.id) ? '제출 완료' : '미제출'}`}
                   selected={linked?.aid === a.id}
                   onPress={() => {
-                    setLinked({ courseId: a.courseId, aid: a.id, title: a.title, due: a.due });
+                    setLinked({ courseId: a.courseId, aid: a.id, title: a.title, due: dueShort(a.due) });
                     setSheet(null);
                   }}
                 />

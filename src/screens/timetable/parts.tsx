@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Chip, Icon, IconButton, LargeHeader, ListGroup, Text, TextTabs, type IconName } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
+import { useHasUnread } from '@/app/useUnread';
 import { CAT, DOW, TODAY, iso, parseIso, type Category } from './data';
 import type { AgendaItem } from './agenda';
 import s from './Schedule.module.css';
@@ -30,7 +31,8 @@ export function ScheduleHeader({ tab, trailing }: { tab: 'timetable' | 'calendar
 
 export function BellButton() {
   const nav = useNav();
-  return <IconButton icon="bell" label="알림함" onPress={() => nav.push(P.notifications)} />;
+  const unread = useHasUnread();
+  return <IconButton icon="bell" label="알림함" dot={unread} onPress={() => nav.push(P.notifications)} />;
 }
 
 /* ── 정보 박스 (bg/subtle r16: 아이콘 · 라벨 · 값 · 칩) ─────── */

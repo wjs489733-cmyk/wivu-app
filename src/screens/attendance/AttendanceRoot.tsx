@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Button, Card, Chip, Icon, IconButton, LargeHeader, ListGroup, MetaLine, ProgressBar, Screen, Section, SectionDivider, TabBar, Text } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
+import { useHasUnread } from '@/app/useUnread';
 import { useApp } from '@/store/app';
 import { courseById, SEMESTER, WEEK_LABEL } from '@/data/core';
 import { AttendanceSheetHost } from './AttendanceSheetHost';
@@ -19,6 +20,7 @@ const RECENT_COUNT = 4;
  */
 export function AttendanceRoot() {
   const nav = useNav();
+  const unread = useHasUnread();
   const complete = useApp((st) => st.attendanceComplete);
   const method = useApp((st) => st.attendanceMethod);
   const time = useApp((st) => st.attendanceTime);
@@ -33,7 +35,7 @@ export function AttendanceRoot() {
   return (
     <Screen
       figma="392:7302"
-      header={<LargeHeader title="출석" actions={<IconButton icon="bell" label="알림함" onPress={() => nav.push(P.notifications)} />} />}
+      header={<LargeHeader title="출석" actions={<IconButton icon="bell" label="알림함" dot={unread} onPress={() => nav.push(P.notifications)} />} />}
       footer={<TabBar active="attendance" />}
       overlay={<AttendanceSheetHost open={pin} onClose={() => setPin(false)} />}
     >

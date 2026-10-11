@@ -6,6 +6,9 @@
   flex-direction: column;
   justify-content: flex-end;
 }
+.layer:focus {
+  outline: none; /* 시트가 열릴 때 레이어 자체로 옮긴 포커스 — 링은 안의 버튼에서만 */
+}
 .scrim {
   position: absolute;
   inset: 0;

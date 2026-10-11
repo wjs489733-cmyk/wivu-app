@@ -1,3 +1,6 @@
+import { COURSES, SEMESTER, TOTAL_CREDITS, USER } from '@/data/core';
+import { SYNC_COUNTS } from '@/screens/courses/data';
+
 /* 진입 플로우 데이터 — Figma 352:1158 · 416:8372 · 416:12064 문구 기준
  * 학교 목록은 실제 대학 이름·소재지(시·구 단위)만 사용. 학사 정보 등 학교별 세부는 가상. */
 
@@ -57,10 +60,11 @@ export const NOTI_OPTIONS = [
   { id: 'board', icon: 'user' as const, title: '게시판 활동', meta: '댓글 · 좋아요', on: false },
 ];
 
-/** 연동 중 체크리스트 (411:11957) */
+/** 연동 중 체크리스트 (411:11957) — 숫자는 실제 데이터에서 계산
+ *  (과제 = 진행 중 과제 · 공지 = 이번 주 과목 공지 + 학사 공지, courses/data.ts SYNC_COUNTS) */
 export const SYNC_STEPS = [
-  { title: '학교 계정 인증', meta: (school: string) => `${school} · 20231234` },
-  { title: '수강 과목 불러오기', meta: () => '2026-2학기 6과목 · 17학점' },
-  { title: '시간표·과제·공지 동기화', meta: () => '과제 4건 · 공지 7건 정리 중' },
+  { title: '학교 계정 인증', meta: (school: string) => `${school} · ${USER.studentId}` },
+  { title: '수강 과목 불러오기', meta: () => `${SEMESTER} ${COURSES.length}과목 · ${TOTAL_CREDITS}학점` },
+  { title: '시간표·과제·공지 동기화', meta: () => `과제 ${SYNC_COUNTS.assignments}건 · 공지 ${SYNC_COUNTS.notices}건 정리 중` },
   { title: '알림·퀵메뉴 준비', meta: () => '다음 단계에서 설정해요' },
 ];

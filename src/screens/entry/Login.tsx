@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { Button, Checkbox, Icon, Screen, Text, TextField, toast } from '@/ui';
+import { Button, Checkbox, CtaBar, Icon, Screen, Text, TextField, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
@@ -27,6 +27,7 @@ export function Login() {
   const [loading, setLoading] = useState(false);
   const forced = useRef(forceError);
   const timer = useRef<number>(0);
+  const formId = useId();
   useEffect(() => () => clearTimeout(timer.current), []);
 
   const ready = id.trim().length > 0 && pw.length > 0;
@@ -49,8 +50,29 @@ export function Login() {
   };
 
   return (
-    <Screen figma={error ? '411:8258' : ready ? '411:8210' : '366:9848'} header={<EntryHeader title="로그인" />}>
+    <Screen
+      figma={error ? '411:8258' : ready ? '411:8210' : '366:9848'}
+      header={<EntryHeader title="로그인" fallback={P.school} />}
+      footer={
+        // 로그인 버튼은 작은 화면(375×667)에서도 항상 보이게 하단 고정
+        <CtaBar>
+          <div className={s.ctaStack}>
+            <Button type="submit" form={formId} block disabled={!ready} loading={loading}>
+              {error ? '다시 로그인' : '로그인'}
+            </Button>
+            {error ? (
+              <TextLink tone="brand" onPress={() => toast('학교 포털 비밀번호 재설정 페이지로 연결돼요')}>
+                학교 포털에서 비밀번호 재설정하기
+              </TextLink>
+            ) : (
+              <TextLink onPress={() => toast('학교 포털 비밀번호 찾기로 연결돼요')}>비밀번호를 잊으셨나요?</TextLink>
+            )}
+          </div>
+        </CtaBar>
+      }
+    >
       <form
+        id={formId}
         className={s.page}
         onSubmit={(e) => {
           e.preventDefault();
@@ -121,19 +143,6 @@ export function Login() {
               학번은 학생증이나 학교 포털 마이페이지에서 확인할 수 있어요
             </Text>
           </div>
-        </div>
-
-        <div className={s.bottom}>
-          <Button type="submit" block disabled={!ready} loading={loading}>
-            {error ? '다시 로그인' : '로그인'}
-          </Button>
-          {error ? (
-            <TextLink tone="brand" onPress={() => toast('학교 포털 비밀번호 재설정 페이지로 연결돼요 (프로토타입)')}>
-              학교 포털에서 비밀번호 재설정하기
-            </TextLink>
-          ) : (
-            <TextLink onPress={() => toast('학교 포털 비밀번호 찾기로 연결돼요 (프로토타입)')}>비밀번호를 잊으셨나요?</TextLink>
-          )}
         </div>
       </form>
     </Screen>

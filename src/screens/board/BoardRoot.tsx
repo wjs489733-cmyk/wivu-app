@@ -1,26 +1,36 @@
-import { useState } from 'react';
-import { Card, Chip, Icon, IconButton, LargeHeader, ListGroup, Screen, Section, SectionDivider, TabBar, Text, Tile } from '@/ui';
+import { useRef, useState } from 'react';
+import { Button, Card, Chip, Icon, IconButton, LargeHeader, ListGroup, Screen, Section, SectionDivider, TabBar, Text, Tile } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
+import { useHasUnread } from '@/app/useUnread';
 import { useApp } from '@/store/app';
 import { courseById } from '@/data/core';
 import { CAMPUS_BOARDS, MY_COURSE_CARDS, POPULAR, TEAM_FEATURED } from './data';
 import { useAllPosts, useBoard } from './store';
-import { BoardSearch, CompactRow, Fab, RecruitFoot, ApplyOverlay } from './parts';
+import { BoardSearch, CompactRow, Fab, RecruitFoot, ApplyOverlay, useFabVisible } from './parts';
 import { useApplyFlow } from './applyFlow';
 import s from './Board.module.css';
 
 /**
  * 게시판 탭 루트 — Figma 418:8600 (Board_v4_01_Root)
  * 검색은 같은 라우트 안 오버레이, 팀플 '참여 신청'은 확인 시트 → 신청 완료 상태로 이어진다.
+ * 글쓰기: 첫 화면은 상단 인증 칩 옆 본문 버튼(FAB가 팀플 카드 '참여 신청'을 가리던 문제) →
+ *   그 버튼이 스크롤로 사라지면 FAB 등장, '참여 신청'과 겹치는 동안엔 FAB를 잠깐 숨김.
  */
+const FAB_SPACE = 24 + 48 + 16; // 마지막 글이 FAB 위로 올라올 수 있게 하단 여백
 export function BoardRoot() {
   const nav = useNav();
   const school = useApp((st) => st.selectedSchool);
   const seen = useBoard((st) => st.seen);
   const posts = useAllPosts();
   const apply = useApplyFlow();
+  const unread = useHasUnread();
   const [search, setSearch] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const fabSlot = useRef<HTMLDivElement>(null);
+  const writeAnchor = useRef<HTMLDivElement>(null);
+  const fabShown = useFabVisible(scrollRef, fabSlot, writeAnchor);
+  const write = () => nav.modal(P.boardWrite);
 
   const team = posts.find((p) => p.id === TEAM_FEATURED);
   const popular = POPULAR.map((id) => posts.find((p) => p.id === id)).filter((p) => p !== undefined);
@@ -28,30 +38,37 @@ export function BoardRoot() {
   return (
     <Screen
       figma="418:8600"
+      scrollRef={scrollRef}
+      bottomSpace={FAB_SPACE}
       header={
         <LargeHeader
           title="게시판"
           actions={
             <>
               <IconButton icon="search" label="게시판 검색" onPress={() => setSearch(true)} />
-              <IconButton icon="bell" label="알림함" dot onPress={() => nav.push(P.notifications)} />
+              <IconButton icon="bell" label="알림함" dot={unread} onPress={() => nav.push(P.notifications)} />
             </>
           }
         />
       }
-      footer={<TabBar active="board" />}
+      footer={<TabBar active="board" onActivePress={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} />}
       overlay={
         <>
-          <Fab aboveTabBar onPress={() => nav.modal(P.boardWrite)} />
+          <Fab aboveTabBar onPress={write} hidden={!fabShown} slotRef={fabSlot} />
           <ApplyOverlay flow={apply} />
           <BoardSearch open={search} onClose={() => setSearch(false)} />
         </>
       }
     >
-      <div className={s.verified}>
+      <div className={`${s.verified} ${s.verifiedRow}`}>
         <Chip tone="brand" pill icon="check">
           {school} 재학생 인증 게시판
         </Chip>
+        <div ref={writeAnchor}>
+          <Button variant="soft" size="s" leadingIcon="edit" onClick={write}>
+            글쓰기
+          </Button>
+        </div>
       </div>
 
       <div className={s.rootSections}>

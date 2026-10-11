@@ -1,5 +1,5 @@
 import { P } from '@/app/paths';
-import { ATTENDANCE_WINDOW } from '@/data/core';
+import { ATTENDANCE_WINDOW, courseById } from '@/data/core';
 import {
   CAT,
   DOW,
@@ -32,7 +32,11 @@ export type AgendaItem = {
   course?: TTCourse;
 };
 
-type Ctx = { submitted: boolean; attended: boolean };
+export type Ctx = {
+  attended: boolean;
+  /** 과제 제출 여부 — 수강과목 스토어(courses/store useIsSubmitted)와 같은 판정 */
+  isSubmitted: (courseId: string, aid: string) => boolean;
+};
 
 const inSpan = (e: CalEvent, date: string) => (e.span ? date >= e.span[0] && date <= e.span[1] : e.date === date);
 export const holidayOn = (events: CalEvent[], date: string) => events.some((e) => e.holiday && inSpan(e, date));
@@ -48,8 +52,18 @@ export function classesOn(courses: TTCourse[], events: CalEvent[], date: string)
   return courses.flatMap((c) => c.slots.filter((sl) => sl.day === dow).map((sl) => ({ course: c, slot: sl })));
 }
 
+/** 과제 일정 상태: 제출 완료 / 미제출(오늘 마감) / null(아직 여유) */
+export function assignmentStatus(e: CalEvent, ctx: Pick<Ctx, 'isSubmitted'>): '제출 완료' | '미제출' | null {
+  if (e.category !== 'assignment' || !e.courseId || !e.aid) return null;
+  if (ctx.isSubmitted(e.courseId, e.aid)) return '제출 완료';
+  return e.date <= TODAY ? '미제출' : null;
+}
+
 export function eventMeta(e: CalEvent, ctx: Ctx) {
-  if (e.id === 'a1') return `서비스디자인 · ${ctx.submitted ? '제출 완료' : '미제출'}`;
+  if (e.category === 'assignment' && e.courseId && e.aid) {
+    // Figma 392:7540: '브랜드디자인 · 23:59' · 오늘 마감은 '서비스디자인 · 미제출'
+    return `${courseById(e.courseId).name} · ${assignmentStatus(e, ctx) ?? e.start ?? ''}`;
+  }
   if (e.meta) return e.meta;
   const time = e.allDay ? '하루 종일' : e.start ?? '';
   return [time, e.place].filter(Boolean).join(' · ') || CAT[e.category].detail;

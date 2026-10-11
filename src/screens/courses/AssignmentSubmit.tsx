@@ -5,7 +5,7 @@ import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { USER } from '@/data/core';
 import { useApp } from '@/store/app';
-import { SAMPLE_SIZE, SUBMIT_TIME, dueShort, findAssignment, getCourse, remaining, sampleFileName } from './data';
+import { SAMPLE_SIZE, SUBMIT_TIME, dueShort, getAssignment, remaining, sampleFileName } from './data';
 import { assignmentKey, isGlobalAssignment, useCourses } from './store';
 import s from './Courses.module.css';
 
@@ -24,8 +24,7 @@ const fmtSize = (b: number) => (b >= 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(
  */
 export function AssignmentSubmit() {
   const { id, aid } = useParams();
-  const { course, info } = getCourse(id);
-  const a = findAssignment(info, aid);
+  const { course, a } = getAssignment(id, aid);
   const nav = useNav();
   const submitGlobal = useApp((st) => st.submitAssignment);
   const saveSubmission = useCourses((st) => st.saveSubmission);
@@ -199,7 +198,7 @@ export function AssignmentSubmit() {
             </Text>
             {files.length < MAX_FILES && !hasSample && (
               <Button variant="soft" size="s" leadingIcon="file" onClick={addSample} disabled={sending}>
-                샘플 파일 첨부
+                최근 파일 첨부
               </Button>
             )}
           </div>

@@ -5,6 +5,7 @@ import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { ACADEMIC_NOTICES, noticeById } from './data';
 import { useInfo } from './store';
+import { applyEventIdForNotice, useSchedule } from '@/screens/timetable/store';
 import s from './Info.module.css';
 
 /**
@@ -16,9 +17,11 @@ export function AcademicNotice() {
   const { id } = useParams();
   const n = noticeById(id) ?? ACADEMIC_NOTICES[0];
   const inCalendar = useInfo((st) => st.inCalendar[n.id]);
-  const applied = useInfo((st) => !!st.applied[n.id]);
+  // 참가 신청은 캘린더 일정(e1)과 같은 상태 — 어느 쪽에서 신청해도 양쪽 모두 '신청 완료'
+  const applyId = applyEventIdForNotice(n.id);
+  const applied = useSchedule((st) => !!applyId && st.applied.includes(applyId));
+  const applyEvent = useSchedule((st) => st.apply);
   const addToCalendar = useInfo((st) => st.addToCalendar);
-  const apply = useInfo((st) => st.apply);
   const [loading, setLoading] = useState(false);
 
   const onCalendar = () => {
@@ -40,7 +43,7 @@ export function AcademicNotice() {
       setLoading(true);
       setTimeout(() => {
         setLoading(false);
-        apply(n.id);
+        if (applyId) applyEvent(applyId);
         toast('취업박람회 참가 신청을 마쳤어요', 'check');
       }, 900);
     }
@@ -50,7 +53,7 @@ export function AcademicNotice() {
   return (
     <Screen
       figma="430:9007"
-      header={<TopNav title="학사 공지" fallback={P.home} />}
+      header={<TopNav title="학사 공지" fallback={P.notices} />}
       footer={
         <CtaBar>
           <Button variant="soft" leadingIcon={inCalendar ? 'check' : undefined} onClick={onCalendar}>

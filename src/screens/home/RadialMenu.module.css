@@ -8,10 +8,11 @@
   inset: 0;
   background: var(--wivu-color-bg-scrim);
 }
+/* 다이얼 전체가 탭바(62 + 범프 21) 위에 오도록 — 6시 방향 메뉴까지 모두 누를 수 있게 (393×852 · 375×667) */
 .dial {
   position: absolute;
   left: 50%;
-  bottom: calc(max(var(--safe-bottom), 12px) + 62px - 40px);
+  bottom: calc(max(var(--safe-bottom), 12px) + 62px + 21px + 8px);
   width: 320px;
   height: 320px;
   margin-left: -160px;

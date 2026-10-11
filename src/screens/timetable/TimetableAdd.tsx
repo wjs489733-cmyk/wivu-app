@@ -30,7 +30,8 @@ export function TimetableAdd() {
   const [detailOpen, setDetailOpen] = useState(false);
   const mine = useMyCourses();
   const addCourse = useSchedule((st) => st.addCourse);
-  const credits = mine.reduce((a, c) => a + c.credits, 0);
+  // 학점은 수강신청 과목만 (시간표에 직접 추가한 수업은 학점 미반영 — TimetableScreen과 같은 규칙)
+  const credits = mine.filter((m) => m.core).reduce((a, c) => a + c.credits, 0);
 
   const status = (c: TTCourse): Status => {
     if (mine.some((m) => m.id === c.id)) return { kind: 'added' };
@@ -118,7 +119,8 @@ export function TimetableAdd() {
                     <Text variant="subhead" className="truncate">
                       <Highlight text={c.name} q={q.trim()} />
                     </Text>
-                    <Text variant="caption-2" color="secondary" className="truncate">
+                    {/* 강의실까지 보이도록 2줄 허용 (375 폭에서 요일이 여러 개인 과목) */}
+                    <Text variant="caption-2" color="secondary" lines={2}>
                       {c.online ? slotText(c) : `${c.professor} 교수 · ${slotText(c)} · ${c.room}`}
                     </Text>
                     <Text variant="caption-2" color={clash ? 'error' : 'tertiary'} className="truncate">
@@ -217,7 +219,11 @@ function CourseCheck({ course: c, status, credits, mine, onClose, onAdd }: { cou
         </div>
         {!c.online && <MiniWeek course={c} mine={mine} clashIds={clashIds} />}
         <Text variant="caption-1" color="secondary">
-          {status.kind === 'added' ? `이번 학기 ${credits}학점` : `추가하면 이번 학기 ${credits}학점 → ${credits + c.credits}학점`}
+          {c.core
+            ? `수강신청한 과목이에요 · 이번 학기 ${credits}학점에 포함`
+            : status.kind === 'added'
+              ? `시간표에만 추가한 수업이에요 · 수강신청 ${credits}학점에는 반영되지 않아요`
+              : `시간표에만 추가돼요 · 수강신청 ${credits}학점은 그대로예요 (정정은 학교 포털에서)`}
         </Text>
       </div>
 

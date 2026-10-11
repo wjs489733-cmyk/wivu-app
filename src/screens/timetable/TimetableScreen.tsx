@@ -37,7 +37,10 @@ export function TimetableScreen() {
   if (removing) lastRemoving.current = removing;
   const removeName = lastRemoving.current?.name ?? '';
 
-  const credits = courses.reduce((a, c) => a + c.credits, 0);
+  // 학점 규칙(단일): 학점은 수강신청 과목(core)만 센다 — 수강과목·마이·학교 연동과 같은 17학점.
+  // 수업 추가로 넣은 과목은 '시간표에만 추가(학점 미반영)' — 실제 정정은 학교 포털에서 하고 동기화로 반영된다.
+  const credits = courses.filter((c) => c.core).reduce((a, c) => a + c.credits, 0);
+  const extraCount = courses.filter((c) => !c.core).length;
   const grid = courses.filter((c) => c.slots.length);
   const online = courses.filter((c) => !c.slots.length);
   // 오늘(금) 아직 끝나지 않은 첫 수업 → 브랜드 채움 블록 (9:41 기준 서비스디자인)
@@ -134,6 +137,14 @@ export function TimetableScreen() {
           {WEEK_LABEL} · {credits}학점
         </Text>
       </div>
+      {extraCount > 0 && (
+        <div className={s.extraNote} role="note">
+          <span className={s.extraSwatch} aria-hidden />
+          <Text variant="caption-2" color="secondary">
+            점선 수업 {extraCount}개는 시간표에만 추가했어요 · 학점 미반영
+          </Text>
+        </div>
+      )}
 
       {editing && (
         <div className={s.editHint} role="status">

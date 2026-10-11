@@ -73,6 +73,7 @@ export function TimetableGrid({ courses, focusId, editing, newId, onBlock }: Pro
               data-focus={focus}
               data-dim={editing && c.core}
               data-new={newId === c.id}
+              data-extra={!c.core}
               data-course={c.id}
               aria-label={`${c.name} ${sl.day} ${sl.start}–${sl.end} ${c.room}${editing && !c.core ? ' · 눌러서 빼기' : ''}`}
               onClick={() => onBlock(c)}

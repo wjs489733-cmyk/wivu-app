@@ -106,12 +106,20 @@
   box-shadow: 0 0 12px 2px rgba(76, 128, 240, 0.6);
   animation: scan 1.8s ease-in-out infinite alternate;
 }
+/* transform 대신 top을 움직인다 — transform 애니메이션은 별도 합성 레이어가 되어
+   데스크톱 폰 목업(둥근 화면)에서 아래 모서리에 화면 배경이 새어 나오는 Chromium 합성 문제가 있었다 */
 @keyframes scan {
   from {
-    transform: translateY(0);
+    top: 20px;
   }
   to {
-    transform: translateY(206px);
+    top: 226px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scanLine {
+    animation: none;
+    top: 50%;
   }
 }
 

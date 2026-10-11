@@ -40,8 +40,11 @@
 .progress > span[data-on='true'] {
   background: var(--wivu-color-bg-brand);
 }
+/* 터치 영역 44 — 위아래 음수 여백으로 보이는 배치(40)는 그대로 */
 .textLink {
-  padding: 10px 4px;
+  min-height: 44px;
+  margin-block: -2px;
+  padding: 12px 4px;
   color: var(--wivu-color-text-secondary);
 }
 .textLink[data-tone='brand'] {
@@ -302,7 +305,7 @@
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 .filterChip[aria-pressed='true'] {
-  background: var(--wivu-color-primitive-ink-900);
+  background: var(--wivu-color-bg-brand); /* DS: 필터 칩 선택 = brand */
   color: var(--wivu-color-text-on-brand);
 }
 .searchHead {
@@ -360,6 +363,16 @@
   padding: 24px 0 calc(max(var(--safe-bottom), 12px) + 4px);
 }
 .bottom > button:last-child {
+  align-self: center;
+}
+/* 하단 고정 CTA 바 안: 주 버튼 + 아래 가운데 텍스트 링크 */
+.ctaStack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.ctaStack > button:last-child:not(:first-child) {
   align-self: center;
 }
 

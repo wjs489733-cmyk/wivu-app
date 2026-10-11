@@ -67,11 +67,11 @@ export const P = {
 /** Figma Flow starting points (전시 데스크톱 패널에서 바로가기) */
 export const FLOWS = [
   { id: 'start', label: '시작부터 홈까지', path: P.splash, figma: '334:9435' },
-  { id: 'attendance', label: '② 출석', path: P.attendance, figma: '392:7302' },
-  { id: 'courses', label: '③ 수강과목 → 과제 제출', path: P.courses, figma: '392:7404' },
-  { id: 'timetable', label: '④ 시간표', path: P.timetable, figma: '392:7472' },
-  { id: 'calendar', label: '④-2 시간표 › 캘린더', path: P.calendar, figma: '392:7540' },
-  { id: 'board', label: '⑤ 게시판', path: P.board, figma: '418:8600' },
+  { id: 'attendance', label: '출석', path: P.attendance, figma: '392:7302' },
+  { id: 'courses', label: '수강과목 → 과제 제출', path: P.courses, figma: '392:7404' },
+  { id: 'timetable', label: '시간표', path: P.timetable, figma: '392:7472' },
+  { id: 'calendar', label: '시간표 › 캘린더', path: P.calendar, figma: '392:7540' },
+  { id: 'board', label: '게시판', path: P.board, figma: '418:8600' },
   { id: 'err-login', label: '예외 · 로그인 오류', path: `${P.login}?error=1`, figma: '411:8258' },
   { id: 'err-pin', label: '예외 · PIN 오류', path: `${P.attendancePin}?error=1`, figma: '432:9371' },
   { id: 'free-day', label: '예외 · 공강 홈', path: P.homeFreeDay, figma: '433:9519' },

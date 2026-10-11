@@ -1,5 +1,7 @@
 import type { IconName } from '@/ui';
 import { COURSES, TOTAL_CREDITS } from '@/data/core';
+import { SYNC_COUNTS } from '@/screens/courses/data';
+import { allRecords } from '@/screens/attendance/data';
 
 /* 마이·설정 데이터 — Figma 424:8665 · 426:8846 · 426:8952 텍스트 그대로 */
 
@@ -27,13 +29,13 @@ export const NOTI_PREVIEW: Record<NotiKey, { title: string; meta: string; time: 
   board: { title: '내 글에 댓글이 달렸어요', meta: '서비스디자인 게시판 · 방금', time: '지금' },
 };
 
-/** 학교 연동으로 불러온 데이터 (426:8952) */
+/** 학교 연동으로 불러온 데이터 (426:8952) — 숫자는 실제 데이터에서 계산 (진입 연동 화면과 같은 SYNC_COUNTS) */
 export const SYNC_ITEMS: { id: string; icon: IconName; title: string; value: string }[] = [
   { id: 'courses', icon: 'nav-courses', title: '수강 과목', value: `${COURSES.length}과목 · ${TOTAL_CREDITS}학점` },
   { id: 'timetable', icon: 'nav-timetable', title: '시간표', value: `주 ${COURSES.reduce((a, c) => a + c.slots.length, 0)}개 수업` },
-  { id: 'assignments', icon: 'assignment', title: '과제', value: '진행 중 4건' },
-  { id: 'notices', icon: 'notice', title: '공지', value: '새 글 7건' },
-  { id: 'attendance', icon: 'nav-attendance', title: '출석 기록', value: '8회차' },
+  { id: 'assignments', icon: 'assignment', title: '과제', value: `진행 중 ${SYNC_COUNTS.assignments}건` },
+  { id: 'notices', icon: 'notice', title: '공지', value: `새 글 ${SYNC_COUNTS.notices}건` },
+  { id: 'attendance', icon: 'nav-attendance', title: '출석 기록', value: `${allRecords({ complete: false, method: null, time: null }).length}회차` },
 ];
 
 export const APP_VERSION = '1.0.0';

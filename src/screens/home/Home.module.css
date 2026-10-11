@@ -15,17 +15,27 @@
 .headerActions {
   display: flex;
   align-items: center;
-  gap: 2px;
+}
+/* 보이는 원은 30, 누르는 영역은 44 */
+.avatarHit {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
 }
 .avatar {
   display: grid;
   place-items: center;
   width: 30px;
   height: 30px;
-  margin-right: 4px;
   border-radius: 50%;
   background: var(--wivu-color-bg-brand-soft);
   color: var(--wivu-color-text-brand);
+  transition: transform var(--wivu-duration-press) ease;
+}
+.avatarHit:active .avatar {
+  transform: scale(0.94);
 }
 
 /* ── 주간 스트립 (44×52, 선택 = 브랜드 r14) ── */

@@ -1,18 +1,29 @@
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Chip, Icon, Text } from '@/ui';
 import { useNav } from '@/nav/nav';
+import { P } from '@/app/paths';
 import type { School } from './data';
 import s from './Entry.module.css';
 
 /* 진입 화면 전용 부품 — Figma Entry v4 공통 헤더(원형 뒤로 44 + 제목/진행 막대) */
 
-export function EntryHeader({ back = true, title, progress, right, onBack }: { back?: boolean; title?: string; progress?: { step: number; total: number }; right?: ReactNode; onBack?: () => void }) {
+type EntryHeaderProps = {
+  back?: boolean;
+  title?: string;
+  progress?: { step: number; total: number };
+  right?: ReactNode;
+  onBack?: () => void;
+  /** 뒤로 갈 기록이 없을 때 갈 진입 단계 (기본 스플래시) — 진입 흐름 밖(홈)으로는 나가지 않는다 */
+  fallback?: string;
+};
+
+export function EntryHeader({ back = true, title, progress, right, onBack, fallback = P.splash }: EntryHeaderProps) {
   const nav = useNav();
   return (
     <div className={s.header}>
       <div className={s.headerLeft}>
         {back && (
-          <button type="button" className={s.backCircle} aria-label="뒤로" onClick={onBack ?? (() => nav.back())}>
+          <button type="button" className={s.backCircle} aria-label="뒤로" onClick={onBack ?? (() => nav.back(fallback))}>
             <Icon name="back" size={24} />
           </button>
         )}

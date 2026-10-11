@@ -3,8 +3,9 @@ import { Button, Chip, IconButton, MoreLink, Screen, SectionDivider, TabBar, Tex
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
+import { useIsSubmitted } from '@/screens/courses/store';
 import { CAT, CATEGORIES, DOW_FULL, MONTHS, TODAY, parseIso } from './data';
-import { dayAgenda, dotsOn, holidayOn, itemTarget, upcoming, type AgendaItem, type Filter } from './agenda';
+import { dayAgenda, dotsOn, holidayOn, itemTarget, upcoming, type AgendaItem, type Ctx, type Filter } from './agenda';
 import { useMyCourses, useSchedule } from './store';
 import { BellButton, CatDot, EmptyNote, EventList, MonthGrid, ScheduleHeader, SmallIconButton } from './parts';
 import s from './Calendar.module.css';
@@ -21,18 +22,18 @@ export function CalendarScreen() {
   const month = useSchedule((st) => st.month);
   const selectDate = useSchedule((st) => st.selectDate);
   const setMonth = useSchedule((st) => st.setMonth);
-  const submitted = useApp((st) => st.assignmentSubmitted);
+  const isSubmitted = useIsSubmitted();
   const attended = useApp((st) => st.attendanceComplete);
   const [filter, setFilter] = useState<Filter>('all');
   const [expanded, setExpanded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const ctx = { submitted, attended };
+  const ctx: Ctx = useMemo(() => ({ attended, isSubmitted }), [attended, isSubmitted]);
 
   const mi = MONTHS.indexOf(month);
   const [y, m] = month.split('-').map(Number);
   const sel = parseIso(selected);
-  const agenda = useMemo(() => dayAgenda(selected, courses, events, filter, ctx), [selected, courses, events, filter, submitted, attended]); // eslint-disable-line react-hooks/exhaustive-deps
-  const next = useMemo(() => upcoming(events, filter, ctx), [events, filter, submitted]); // eslint-disable-line react-hooks/exhaustive-deps
+  const agenda = useMemo(() => dayAgenda(selected, courses, events, filter, ctx), [selected, courses, events, filter, ctx]);
+  const next = useMemo(() => upcoming(events, filter, ctx), [events, filter, ctx]);
   const shownNext = expanded ? next : next.slice(0, 3);
 
   const open = (it: AgendaItem) => {
@@ -62,7 +63,8 @@ export function CalendarScreen() {
           }
         />
       }
-      footer={<TabBar active="timetable" onActivePress={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} />}
+      // 캘린더에서 '시간표' 탭(활성)을 누르면 시간표 그리드로 돌아간다
+      footer={<TabBar active="timetable" onActivePress={() => nav.tab(P.timetable)} />}
     >
       <div className={s.monthBar}>
         <Text variant="title-2" as="h2" tnum aria-live="polite">

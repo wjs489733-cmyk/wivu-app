@@ -248,12 +248,13 @@
   box-shadow: var(--wivu-elevation-overlay);
 }
 .grabber {
+  /* 손잡이 모양은 그대로, 누르는 영역 88×44 (음수 마진으로 시트 레이아웃 유지) */
   align-self: center;
   display: grid;
   place-items: center;
-  width: 64px;
-  height: 20px;
-  margin-bottom: -8px;
+  width: 88px;
+  height: 44px;
+  margin: -12px 0 -20px;
 }
 .grabber::before {
   content: '';

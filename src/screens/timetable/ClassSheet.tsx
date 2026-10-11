@@ -3,13 +3,15 @@ import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
 import { ATTENDANCE_WINDOW } from '@/data/core';
-import { NOW_MIN, TODAY, longDate, nextClassDate, periodNote, slotText, toMin, type TTCourse } from './data';
+import { TODAY, longDate, nextClassDate, periodNote, slotText, type TTCourse } from './data';
 import { InfoBox, InfoRow, MapChip } from './parts';
 import s from './Timetable.module.css';
 
 /**
  * 수업 상세 시트 — Figma 402:7846 (Schedule_v4_02_ClassSheet)
- * 서비스디자인: 출석 인증 가능(10:00–10:10) → AttendanceSheet로 이어짐
+ * 서비스디자인: 출석 인증 가능(10:00–10:10) → AttendanceSheet로 이어짐.
+ *   시간 흐름: 상태바 9:41은 장식이고 시나리오는 '수업이 막 시작돼 10:10까지 인증 가능' — 출석 탭 히어로와 같은 칩
+ *   (Figma 402:7846 '19분 후 시작 · 출석 10:00–10:10'은 히어로와 어긋나 맞춤)
  * 다른 과목: 출석은 수업 시간에만 열린다는 안내 + 비활성 버튼
  * 직접 추가한 과목: '과목 상세' 대신 '시간표에서 빼기'
  */
@@ -32,11 +34,9 @@ function SheetBody({ course: c, onClose, onAttend, onRemove }: { course: TTCours
   // 상단 상태 칩
   let chip: { text: string; tone: 'brand' | 'neutral' | 'pulse' };
   if (isAttendCourse && attended) chip = { text: `출석 완료 · ${attendTime ?? '10:01'} 인증`, tone: 'pulse' };
-  else if (isAttendCourse) chip = { text: `${ATTENDANCE_WINDOW.minutesToStart}분 후 시작 · 출석 ${ATTENDANCE_WINDOW.opens}–${ATTENDANCE_WINDOW.closes}`, tone: 'brand' };
-  else if (next && isToday) {
-    const left = toMin(next.slot.start) - NOW_MIN;
-    chip = { text: `오늘 ${next.slot.start} 시작 · ${Math.floor(left / 60)}시간 ${left % 60}분 후`, tone: 'brand' };
-  } else if (next) chip = { text: `다음 수업 ${longDate(next.date)} ${next.slot.start}`, tone: 'neutral' };
+  else if (isAttendCourse) chip = { text: `출석 가능 · ${ATTENDANCE_WINDOW.closes}까지`, tone: 'brand' };
+  else if (next && isToday) chip = { text: `오늘 ${next.slot.start} 시작`, tone: 'brand' };
+  else if (next) chip = { text: `다음 수업 ${longDate(next.date)} ${next.slot.start}`, tone: 'neutral' };
   else chip = { text: '사이버 강의', tone: 'pulse' };
 
   const time = c.slots.length === 1 ? `${slotText(c, ' – ')}${periodNote(c.slots[0]) ? ` (${periodNote(c.slots[0])})` : ''}` : slotText(c, ' – ');
@@ -44,7 +44,9 @@ function SheetBody({ course: c, onClose, onAttend, onRemove }: { course: TTCours
 
   // 출석 버튼 상태 + 안내
   const canAttend = isAttendCourse && !attended;
-  const note = isAttendCourse
+  const note = !c.core
+    ? '시간표에만 추가한 수업이에요 · 수강신청 학점에는 반영되지 않아요'
+    : isAttendCourse
     ? attended
       ? '오늘 출석이 이미 인증됐어요'
       : null
@@ -101,13 +103,16 @@ function SheetBody({ course: c, onClose, onAttend, onRemove }: { course: TTCours
             과목 상세
           </Button>
         ) : (
+          // 직접 추가한 수업은 수강신청 과목이 아니라 출석 대상이 아님 → 빼기만
           <Button variant="outline" grow onClick={() => onRemove(c)}>
             시간표에서 빼기
           </Button>
         )}
-        <Button variant="primary" grow disabled={!canAttend} leadingIcon={isAttendCourse && attended ? 'check' : undefined} onClick={onAttend}>
-          {isAttendCourse && attended ? '출석 완료' : '출석 인증하기'}
-        </Button>
+        {c.core && (
+          <Button variant="primary" grow disabled={!canAttend} leadingIcon={isAttendCourse && attended ? 'check' : undefined} onClick={onAttend}>
+            {isAttendCourse && attended ? '출석 완료' : '출석 인증하기'}
+          </Button>
+        )}
       </div>
       {note && (
         <div className={s.sheetNote}>

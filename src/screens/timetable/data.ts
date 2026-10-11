@@ -1,5 +1,6 @@
 import { P } from '@/app/paths';
-import { COURSES, NOW, type CourseId, type Weekday } from '@/data/core';
+import { COURSES, NOW, courseById, type CourseId, type Weekday } from '@/data/core';
+import { ASSIGNMENT_LIST } from '@/screens/courses/data';
 
 /* ────────────────────────────────────────────────────────────
  * 시간표 · 캘린더 섹션 데이터 — Figma 392:7472 · 402:7846 · 403:7931 · 392:7540 · 404:7979 · 405:8022
@@ -153,10 +154,12 @@ export function nextClassDate(c: TTCourse): { date: string; slot: Slot } | null 
 /* ── 캘린더 ────────────────────────────────────────────────── */
 export type Category = 'class' | 'assignment' | 'academic' | 'personal';
 export const CATEGORIES: Category[] = ['class', 'assignment', 'academic', 'personal'];
-export const CAT: Record<Category, { label: string; detail: string; color: string; tone: 'brand' | 'dangerSoft' | 'pulse' | 'neutral' }> = {
-  class: { label: '수업', detail: '수업', color: 'var(--wivu-color-bg-brand)', tone: 'brand' },
+/** 카테고리 색 — 디자인 규칙 §5 칩 색 매핑(학사 → brand)을 따름.
+ *  Figma 392:7540은 학사=초록(pulse)·수업=브랜드였지만, 학사를 brand로 통일하면서 수업은 잉크(진한 남색)로 구분 */
+export const CAT: Record<Category, { label: string; detail: string; color: string; tone: 'brand' | 'dangerSoft' | 'outline' | 'neutral' }> = {
+  class: { label: '수업', detail: '수업', color: 'var(--wivu-color-text-primary)', tone: 'outline' },
   assignment: { label: '과제', detail: '과제', color: 'var(--wivu-color-status-error)', tone: 'dangerSoft' },
-  academic: { label: '학사', detail: '학사 일정', color: 'var(--wivu-color-icon-pulse)', tone: 'pulse' },
+  academic: { label: '학사', detail: '학사 일정', color: 'var(--wivu-color-bg-brand)', tone: 'brand' },
   personal: { label: '개인', detail: '개인 일정', color: 'var(--wivu-color-text-tertiary)', tone: 'neutral' },
 };
 
@@ -187,6 +190,8 @@ export type CalEvent = {
   alarm?: string;
   repeat?: string;
   courseId?: CourseId;
+  /** 과제 일정: 수강과목 과제 id (제출 상태 조회용) */
+  aid?: string;
   /** 목록에서 바로 이동할 곳 (과제 상세 등) */
   to?: string;
   /** 사전 신청 CTA */
@@ -195,17 +200,35 @@ export type CalEvent = {
   user?: boolean;
 };
 
+/** 과제 일정 — 수강과목 과제 목록(courses/data.ts ASSIGNMENT_LIST)에서 파생 (단일 기준).
+ *  제목은 '{과제명} 제출' (Figma 392:7540 '브랜드 무드보드 제출'), 목록 메타는 agenda.eventMeta가 제출 상태로 계산 */
+const hhmm = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+export const ASSIGNMENT_EVENTS: CalEvent[] = ASSIGNMENT_LIST.map((a) => {
+  const course = courseById(a.courseId);
+  const date = iso(a.due);
+  return {
+    id: `${a.courseId}-${a.id}`,
+    title: `${a.title} 제출`,
+    category: 'assignment',
+    date,
+    start: hhmm(a.due),
+    deadline: true,
+    courseId: a.courseId,
+    aid: a.id,
+    to: P.assignment(a.courseId, a.id),
+    source: `${course.name} · 과제 공지`,
+    description: a.desc.split('\n\n')[0],
+    alarm: a.closed ? undefined : date === iso(NOW) ? '3시간 전' : '하루 전 18:00',
+  };
+});
+
 export const SEED_EVENTS: CalEvent[] = [
-  { id: 'e4', title: '1주차 리플렉션 제출', category: 'assignment', date: '2026-09-04', start: '23:59', deadline: true, courseId: 'service-design', meta: '서비스디자인 · 제출 완료', source: '서비스디자인 · 과제 공지', description: '1주차 수업 내용을 정리한 리플렉션을 A4 1장 분량으로 제출해요.' },
   { id: 'e5', title: '시각디자인과 개강총회', category: 'academic', date: '2026-09-10', start: '18:00', end: '20:00', place: '디자인관 세미나실', onCampus: true, meta: '18:00 · 디자인관 세미나실', source: '학과 공지 · 09.03 등록', description: '2학기 학과 개강총회예요. 학기 일정 안내와 학생회 소개가 이어져요.', alarm: '1시간 전' },
-  { id: 'a1', title: '서비스 분석 리포트', category: 'assignment', date: '2026-09-11', start: '23:59', deadline: true, courseId: 'service-design', to: P.assignment('service-design', 'a1'), source: '서비스디자인 · 과제 공지', description: '관심 있는 서비스 하나를 골라 이용 흐름과 문제점을 분석한 리포트를 PDF로 제출해요.', alarm: '3시간 전' },
   { id: 'e1', title: '2026 하반기 취업박람회', category: 'academic', date: '2026-09-14', start: '14:00', end: '17:00', place: '학생회관 대강당', onCampus: true, meta: '14:00 · 학생회관 대강당', note: '사전 신청 9.13(일)까지', source: '학사 공지 · 09.05 등록', noticeId: 'n3', apply: true, alarm: '하루 전 18:00 · 1시간 전', description: '지역 기업 32개사가 참여하는 하반기 취업박람회입니다. 현장 면접과 직무 상담이 진행되며, 사전 신청자에게는 이력서·포트폴리오 컨설팅이 제공됩니다.\n\n· 대상: 재학생 및 졸업 예정자\n· 준비물: 학생증, 이력서(선택)' },
   { id: 'e2', title: '수강신청 정정 마감', category: 'academic', date: '2026-09-15', span: ['2026-09-14', '2026-09-15'], end: '18:00', deadline: true, meta: '18:00까지 · 학사 공지', note: '정정 기간 9.14(월) – 9.15(화)', source: '학사 공지 · 09.10 등록', noticeId: 'n1', alarm: '마감 3시간 전', description: '2학기 수강신청 정정 기간이에요. 기간 안에 과목을 추가하거나 취소할 수 있고, 9.15(화) 18:00에 마감돼요.' },
-  { id: 'e3', title: '브랜드 무드보드 제출', category: 'assignment', date: '2026-09-17', start: '23:59', deadline: true, courseId: 'brand-design', meta: '브랜드디자인 · 23:59', source: '브랜드디자인 · 과제 공지', alarm: '하루 전 18:00', description: '리서치한 레퍼런스로 브랜드 무드보드 1장을 만들어 PDF로 제출해요.' },
-  { id: 'e6', title: 'UX 리서치 인터뷰 계획서', category: 'assignment', date: '2026-09-18', start: '23:59', deadline: true, courseId: 'ux-research', meta: 'UX 리서치 · 23:59', source: 'UX 리서치 · 과제 공지', alarm: '하루 전 18:00', description: '팀별 인터뷰 대상과 질문지를 정리한 계획서를 제출해요.' },
   { id: 'e7', title: '포트폴리오 스터디', category: 'personal', date: '2026-09-22', start: '19:00', end: '21:00', place: '중앙도서관 그룹스터디룸 3', onCampus: true, meta: '19:00 · 중앙도서관', alarm: '30분 전', repeat: '매주', user: true },
   { id: 'e8', title: '추석 연휴', category: 'academic', date: '2026-09-24', span: ['2026-09-24', '2026-09-26'], allDay: true, holiday: true, meta: '공휴일 · 9.24 – 9.26', source: '학사 일정', description: '추석 연휴예요. 연휴 중 수업 운영은 각 과목 공지를 확인해 주세요.' },
-  { id: 'e9', title: '모션그래픽스 스토리보드', category: 'assignment', date: '2026-09-29', start: '23:59', deadline: true, courseId: 'motion-graphics', meta: '모션그래픽스 · 23:59', source: '모션그래픽스 · 과제 공지', alarm: '하루 전 18:00', description: '15초 모션 작업의 스토리보드를 6컷 이상으로 정리해 제출해요.' },
+  ...ASSIGNMENT_EVENTS,
 ];
 
 /** 수업이 열리는 기간 (학기 시작 ~ 연말) */

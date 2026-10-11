@@ -5,6 +5,7 @@ export * from './Button';
 export * from './Display';
 export * from './Surface';
 export * from './Screen';
+export { useScreen } from './screenContext';
 export * from './TabBar';
 export * from './Overlay';
 export * from './Form';

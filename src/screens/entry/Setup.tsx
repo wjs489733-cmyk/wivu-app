@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Button, Icon, LeadingIcon, ListGroup, ListRow, Screen, Switch, SystemAlert, Text, toast } from '@/ui';
+import { Button, CtaBar, Icon, LeadingIcon, ListGroup, ListRow, Screen, Switch, SystemAlert, Text, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
 import { QUICK_MAX, RADIAL_DEFAULT, SETUP_ITEMS, quickItem } from '@/data/quickMenu';
+import { useMy } from '@/screens/my/store';
+import { NOTI_TYPES, type NotiKey } from '@/screens/my/data';
 import { EntryHeader, Hero, TextLink } from './parts';
 import { WuMark } from './Intro';
 import { NOTI_OPTIONS } from './data';
@@ -13,7 +15,9 @@ import s from './Entry.module.css';
 /**
  * 초기 설정 1/2 · 알림 — Figma 411:12022 (+ 시스템 알림 권한 411:12110)
  * 토글은 실제로 동작하고, 미리보기 알림이 켜진 항목에 맞춰 바뀐다.
+ * 고른 값은 다음 단계로 넘어갈 때(허용·허용 안 함·나중에) 마이 › 알림 설정과 같은 스토어에 저장된다.
  */
+const NOTI_KEYS = new Set<string>(NOTI_TYPES.map((t) => t.id));
 const PREVIEW: Record<string, { title: string; meta: string; time: string }> = {
   attendance: { title: '출석 인증 10분 전이에요', meta: '서비스디자인 · 디자인관 302호 · 10:10까지', time: '09:50' },
   assignment: { title: '과제 마감 3시간 전', meta: '서비스 분석 리포트 · 오늘 23:59', time: '20:59' },
@@ -27,12 +31,23 @@ export function SetupNotifications() {
   const [alert, setAlert] = useState(false);
   const first = NOTI_OPTIONS.find((o) => on[o.id]);
   const preview = first ? PREVIEW[first.id] : null;
-  const next = () => nav.push(P.setupQuickMenu);
+  const next = () => {
+    const setToggle = useMy.getState().setToggle;
+    for (const [id, v] of Object.entries(on)) if (NOTI_KEYS.has(id)) setToggle(id as NotiKey, v);
+    nav.push(P.setupQuickMenu);
+  };
 
   return (
     <Screen
       figma="411:12022"
       header={<EntryHeader back={false} progress={{ step: 1, total: 2 }} right={<TextLink onPress={next}>나중에</TextLink>} />}
+      footer={
+        <CtaBar>
+          <Button block onClick={() => setAlert(true)}>
+            알림 허용하기
+          </Button>
+        </CtaBar>
+      }
       overlay={
         <SystemAlert
           open={alert}
@@ -100,11 +115,6 @@ export function SetupNotifications() {
             />
           ))}
         </ListGroup>
-        <div className={s.bottom}>
-          <Button block onClick={() => setAlert(true)}>
-            알림 허용하기
-          </Button>
-        </div>
       </div>
     </Screen>
   );
@@ -117,6 +127,7 @@ export function SetupNotifications() {
 export function SetupQuickMenu() {
   const nav = useNav();
   const save = useApp((st) => st.setQuickMenu);
+  const finishOnboarding = useApp((st) => st.finishOnboarding);
   const [picked, setPicked] = useState<string[]>(RADIAL_DEFAULT);
   const full = picked.length >= QUICK_MAX;
 
@@ -134,7 +145,22 @@ export function SetupQuickMenu() {
   return (
     <Screen
       figma="411:12208"
-      header={<EntryHeader progress={{ step: 2, total: 2 }} right={<TextLink onPress={() => setPicked(RADIAL_DEFAULT)}>기본값으로</TextLink>} />}
+      header={<EntryHeader progress={{ step: 2, total: 2 }} fallback={P.setupNotifications} right={<TextLink onPress={() => setPicked(RADIAL_DEFAULT)}>기본값으로</TextLink>} />}
+      footer={
+        <CtaBar>
+          <Button
+            block
+            disabled={picked.length === 0}
+            onClick={() => {
+              save(picked);
+              finishOnboarding();
+              nav.reset(P.home);
+            }}
+          >
+            완료하고 WivU 시작하기
+          </Button>
+        </CtaBar>
+      }
     >
       <div className={s.page}>
         <Hero title={'자주 쓰는 기능을\n골라주세요'} desc="홈에서 위로 밀면 고른 기능이 바로 열려요. 최대 8개까지 담을 수 있어요." />
@@ -171,18 +197,6 @@ export function SetupQuickMenu() {
           <Text variant="caption-2" color="tertiary">
             숫자는 퀵메뉴 순서예요 · 빼고 다시 고르면 맨 뒤로 가요
           </Text>
-        </div>
-        <div className={s.bottom}>
-          <Button
-            block
-            disabled={picked.length === 0}
-            onClick={() => {
-              save(picked);
-              nav.reset(P.home);
-            }}
-          >
-            완료하고 WivU 시작하기
-          </Button>
         </div>
       </div>
     </Screen>

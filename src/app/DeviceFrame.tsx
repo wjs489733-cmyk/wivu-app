@@ -68,13 +68,16 @@ export function DeviceFrame({ children }: { children: ReactNode }) {
   );
 }
 
+/** 화면들이 대응하는 Figma 프레임 수 (중복 없이) */
+const FIGMA_FRAMES = new Set(SCREENS.flatMap((sc) => sc.figma)).size;
+
 function LeftPanel() {
   const navigate = useNavigate();
-  const reset = useApp((st) => st.reset);
+  const demoReset = useApp((st) => st.demoReset);
   const { pathname } = useLocation();
   const go = (path: string, fresh = false) => {
     if (fresh) return restart();
-    reset();
+    demoReset(); // 로그아웃 잠금까지 풀고 해당 플로우 시작점으로
     navigate(path, { replace: true, state: { t: 'fade', d: 0 } });
   };
   return (
@@ -110,7 +113,7 @@ function LeftPanel() {
       <div className={s.meta}>
         <MetaItem k="기준 시각" v="2026.09.11 (금) 9:41" />
         <MetaItem k="사용자" v="김유진 · 시각디자인과 4학년 (가상)" />
-        <MetaItem k="화면" v={`${SCREENS.length}개 라우트 · Figma 54 프레임 대응`} />
+        <MetaItem k="화면" v={`${SCREENS.length}개 라우트 · Figma ${FIGMA_FRAMES} 프레임 대응`} />
         <MetaItem k="데이터" v="가상 데이터 · 백엔드 없음 · 새로고침 시 초기화" />
       </div>
     </aside>

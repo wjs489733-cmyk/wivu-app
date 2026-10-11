@@ -21,6 +21,10 @@ type AppState = {
   /** 홈 퀵메뉴 (레디얼·초기 설정·편집 공통) */
   quickMenu: string[];
   readNotifications: string[];
+  /** 온보딩(초기 설정)까지 끝냈는지 — 뒤로 가기로 진입 화면에 돌아가지 않게 */
+  onboarded: boolean;
+  /** 사용자가 직접 로그아웃했는지 — true면 진입 화면 밖으로 못 나감 (새로고침하면 초기화) */
+  loggedOut: boolean;
 
   setSchool: (name: string) => void;
   login: () => void;
@@ -28,8 +32,14 @@ type AppState = {
   submitAssignment: (fileName: string) => void;
   setQuickMenu: (ids: string[]) => void;
   markRead: (id: string) => void;
-  /** 스플래시 진입 시 초기화 (Figma: 스플래시 AFTER_TIMEOUT → 변수 리셋) */
+  finishOnboarding: () => void;
+  /** 로그아웃: 상태 초기화 + 잠금 */
+  logout: () => void;
+  /** 스플래시 진입 시 초기화 (Figma: 스플래시 AFTER_TIMEOUT → 변수 리셋).
+   *  로그아웃 잠금(loggedOut)은 유지 — 잠금은 다시 로그인(login)해야만 풀린다. */
   reset: () => void;
+  /** 전시 패널 바로가기용: 상태 초기화 + 잠금 해제 */
+  demoReset: () => void;
 };
 
 const INITIAL = {
@@ -42,15 +52,25 @@ const INITIAL = {
   submittedFile: null,
   quickMenu: RADIAL_DEFAULT,
   readNotifications: [] as string[],
+  onboarded: false,
+  loggedOut: false,
 };
 
 export const useApp = create<AppState>((set) => ({
   ...INITIAL,
   setSchool: (name) => set({ selectedSchool: name }),
-  login: () => set({ loggedIn: true }),
+  login: () => set({ loggedIn: true, loggedOut: false }),
+  finishOnboarding: () => set({ onboarded: true }),
+  logout: () => set({ ...INITIAL, loggedOut: true }),
   completeAttendance: (method) => set({ attendanceComplete: true, attendanceMethod: method, attendanceTime: '10:01' }),
   submitAssignment: (fileName) => set({ assignmentSubmitted: true, submittedFile: fileName }),
   setQuickMenu: (ids) => set({ quickMenu: ids }),
   markRead: (id) => set((st) => ({ readNotifications: st.readNotifications.includes(id) ? st.readNotifications : [...st.readNotifications, id] })),
-  reset: () => set({ ...INITIAL }),
+  reset: () => set((st) => ({ ...INITIAL, loggedOut: st.loggedOut })),
+  demoReset: () => set({ ...INITIAL }),
 }));
+
+/** 진입(온보딩·로그인) 라우트 */
+export const isEntryPath = (pathname: string) => /^\/(splash|intro|school|login|setup)(\/|$)/.test(pathname);
+/** 로그인 전 단계 라우트 — 로그아웃 잠금 중에 머물 수 있는 곳 (연동 중·초기 설정은 로그인 뒤 단계라 제외) */
+export const isPreLoginPath = (pathname: string) => /^\/(splash|intro\/\d|school(\/search)?|login)$/.test(pathname);

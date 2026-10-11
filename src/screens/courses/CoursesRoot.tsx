@@ -2,6 +2,9 @@ import { useRef, useState } from 'react';
 import { Card, Chip, Icon, IconButton, LargeHeader, ProgressBar, Screen, SearchField, Section, SectionDivider, TabBar, Text } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
+import { useHasUnread } from '@/app/useUnread';
+import { useApp } from '@/store/app';
+import { onlineProgress } from '@/screens/attendance/data';
 import { COURSES, SEMESTER, TOTAL_CREDITS, type Course } from '@/data/core';
 import { COURSE_INFO, allFiles, cardMeta, ddayCount, professorOf } from './data';
 import { useIsNew, useSubmissionOf } from './store';
@@ -15,6 +18,7 @@ import s from './Courses.module.css';
  */
 export function CoursesRoot() {
   const nav = useNav();
+  const unread = useHasUnread();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [q, setQ] = useState('');
   const query = q.trim().toLowerCase();
@@ -27,7 +31,7 @@ export function CoursesRoot() {
     <Screen
       figma="392:7404"
       scrollRef={scrollRef}
-      header={<LargeHeader title="수강과목" actions={<IconButton icon="bell" label="알림함" onPress={() => nav.push(P.notifications)} />} />}
+      header={<LargeHeader title="수강과목" actions={<IconButton icon="bell" label="알림함" dot={unread} onPress={() => nav.push(P.notifications)} />} />}
       footer={<TabBar active="courses" onActivePress={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} />}
     >
       <div className={s.searchWrap}>
@@ -85,6 +89,9 @@ function CourseCard({ course }: { course: Course }) {
   const info = COURSE_INFO[course.id];
   const isNew = useIsNew(course.id);
   const submissionOf = useSubmissionOf(course.id);
+  const complete = useApp((st) => st.attendanceComplete);
+  // 사이버 강의 진도는 출석 데이터(주차별 수강 기록)에서 파생
+  const online = course.online ? onlineProgress(course.id, { complete, method: null, time: null }) : null;
 
   const weekNotices = info.notices.filter((n) => n.thisWeek);
   const hasNew = weekNotices.some(isNew);
@@ -109,17 +116,17 @@ function CourseCard({ course }: { course: Course }) {
         <Icon name="arrow-right" size={20} color="primary" />
       </div>
 
-      {info.online ? (
+      {online ? (
         <div className={s.progressBlock}>
           <div className={s.progressLabel}>
             <Text variant="caption-2" color="secondary" className="truncate">
-              {info.online.label}
+              {online.label}
             </Text>
             <Text variant="caption-2-strong" color="brand" tnum style={{ flexShrink: 0 }}>
-              진도율 {info.online.progress}%
+              진도율 {online.progress}%
             </Text>
           </div>
-          <ProgressBar value={info.online.progress} />
+          <ProgressBar value={online.progress} />
         </div>
       ) : (
         <div className={s.counts}>

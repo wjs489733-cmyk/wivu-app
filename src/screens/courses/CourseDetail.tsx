@@ -23,6 +23,7 @@ import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { SEMESTER } from '@/data/core';
 import { useApp } from '@/store/app';
+import { courseStats, nextAttendLabel, type TodayState } from '@/screens/attendance/data';
 import { allFiles, ddayCount, dday, detailMeta, dueShort, getCourse, professorOf, type Assignment } from './data';
 import { useIsNew, useSubmissionOf } from './store';
 import { FileRow } from './parts';
@@ -39,9 +40,10 @@ export function CourseDetail() {
   const nav = useNav();
   const isNew = useIsNew(course.id);
   const submissionOf = useSubmissionOf(course.id);
-  const attended = useApp((st) => st.attendanceComplete);
+  const complete = useApp((st) => st.attendanceComplete);
   const attendTime = useApp((st) => st.attendanceTime);
   const attendMethod = useApp((st) => st.attendanceMethod);
+  const today: TodayState = { complete, method: attendMethod, time: attendTime };
   const [expanded, setExpanded] = useState(false);
   const [menu, setMenu] = useState(false);
 
@@ -54,11 +56,11 @@ export function CourseDetail() {
   const files = allFiles(info);
   const notices = expanded ? info.notices : info.notices.slice(0, 2);
 
-  // 서비스디자인은 오늘 출석 인증과 연결 (attendanceComplete)
-  const todayAttend = course.id === 'service-design' && attended;
-  const att = info.attendance;
-  const present = att.present + (todayAttend ? 1 : 0);
-  const attendNext = todayAttend ? `오늘 ${attendTime ?? '10:01'} 출석 완료 · ${attendMethod ?? 'PIN'} 인증` : att.next;
+  // 출석 숫자는 출석 탭과 같은 데이터(attendance/data.ts)에서 파생 — 오늘 서비스디자인 인증(attendanceComplete)도 반영
+  const att = courseStats(course.id, today);
+  const todayAttend = course.id === 'service-design' && complete;
+  const attendNext = todayAttend ? `오늘 ${attendTime ?? '10:01'} 출석 완료 · ${attendMethod ?? 'PIN'} 인증` : nextAttendLabel(course.id, today);
+  const attendWarn = att.absent > 0;
 
   const assignmentSub = pending.length > 0 ? `${pending.length}개 진행` : open.length > 0 ? '제출 완료' : main ? '모두 마감' : '없음';
 
@@ -135,7 +137,7 @@ export function CourseDetail() {
           onPress={() => (main ? nav.push(P.assignment(course.id, main.id)) : toast('진행 중인 과제가 없어요'))}
         />
         <Tile icon="materials" label="강의자료" sub={`${files.length}개`} onPress={() => nav.push(P.courseMaterials(course.id))} />
-        <Tile icon="nav-attendance" label="출석" sub={`${att.rate}%`} onPress={() => nav.push(P.attendanceCourse(course.id))} />
+        <Tile icon="nav-attendance" label="출석" sub={`${att.rate}%`} subColor={attendWarn ? 'error' : 'tertiary'} onPress={() => nav.push(P.attendanceCourse(course.id))} />
       </div>
 
       {main && (
@@ -197,13 +199,13 @@ export function CourseDetail() {
         <Card variant="subtle" className={s.attendCard} onPress={() => nav.push(P.attendanceCourse(course.id))} aria-label="과목 출석 현황 보기">
           <div className={s.attendInfo}>
             <Text variant="subhead" as="p" className="tnum">
-              출석 {present} · 지각 {att.late} · 결석 {att.absent}
+              출석 {att.present} · 지각 {att.late} · 결석 {att.absent}
             </Text>
             <Text variant="caption-2" color="secondary" as="p" className="truncate">
               {attendNext}
             </Text>
           </div>
-          <Text variant="number" color="brand" tnum>
+          <Text variant="number" color={attendWarn ? 'error' : 'brand'} tnum>
             {att.rate}%
           </Text>
         </Card>

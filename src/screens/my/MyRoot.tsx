@@ -24,7 +24,8 @@ export function MyRoot() {
 
   const logout = () => {
     setConfirm(false);
-    useApp.getState().reset();
+    // 전역 logout(): 상태 초기화 + 진입 화면 밖으로 못 나가게 잠금
+    useApp.getState().logout();
     useMy.getState().resetMy();
     toast('로그아웃했어요');
     // Figma: 로그아웃 → 로그인(빈 상태) DISSOLVE. 스택은 '학교 선택 → 로그인'으로 다시 쌓아
@@ -114,7 +115,7 @@ export function MyRoot() {
 
       <SectionDivider />
       <Group title="지원">
-        <SettingRow icon="notice" title="공지사항" onPress={() => toast('WivU 공지사항은 다음 버전에서 열려요')} />
+        <SettingRow icon="notice" title="공지사항" onPress={() => nav.push(P.notices)} />
         <SettingRow icon="comment" title="문의하기" onPress={() => toast('문의하기는 다음 버전에서 열려요')} />
         <SettingRow icon="user" title="개인정보 처리방침" onPress={() => toast('개인정보 처리방침은 다음 버전에서 열려요')} />
         <SettingRow title="앱 버전" value={APP_VERSION} onPress={() => toast('최신 버전을 쓰고 있어요', 'check')} />

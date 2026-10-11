@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import { Icon, type IconName } from './Icon';
 import { Text } from './primitives';
 import { useNav } from '@/nav/nav';
+import { ScreenCtx } from './screenContext';
 import s from './Screen.module.css';
 
 /* 프레임 모드(데스크톱 폰 목업) 여부 — 상태바·홈 인디케이터 표시에 사용 */
@@ -25,6 +26,8 @@ type ScreenProps = {
   bg?: ScreenBg;
   /** 상태바·홈 인디케이터 색 (어두운 배경이면 'light') */
   tone?: 'dark' | 'light';
+  /** 홈 인디케이터만 다른 색이 필요할 때 (예: 어두운 화면 + 흰 하단 패널 → 'dark') */
+  indicatorTone?: 'dark' | 'light';
   scroll?: boolean;
   /** 스크롤 시 헤더 아래 1px 라인 */
   hairline?: boolean;
@@ -39,13 +42,18 @@ type ScreenProps = {
   figma?: string;
 };
 
-export function Screen({ header, footer, bg = 'surface', tone, scroll = true, hairline = true, bottomSpace = 24, scrollRef, overlay, children, style, figma }: ScreenProps) {
+export function Screen({ header, footer, bg = 'surface', tone, indicatorTone, scroll = true, hairline = true, bottomSpace = 24, scrollRef, overlay, children, style, figma }: ScreenProps) {
   const innerRef = useRef<HTMLDivElement>(null);
   const ref = scrollRef ?? innerRef;
   const footerRef = useRef<HTMLDivElement>(null);
   const [footerH, setFooterH] = useState(0);
   const [scrolled, setScrolled] = useState(false);
   const statusTone = tone ?? (bg === 'surface' || bg === 'subtle' ? 'dark' : 'light');
+  const scrollToTop = useCallback(() => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    ref.current?.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+  }, [ref]);
+  const api = useMemo(() => ({ scrollToTop }), [scrollToTop]);
 
   useEffect(() => {
     if (!footerRef.current) return;
@@ -55,27 +63,29 @@ export function Screen({ header, footer, bg = 'surface', tone, scroll = true, ha
   }, [footer]);
 
   return (
-    <div className={s.screen} style={{ background: BG[bg], ...style }} data-figma={figma}>
-      <div className={s.top} data-scrolled={scrolled} data-hairline={hairline} style={{ background: BG[bg] }}>
-        <StatusBar tone={statusTone} />
-        {header}
-      </div>
-      <div
-        ref={ref}
-        className={`${s.scroll} ${scroll ? '' : s.noScroll}`}
-        onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 2)}
-      >
-        {children}
-        <div style={{ height: footerH + bottomSpace }} aria-hidden />
-      </div>
-      {footer && (
-        <div ref={footerRef} className={s.footer}>
-          {footer}
+    <ScreenCtx.Provider value={api}>
+      <div className={s.screen} style={{ background: BG[bg], ...style }} data-figma={figma}>
+        <div className={s.top} data-scrolled={scrolled} data-hairline={hairline} style={{ background: BG[bg] }}>
+          <StatusBar tone={statusTone} />
+          {header}
         </div>
-      )}
-      {overlay}
-      <HomeIndicator tone={statusTone} />
-    </div>
+        <div
+          ref={ref}
+          className={`${s.scroll} ${scroll ? '' : s.noScroll}`}
+          onScroll={(e) => setScrolled(e.currentTarget.scrollTop > 2)}
+        >
+          {children}
+          <div style={{ height: footerH + bottomSpace }} aria-hidden />
+        </div>
+        {footer && (
+          <div ref={footerRef} className={s.footer}>
+            {footer}
+          </div>
+        )}
+        {overlay}
+        <HomeIndicator tone={indicatorTone ?? statusTone} />
+      </div>
+    </ScreenCtx.Provider>
   );
 }
 

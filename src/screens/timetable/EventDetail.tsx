@@ -3,8 +3,9 @@ import { useParams } from 'react-router';
 import { Button, Chip, CtaBar, Dialog, Icon, IconButton, Screen, SectionDivider, Switch, Text, TopNav, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { useApp } from '@/store/app';
 import { courseById } from '@/data/core';
+import { useIsSubmitted } from '@/screens/courses/store';
+import { assignmentStatus } from './agenda';
 import { CAT, dday, longDate, type CalEvent } from './data';
 import { useSchedule } from './store';
 import { CatDot, EmptyNote, InfoBox, InfoRow, MapChip } from './parts';
@@ -20,10 +21,11 @@ export function EventDetail() {
   const event = useSchedule((st) => st.events.find((e) => e.id === id));
   const alarmOn = useSchedule((st) => !!st.alarms[id]);
   const setAlarm = useSchedule((st) => st.setAlarm);
+  // 사전 신청은 이 스토어 하나가 기준 (학사 공지 n3의 '참가 신청하기'도 같은 값을 읽고 씀)
   const applied = useSchedule((st) => st.applied.includes(id));
   const apply = useSchedule((st) => st.apply);
   const removeEvent = useSchedule((st) => st.removeEvent);
-  const submitted = useApp((st) => st.assignmentSubmitted);
+  const isSubmitted = useIsSubmitted();
   const [applying, setApplying] = useState(false);
   const [confirm, setConfirm] = useState(false);
   // 삭제 직후 화면이 내려가는 동안 내용 유지
@@ -46,7 +48,7 @@ export function EventDetail() {
   const dateText = e.span ? `${longDate(e.span[0])} – ${longDate(e.span[1])}` : longDate(e.date);
   const timeText = e.allDay ? '하루 종일' : e.start && e.end ? `${e.start} – ${e.end}` : `${e.start ?? e.end} 마감`;
   const course = e.courseId ? courseById(e.courseId) : null;
-  const status = e.id === 'a1' ? (submitted ? '제출 완료' : '미제출') : null;
+  const status = assignmentStatus(e, { isSubmitted });
   const edit = () => (e.user ? nav.modal(`${P.calendarNew}?edit=${e.id}`) : toast('학교에서 등록한 일정은 수정할 수 없어요'));
 
   const alarmText = e.alarm && e.alarm !== '없음' ? e.alarm : null;
@@ -97,7 +99,7 @@ export function EventDetail() {
         <Button variant="soft" onClick={() => nav.push(P.course(course.id))}>
           과목 상세
         </Button>
-        {e.to && <Button onClick={() => nav.push(e.to!)}>{submitted && e.id === 'a1' ? '제출 내역 보기' : '과제 보기'}</Button>}
+        {e.to && <Button onClick={() => nav.push(e.to!)}>{status === '제출 완료' ? '제출 내역 보기' : '과제 보기'}</Button>}
       </CtaBar>
     );
   } else if (e.place && e.onCampus) {

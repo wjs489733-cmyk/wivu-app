@@ -1,5 +1,5 @@
 import { Fragment, useState, type CSSProperties } from 'react';
-import { Icon, Screen, Text, TextAction, TopNav, toast } from '@/ui';
+import { Chip, Icon, Screen, Text, TextAction, TopNav, toast } from '@/ui';
 import { useNav, type Nav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
@@ -56,11 +56,12 @@ export function Notifications() {
     >
       <div className={s.page}>
         <div className={s.filters} role="toolbar" aria-label="알림 분류">
+          {/* DS 필터 칩 — 선택 = brand (캘린더·수업 추가와 같은 Chip size m pill) */}
           {NOTI_FILTERS.map((f) => (
-            <button key={f.value} type="button" className={`${s.filter} t-caption-1-strong`} aria-pressed={filter === f.value} onClick={() => setFilter(f.value)}>
+            <Chip key={f.value} size="m" pill tone="neutral" selected={filter === f.value} onSelect={() => setFilter(f.value)} className={s.filter}>
               {f.label}
-              {f.value === 'all' && unreadCount > 0 && <span className={`${s.filterCount} t-caption-2-strong tnum`}>{unreadCount}</span>}
-            </button>
+              {f.value === 'all' && unreadCount > 0 && <span className={`${s.filterCount} tnum`}>{unreadCount}</span>}
+            </Chip>
           ))}
         </div>
 

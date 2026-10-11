@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Icon, Text, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
@@ -8,13 +9,21 @@ import s from './RadialMenu.module.css';
 
 /**
  * 홈 퀵메뉴(레디얼) — Figma 308:11745
- * 홈에서 활성 '홈' 탭을 다시 누르면 열림. 8개 메뉴가 원형으로 펼쳐지고 가운데 '메뉴 추가'.
+ * 홈에서 활성 '홈' 탭을 다시 누르거나 탭바에서 위로 밀면 열림(다시 누르기·딤·Esc로 닫힘).
+ * 8개 메뉴가 원형으로 펼쳐지고 가운데 '메뉴 추가'. 다이얼은 탭바 위에 떠서 모든 메뉴를 누를 수 있다.
  */
 export function RadialMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
   const nav = useNav();
   const ids = useApp((st) => st.quickMenu);
   const items = ids.map(quickItem).filter(Boolean).slice(0, 8) as QuickItem[];
   const R = 118;
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
 
   const go = (q: QuickItem) => {
     onClose();

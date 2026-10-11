@@ -26,7 +26,7 @@ export function SchoolSelect() {
   return (
     <Screen
       figma="352:1158"
-      header={<EntryHeader title="학교 선택" />}
+      header={<EntryHeader title="학교 선택" fallback={P.intro(3)} />}
       overlay={<RegionSheet open={sheet} onClose={() => setSheet(false)} />}
     >
       <div className={s.page}>
@@ -69,7 +69,7 @@ function RegionSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
   return (
     <BottomSheet open={open} onClose={onClose} label="지역 선택">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: -4 }}>
-        <Text variant="title-2" as="h2" style={{ fontSize: 20 }}>
+        <Text variant="title-2" as="h2">
           지역 선택
         </Text>
         <div style={{ marginRight: -10 }}>
@@ -131,7 +131,7 @@ export function SchoolSearch() {
   }, [query, region]);
 
   return (
-    <Screen figma="416:8372" header={<EntryHeader title="학교 선택" />}>
+    <Screen figma="416:8372" header={<EntryHeader title="학교 선택" fallback={P.school} />}>
       <div className={s.page} style={{ paddingTop: 8 }}>
         <SearchField value={query} onChange={setQuery} placeholder="학교 이름 검색" autoFocus />
         <div className={`${s.chipRow} no-scrollbar`}>

@@ -19,23 +19,19 @@
   display: none;
 }
 .filter {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-  height: 32px;
-  padding-inline: 12px;
-  border-radius: var(--wivu-radius-full);
-  background: var(--wivu-color-bg-subtle);
-  color: var(--wivu-color-text-secondary);
-  transition: background-color 0.18s ease, color 0.18s ease;
+  /* DS Chip(size m) — 터치 영역 44: 위아래로 투명 히트 영역 확장 */
+  position: relative;
 }
-.filter[aria-pressed='true'] {
-  background: var(--wivu-color-text-primary);
-  color: var(--wivu-color-text-on-brand);
+.filter::after {
+  content: '';
+  position: absolute;
+  inset: -8px 0;
 }
 .filterCount {
-  color: var(--wivu-color-icon-brand);
+  color: var(--wivu-color-text-brand);
+}
+.filter[aria-pressed='true'] .filterCount {
+  color: var(--wivu-color-text-on-brand-muted);
 }
 .group {
   display: flex;
@@ -262,4 +258,31 @@
   border-radius: var(--wivu-radius-14);
   background: var(--wivu-color-bg-brand-soft);
   color: var(--wivu-color-icon-primary);
+}
+
+/* ── 학사 공지 목록 (코드 추가 · 홈 학사 공지 행과 같은 모양) ── */
+.listMeta {
+  padding-inline: 4px;
+}
+.noticeRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 55px;
+  padding-block: 16px;
+  text-align: left;
+}
+.noticeRow + .noticeRow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--wivu-color-border-default);
+}
+.noticeRow:active {
+  opacity: 0.7;
 }

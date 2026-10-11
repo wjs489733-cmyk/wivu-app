@@ -19,7 +19,7 @@ import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
 import { USER } from '@/data/core';
 import { AttendanceSheet } from '@/screens/attendance/AttendanceSheet';
-import { NOTIFICATIONS } from '@/screens/info/data';
+import { useHasUnread } from '@/app/useUnread';
 import { RadialMenu } from './RadialMenu';
 import { FLOW_FREE_DAY, FLOW_TODAY, HOME_NOTICES, MEALS, WEEK, type FlowItem } from './data';
 import s from './Home.module.css';
@@ -28,13 +28,12 @@ import s from './Home.module.css';
  * 홈 — Figma 308:11640(출석 전) · 308:11881(출석 완료) · 433:9519(공강, 목 9/10)
  * 출석 완료 여부는 전역 상태(attendanceComplete)로 자동 분기 → Figma의 CONDITIONAL 대체
  */
-export function HomeScreen({ variant = 'today', openPin = false, pinError = false }: { variant?: 'today' | 'free-day'; openPin?: boolean; pinError?: boolean }) {
+export function HomeScreen({ variant = 'today' }: { variant?: 'today' | 'free-day' }) {
   const nav = useNav();
   const school = useApp((st) => st.selectedSchool);
-  const read = useApp((st) => st.readNotifications);
-  const unread = NOTIFICATIONS.some((n) => n.unread && !read.includes(n.id));
+  const unread = useHasUnread();
   const [radial, setRadial] = useState(false);
-  const [pin, setPin] = useState(openPin);
+  const [pin, setPin] = useState(false);
   const freeDay = variant === 'free-day';
 
   return (
@@ -51,28 +50,20 @@ export function HomeScreen({ variant = 'today', openPin = false, pinError = fals
             </Text>
           </div>
           <div className={s.headerActions}>
-            <button type="button" className={`${s.avatar} t-caption-1-strong`} onClick={() => nav.push(P.my)} aria-label="마이·설정">
-              {USER.initial}
+            <button type="button" className={s.avatarHit} onClick={() => nav.push(P.my)} aria-label="마이·설정">
+              <span className={`${s.avatar} t-caption-1-strong`} aria-hidden>
+                {USER.initial}
+              </span>
             </button>
             <IconButton icon="bell" label={unread ? '알림함 · 읽지 않은 알림 있음' : '알림함'} dot={unread} onPress={() => nav.push(P.notifications)} />
           </div>
         </div>
       }
-      footer={<TabBar active="home" onActivePress={() => setRadial((v) => !v)} />}
+      footer={<TabBar active="home" onActivePress={() => setRadial((v) => !v)} onSwipeUp={() => setRadial(true)} />}
       overlay={
         <>
           <RadialMenu open={radial} onClose={() => setRadial(false)} />
-          {!freeDay && (
-            <AttendanceSheet
-              open={pin}
-              forceError={pinError}
-              onClose={() => {
-                setPin(false);
-                // 라우트(/attendance/pin)로 들어온 경우: 시트가 내려간 뒤 홈 주소로 정리
-                if (openPin) setTimeout(() => nav.reset(P.home, 'none'), 320);
-              }}
-            />
-          )}
+          {!freeDay && <AttendanceSheet open={pin} onClose={() => setPin(false)} />}
         </>
       }
     >
@@ -107,7 +98,7 @@ export function HomeScreen({ variant = 'today', openPin = false, pinError = fals
       </Section>
 
       <SectionDivider />
-      <Section title="학사 공지" more="공지 전체" onMore={() => nav.push(P.academicNotice('n1'))}>
+      <Section title="학사 공지" more="공지 전체" onMore={() => nav.push(P.notices)}>
         <ListGroup>
           {HOME_NOTICES.map((n) => (
             <button key={n.id} type="button" className={s.noticeRow} onClick={() => nav.push(P.academicNotice(n.id))}>
@@ -144,7 +135,7 @@ function WeekStrip({ selected }: { selected: number }) {
               if (on) return;
               if (w.d === 11) nav.fade(P.home);
               else if (w.d === 10) nav.fade(P.homeFreeDay);
-              else toast(`${w.dow}요일 일정은 프로토타입에 포함되지 않았어요`);
+              else toast(`${w.d}일(${w.dow}) 일정은 캘린더에서 볼 수 있어요`);
             }}
           >
             <Text variant="caption-2" color={on ? 'on-brand-muted' : 'tertiary'}>
@@ -245,6 +236,15 @@ function HeroCarousel({ onAttend }: { onAttend: () => void }) {
       <div
         ref={ref}
         className={`${s.carousel} no-scrollbar`}
+        onFocus={(e) => {
+          // 키보드로 화면 밖 카드의 버튼에 포커스가 가면 그 카드를 통째로 보여준다
+          const el = e.currentTarget;
+          const card = Array.from(el.children).find((c) => c.contains(e.target as Node)) as HTMLElement | undefined;
+          if (!card) return;
+          const left = el.scrollLeft + card.getBoundingClientRect().left - el.getBoundingClientRect().left - 16;
+          const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+          if (Math.abs(left - el.scrollLeft) > 1) el.scrollTo({ left, behavior: reduce ? 'auto' : 'smooth' });
+        }}
         onScroll={(e) => {
           const el = e.currentTarget;
           const card = el.firstElementChild as HTMLElement | null;
@@ -375,7 +375,8 @@ function Timeline({ items }: { items: FlowItem[] }) {
         return (
           <li key={it.time + it.title} className={s.flowRow}>
             <span className={s.node} data-done={done} />
-            <Text variant="subhead" tnum className={s.flowTime}>
+            {/* 오늘 일은 시각(13:00), 다가오는 일은 날짜(9.14) — 날짜는 한 단계 낮춰 구분 */}
+            <Text variant="subhead" tnum className={s.flowTime} color={it.time.includes('.') ? 'secondary' : 'primary'}>
               {it.time}
             </Text>
             <span className={s.flowMain}>

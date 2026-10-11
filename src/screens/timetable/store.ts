@@ -7,7 +7,7 @@ import { CATALOG, CORE_COURSES, SEED_EVENTS, TODAY, type CalEvent, type TTCourse
  *   added      : 수업 추가 화면에서 넣은 카탈로그 과목 → 시간표 그리드·캘린더에 반영
  *   events     : 캘린더 일정 (시드 + 일정 추가 화면에서 만든 일정)
  *   alarms     : 일정별 알림 토글
- *   applied    : 사전 신청한 일정 (취업박람회)
+ *   applied    : 사전 신청한 일정 (취업박람회) — 앱 전체의 단일 기준 (학사 공지 n3도 여기를 읽고 씀)
  *   selectedDate / month : 캘린더 선택 상태 (상세 갔다 돌아와도 유지)
  * 새로고침하면 초기화 (전역 useApp과 같은 정책)
  * ──────────────────────────────────────────────────────────── */
@@ -59,6 +59,9 @@ export const useSchedule = create<ScheduleState>((set) => ({
   selectDate: (date) => set({ selectedDate: date, month: date.slice(0, 7) }),
   setMonth: (month) => set({ month }),
 }));
+
+/** 학사 공지에 연결된 사전 신청 일정 id (n3 → e1). 공지 화면과 일정 상세가 같은 applied 값을 쓴다 */
+export const applyEventIdForNotice = (noticeId: string) => SEED_EVENTS.find((e) => e.noticeId === noticeId && e.apply)?.id ?? null;
 
 /** 시간표에 있는 모든 과목 (core 6과목 + 직접 추가) */
 export function useMyCourses(): TTCourse[] {

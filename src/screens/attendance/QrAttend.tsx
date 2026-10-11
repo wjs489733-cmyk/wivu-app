@@ -2,30 +2,36 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Button, Icon, Screen, Segmented, Text, TopNav } from '@/ui';
-import { useNav } from '@/nav/nav';
+import { useNav, useNavState } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useApp, type AttendMethod } from '@/store/app';
+import type { AttendOrigin } from './AttendanceSheet';
 import s from './Qr.module.css';
 
 type Mode = 'QR' | 'NFC';
 type Phase = 'scanning' | 'recognized' | 'already';
 
-const AUTO_MS = 2500;
+/** 카메라를 대고 이만큼 지나면 포스터가 화면 안에 '맞춰진' 것처럼 보인다 — 인식은 사용자가 눌러야 진행 */
+const ALIGN_MS = 2500;
 /** 강의실 앞 출석 QR(가짜) — 카메라 화면 속 포스터로만 쓰는 데모 값 */
 const CLASS_QR = 'WIVU-DEMO:SD302:W2';
 
 /**
  * QR 출석 인증 — Figma 408:8098 (어두운 카메라 화면 모달)
- * 실제 카메라 없이 스캔을 흉내: 2.5초 뒤 자동 인식 또는 뷰파인더/‘QR 인식하기’ 탭 → 인식 상태 → 출석 완료(DISSOLVE).
- * 하단 세그먼트: PIN → PIN 시트 흐름(/attendance/pin) · NFC → 같은 화면에서 NFC 태그 흉내.
+ * 실제 카메라 없이 스캔을 흉내: 2.5초 뒤 포스터가 화면 안에 맞춰지고(안내만), 뷰파인더/‘QR 인식하기’를 눌러야
+ * 인식 → 출석 완료(DISSOLVE). 사용자 동작 없이 출석이 처리되지 않는다.
+ * 하단 세그먼트: PIN → PIN 시트 흐름(/attendance/pin, 시작한 곳 유지) · NFC → 같은 화면에서 NFC 태그 흉내.
  */
 export function QrAttend() {
   const nav = useNav();
+  const { from } = useNavState<{ from: AttendOrigin }>();
+  const origin: AttendOrigin = from === 'attendance' ? 'attendance' : 'home';
   const complete = useApp((st) => st.completeAttendance);
   const doneTime = useApp((st) => st.attendanceTime);
   const doneMethod = useApp((st) => st.attendanceMethod);
   const [mode, setMode] = useState<Mode>('QR');
   const [phase, setPhase] = useState<Phase>(() => (useApp.getState().attendanceComplete ? 'already' : 'scanning'));
+  const [aligned, setAligned] = useState(false);
   const timers = useRef<number[]>([]);
 
   const clear = () => {
@@ -47,26 +53,27 @@ export function QrAttend() {
     );
   };
 
-  // 자동 인식 (모드가 바뀌면 다시 2.5초)
+  // 포스터가 화면 안에 맞춰지는 연출 (QR 모드 · 인식은 하지 않음)
   useEffect(() => {
-    if (phase !== 'scanning') return;
-    const t = window.setTimeout(() => recognize(mode), AUTO_MS);
+    if (phase !== 'scanning' || mode !== 'QR') return;
+    const t = window.setTimeout(() => setAligned(true), ALIGN_MS);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, phase]);
   useEffect(() => clear, []);
 
   const recognized = phase === 'recognized';
   const already = phase === 'already';
   const isQr = mode === 'QR';
+  const steady = recognized || already || (isQr && aligned);
 
   return (
     <Screen
       bg="qr-dark"
       tone="light"
+      indicatorTone="dark"
       scroll={false}
       figma="408:8098"
-      header={<TopNav leading="close" title={isQr ? 'QR 출석 인증' : 'NFC 출석 인증'} tone="light" fallback={P.attendance} />}
+      header={<TopNav leading="close" title={isQr ? 'QR 출석 인증' : 'NFC 출석 인증'} tone="light" fallback={origin === 'attendance' ? P.attendance : P.home} />}
       footer={
         <div className={s.panel}>
           {already ? (
@@ -92,8 +99,12 @@ export function QrAttend() {
                 value={mode}
                 onChange={(v) => {
                   if (recognized) return;
-                  if (v === 'PIN') nav.fade(P.attendancePin);
-                  else setMode(v);
+                  // QR 기록을 PIN 시트 라우트로 대체 → 시트를 닫으면 시작한 곳(홈·출석 탭·알림함)으로
+                  if (v === 'PIN') nav.fade(P.attendancePin, { replace: true, state: { from: origin } });
+                  else {
+                    setMode(v);
+                    setAligned(false);
+                  }
                 }}
               />
               <Button block loading={recognized} onClick={() => recognize(mode)}>
@@ -127,8 +138,8 @@ export function QrAttend() {
             <>
               <motion.span
                 className={s.poster}
-                animate={recognized || already ? { x: 0, y: 0, rotate: 0, scale: 1, filter: 'blur(0px)' } : { x: [6, -4, 3, 6], y: [-4, 5, 2, -4], rotate: [-7, -5, -8, -7], scale: 0.86, filter: 'blur(1.2px)' }}
-                transition={recognized || already ? { duration: 0.35, ease: [0.32, 0.72, 0, 1] } : { duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+                animate={steady ? { x: 0, y: 0, rotate: 0, scale: 1, filter: 'blur(0px)' } : { x: [6, -4, 3, 6], y: [-4, 5, 2, -4], rotate: [-7, -5, -8, -7], scale: 0.86, filter: 'blur(1.2px)' }}
+                transition={steady ? { duration: 0.35, ease: [0.32, 0.72, 0, 1] } : { duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
               >
                 <QRCodeSVG value={CLASS_QR} size={132} level="L" bgColor="transparent" fgColor="currentColor" />
               </motion.span>
@@ -163,7 +174,13 @@ export function QrAttend() {
         </button>
 
         <span className={`${s.timerPill} t-caption-2-strong`} role="status">
-          {already ? '출석 완료 · 정상 출석으로 기록됐어요' : recognized ? `${isQr ? 'QR' : 'NFC'} 인식 완료 · 출석 처리 중…` : '출석 인정 시간 10:10까지 · 9분 남음'}
+          {already
+            ? '출석 완료 · 정상 출석으로 기록됐어요'
+            : recognized
+              ? `${isQr ? 'QR' : 'NFC'} 인식 완료 · 출석 처리 중…`
+              : isQr && aligned
+                ? 'QR이 화면 안에 들어왔어요 · 인식하기를 눌러주세요'
+                : '출석 인정 시간 · 10:10까지 인증 가능'}
         </span>
       </div>
     </Screen>

@@ -2,7 +2,7 @@ import { useParams } from 'react-router';
 import { Button, Card, Chip, CtaBar, Icon, Screen, Text, TopNav } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { dday, ddayCount, dueFull, findAssignment, getCourse } from './data';
+import { dday, ddayCount, dueFull, getAssignment } from './data';
 import { useSubmissionOf } from './store';
 import { BodyText, FileRow, InfoLine } from './parts';
 import s from './Courses.module.css';
@@ -14,8 +14,7 @@ import s from './Courses.module.css';
  */
 export function AssignmentDetail() {
   const { id, aid } = useParams();
-  const { course, info } = getCourse(id);
-  const a = findAssignment(info, aid);
+  const { course, a } = getAssignment(id, aid);
   const nav = useNav();
   const submission = useSubmissionOf(course.id)(a);
   const done = !!submission;

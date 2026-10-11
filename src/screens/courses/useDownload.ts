@@ -14,7 +14,7 @@ export function useDownload(file: FileItem) {
   useEffect(() => () => clearInterval(timer.current), []);
 
   const start = () => {
-    if (file.kind === 'link') return toast('외부 링크는 프로토타입에서 열리지 않아요');
+    if (file.kind === 'link') return toast('외부 링크 열기는 다음 버전에서 열려요');
     if (file.kind === 'video') return toast('강의 영상 재생은 다음 버전에서 열려요');
     if (st.status === 'loading') return;
     if (done) return toast('이미 받은 파일이에요 · 파일 앱에서 열 수 있어요', 'file');

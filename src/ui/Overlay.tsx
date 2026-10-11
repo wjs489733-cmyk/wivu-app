@@ -1,11 +1,92 @@
-import { useEffect, type ReactNode } from 'react';
-import { AnimatePresence, motion, useDragControls } from 'motion/react';
+import { useEffect, useId, useRef, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
+import { AnimatePresence, motion, useDragControls, useIsPresent } from 'motion/react';
 import { create } from 'zustand';
 import { Icon, type IconName } from './Icon';
 import { Text } from './primitives';
 import s from './Overlay.module.css';
 
 const EASE = [0.32, 0.72, 0, 1] as const;
+
+/* ── 대화상자 레이어 (시트·다이얼로그·시스템 알림 공통) ─────────
+ * 접근성: 열릴 때 포커스를 안으로 옮기고, Tab은 안에서만 돌고, 닫히기 시작하면 원래 자리로 돌려준다. */
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const focusables = (root: HTMLElement) => Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter((el) => el.getClientRects().length > 0);
+
+type LayerProps = {
+  role: 'dialog' | 'alertdialog';
+  label?: string;
+  labelledBy?: string;
+  /** 처음 포커스: 'container' = 레이어 자체(내용이 많은 시트), 'first' = 첫 버튼(확인창) */
+  initialFocus: 'container' | 'first';
+  children: ReactNode;
+};
+function DialogLayer({ role, label, labelledBy, initialFocus, children }: LayerProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const returnTo = useRef<HTMLElement | null>(null);
+  const isPresent = useIsPresent();
+
+  const restore = (root: HTMLElement | null) => {
+    const el = returnTo.current;
+    const active = document.activeElement;
+    // 사용자가 이미 다른 곳으로 포커스를 옮겼으면 건드리지 않는다
+    const focusInside = !active || active === document.body || !!root?.contains(active);
+    if (!el || !focusInside) return;
+    returnTo.current = null;
+    if (el.isConnected) el.focus({ preventScroll: true });
+  };
+
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return;
+    const active = document.activeElement;
+    if (!returnTo.current && active instanceof HTMLElement && !root.contains(active)) returnTo.current = active;
+    const target = initialFocus === 'first' ? (focusables(root)[0] ?? root) : root;
+    target.focus({ preventScroll: true });
+    // StrictMode의 가짜 언마운트에서는 ref가 비므로 root를 직접 넘긴다
+    return () => restore(root);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // 닫힘 애니메이션이 시작되는 순간 바로 돌려준다
+  useEffect(() => {
+    if (!isPresent) restore(ref.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPresent]);
+
+  const onKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Tab' || !ref.current) return;
+    const list = focusables(ref.current);
+    if (!list.length) {
+      e.preventDefault();
+      return;
+    }
+    const first = list[0];
+    const last = list[list.length - 1];
+    const active = document.activeElement;
+    if (e.shiftKey && (active === first || active === ref.current || !ref.current.contains(active))) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && (active === last || !ref.current.contains(active))) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
+
+  return (
+    <div ref={ref} className={s.layer} role={role} aria-modal="true" aria-label={label} aria-labelledby={labelledBy} tabIndex={-1} onKeyDown={onKeyDown}>
+      {children}
+    </div>
+  );
+}
+
+/** 열려 있는 동안 Esc로 닫기 */
+function useEscape(open: boolean, onEscape?: () => void) {
+  useEffect(() => {
+    if (!open || !onEscape) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onEscape();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onEscape]);
+}
 
 /* ── Bottom sheet ─────────────────────────────────────────────
  * Figma의 '배경 화면 복제 + 딤 + 시트' 프레임을 실제 오버레이로.
@@ -20,17 +101,12 @@ type SheetProps = {
 };
 export function BottomSheet({ open, onClose, children, dismissible = true, label }: SheetProps) {
   const controls = useDragControls();
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  useEscape(open, onClose);
 
   return (
     <AnimatePresence>
       {open && (
-        <div className={s.layer} role="dialog" aria-modal="true" aria-label={label}>
+        <DialogLayer role="dialog" label={label} initialFocus="container">
           <motion.div
             className={s.scrim}
             initial={{ opacity: 0 }}
@@ -59,7 +135,7 @@ export function BottomSheet({ open, onClose, children, dismissible = true, label
             </div>
             {children}
           </motion.div>
-        </div>
+        </DialogLayer>
       )}
     </AnimatePresence>
   );
@@ -112,10 +188,11 @@ type AlertProps = {
   actions: { label: string; onPress: () => void; bold?: boolean; destructive?: boolean }[];
 };
 export function SystemAlert({ open, title, message, actions }: AlertProps) {
+  const titleId = useId();
   return (
     <AnimatePresence>
       {open && (
-        <div className={s.layer} role="alertdialog" aria-modal="true">
+        <DialogLayer role="alertdialog" labelledBy={titleId} initialFocus="first">
           <motion.div className={s.scrim} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} />
           <motion.div
             className={s.alert}
@@ -125,7 +202,9 @@ export function SystemAlert({ open, title, message, actions }: AlertProps) {
             transition={{ duration: 0.22, ease: EASE }}
           >
             <div className={s.alertBody}>
-              <p className={s.alertTitle}>{title}</p>
+              <p className={s.alertTitle} id={titleId}>
+                {title}
+              </p>
               {message && <p className={s.alertMessage}>{message}</p>}
             </div>
             <div className={s.alertActions} data-count={actions.length}>
@@ -136,7 +215,7 @@ export function SystemAlert({ open, title, message, actions }: AlertProps) {
               ))}
             </div>
           </motion.div>
-        </div>
+        </DialogLayer>
       )}
     </AnimatePresence>
   );
@@ -154,13 +233,15 @@ type DialogProps = {
   destructive?: boolean;
 };
 export function Dialog({ open, title, message, confirmLabel, cancelLabel = '취소', onConfirm, onCancel, destructive }: DialogProps) {
+  const titleId = useId();
+  useEscape(open, onCancel);
   return (
     <AnimatePresence>
       {open && (
-        <div className={s.layer} role="alertdialog" aria-modal="true">
+        <DialogLayer role="alertdialog" labelledBy={titleId} initialFocus="first">
           <motion.div className={s.scrim} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onCancel} />
           <motion.div className={s.dialog} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.22, ease: EASE }}>
-            <Text variant="headline" as="h2">
+            <Text variant="headline" as="h2" id={titleId}>
               {title}
             </Text>
             {message && (
@@ -177,7 +258,7 @@ export function Dialog({ open, title, message, confirmLabel, cancelLabel = '취�
               </button>
             </div>
           </motion.div>
-        </div>
+        </DialogLayer>
       )}
     </AnimatePresence>
   );

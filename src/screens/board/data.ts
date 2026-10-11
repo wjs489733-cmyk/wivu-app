@@ -160,7 +160,8 @@ export type Comment = {
 const A1: LinkedAssignment = { courseId: 'service-design', aid: 'a1', title: '서비스 분석 리포트', due: '오늘 23:59' };
 
 export const POSTS: Post[] = [
-  /* 서비스디자인 — Figma 419:8518 */
+  /* 서비스디자인 — Figma 419:8518
+   * p1은 '내 글'(알림 '내 글에 댓글 2개가 달렸어요') → mine: true · 내 공감 없음(공감 4는 다른 사람들) */
   {
     id: 'p1',
     boardId: 'service-design',
@@ -172,10 +173,10 @@ export const POSTS: Post[] = [
     time: '12분 전',
     views: 54,
     likes: 4,
-    likedByMe: true,
     comments: 6,
     isNew: true,
     linked: A1,
+    mine: true,
   },
   {
     id: 'p2',

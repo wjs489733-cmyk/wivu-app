@@ -48,6 +48,8 @@
   height: 852px;
   border-radius: 52px;
   overflow: hidden;
+  /* 합성 레이어(전환·애니메이션) 자식도 둥근 모서리로 확실히 잘리게 — overflow만으로는 모서리가 새는 경우가 있음 */
+  clip-path: inset(0 round 52px);
   background: var(--wivu-color-bg-surface);
   isolation: isolate;
 }

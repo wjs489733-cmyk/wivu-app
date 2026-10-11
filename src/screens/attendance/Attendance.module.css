@@ -290,3 +290,19 @@
 .sheetCta {
   margin-top: 24px;
 }
+/* 이의 신청 메모 필드 */
+.memoField {
+  padding: var(--wivu-space-16);
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-subtle);
+  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+  transition: box-shadow var(--wivu-duration-press) ease, background-color var(--wivu-duration-press) ease;
+}
+.memoField:focus-within {
+  background: var(--wivu-color-bg-surface);
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-brand);
+}
+.memoArea {
+  display: block;
+  min-height: 72px;
+}

@@ -42,13 +42,15 @@ export const NOTI_FILTERS: { value: NotiFilter; label: string }[] = [
   { value: 'board', label: '게시판' },
 ];
 
+/* 시간 흐름: 상태바 9:41은 장식. 시나리오는 '수업이 막 시작돼 10:10까지 출석 인증 가능'(≈10:00).
+ * 게시판 상대 시각(p1 '12분 전' ≈ 09:48, 댓글 '8분 전'·'3분 전')과 맞춰 댓글 알림은 09:57 — 글보다 앞서지 않게. */
 export const NOTIFICATIONS: Noti[] = [
-  { id: 'nt-attend', group: '오늘', category: '출석', filter: 'attendance', icon: 'nav-attendance', tone: 'brand', time: '09:50', title: '서비스디자인 출석 인증이 열렸어요', body: '디자인관 302호 · 10:10까지 인증하세요', unread: true, to: { kind: 'attendance' } },
+  { id: 'nt-comment', group: '오늘', category: '게시판', filter: 'board', icon: 'nav-board', tone: 'brand', time: '09:57', title: '내 글에 댓글 2개가 달렸어요', body: '“서비스 분석 리포트, 분석 대상 겹쳐도…”', unread: true, to: { kind: 'boardPost', id: 'p1' } },
+  { id: 'nt-attend', group: '오늘', category: '출석', filter: 'attendance', icon: 'nav-attendance', tone: 'brand', time: '09:50', title: '서비스디자인 출석 인증 10분 전이에요', body: '디자인관 302호 · 10:00–10:10 인증', unread: true, to: { kind: 'attendance' } },
   { id: 'nt-assign', group: '오늘', category: '과제', filter: 'assignment', icon: 'assignment', tone: 'error', time: '09:00', title: '서비스 분석 리포트 오늘 마감', body: '23:59까지 · 아직 제출하지 않았어요', unread: true, to: { kind: 'assignment' } },
-  { id: 'nt-comment', group: '오늘', category: '게시판', filter: 'board', icon: 'nav-board', tone: 'brand', time: '08:58', title: '내 글에 댓글 2개가 달렸어요', body: '“서비스 분석 리포트, 분석 대상 겹쳐도…”', unread: true, to: { kind: 'boardPost', id: 'p1' } },
   { id: 'nt-course-notice', group: '오늘', category: '공지', filter: 'notice', icon: 'notice', tone: 'brand', time: '08:30', title: '서비스디자인 새 공지', body: '오늘 수업 진행 방식 안내', unread: true, to: { kind: 'courseNotice' } },
-  { id: 'nt-academic', group: '어제', category: '학사', filter: 'notice', icon: 'notice', tone: 'pulse', time: '18:20', title: '2학기 수강신청 정정 기간 안내', body: '9.15(화) 18:00 마감', unread: false, to: { kind: 'academicNotice', id: 'n1' } },
-  { id: 'nt-team', group: '어제', category: '팀플', filter: 'board', icon: 'user', tone: 'pulse', time: '13:05', title: 'UX 리서치 팀플 모집이 곧 마감돼요', body: '사용자 인터뷰 팀원 · D-2', unread: false, to: { kind: 'board' } },
+  { id: 'nt-academic', group: '어제', category: '학사', filter: 'notice', icon: 'notice', tone: 'brand', time: '18:20', title: '2학기 수강신청 정정 기간 안내', body: '9.15(화) 18:00 마감', unread: false, to: { kind: 'academicNotice', id: 'n1' } },
+  { id: 'nt-team', group: '어제', category: '팀플', filter: 'board', icon: 'user', tone: 'pulse', time: '13:05', title: 'UX 리서치 팀플 모집이 곧 마감돼요', body: '사용자 인터뷰 팀원 · D-2', unread: false, to: { kind: 'boardPost', id: 'u1' } },
   { id: 'nt-fair', group: '이번 주', category: '일정', filter: null, icon: 'quick-calendar', tone: 'neutral', time: '9.07', title: '취업박람회가 캘린더에 추가됐어요', body: '9.14(월) 14:00 · 학생회관 대강당', unread: false, to: { kind: 'calendarEvent' } },
 ];
 export const NOTI_GROUPS = ['오늘', '어제', '이번 주'] as const;
@@ -91,38 +93,41 @@ export const MEAL_TIME: Record<MealKind, { range: string; axis: string[] }> = {
   석식: { range: '17:00 – 18:30', axis: DINNER_AXIS },
 };
 
+/** 가격은 Figma 429:8987(금 학생식당) 값 한 가지로 통일 — 식당·요일별 실제 가격처럼 보이는 가상 수치를 만들지 않음 */
+const LUNCH_PRICE = '5,500원';
+const DINNER_PRICE = '5,000원';
 const L = (main: string, sides: string, price: string, crowd = [0.3, 0.44, 0.6, 0.94, 1, 0.86, 0.5, 0.3], peak = '12:10–12:40 붐빔', best = 2): Meal => ({ kind: '중식', main, sides, price, crowd, peak, best });
 const D = (main: string, sides: string, price: string, crowd = [0.36, 0.62, 0.9, 0.82, 0.48, 0.3, 0.2, 0.14], peak = '17:20–17:50 붐빔', best = 5): Meal => ({ kind: '석식', main, sides, price, crowd, peak, best });
 
 /** 식단[날짜][식당] — 금(11) 학생식당은 Figma 429:8987 그대로, 나머지는 가상 식단 */
 export const MENUS: Record<number, Record<CafeteriaId, Meal[]>> = {
   7: {
-    student: [L('제육덮밥', '미소된장국 · 단무지 · 배추김치', '5,500원'), D('짜장면', '군만두 · 단무지 · 양파', '5,000원')],
-    staff: [L('갈비탕', '잡곡밥 · 깍두기 · 숙주나물', '6,500원', undefined, '12:00–12:30 붐빔', 1), D('비빔밥', '된장찌개 · 계란후라이', '6,000원')],
-    dorm: [L('카레라이스', '미니돈까스 · 샐러드 · 배추김치', '5,000원'), D('닭갈비덮밥', '어묵국 · 깍두기', '5,000원')],
+    student: [L('제육덮밥', '미소된장국 · 단무지 · 배추김치', LUNCH_PRICE), D('짜장면', '군만두 · 단무지 · 양파', DINNER_PRICE)],
+    staff: [L('갈비탕', '잡곡밥 · 깍두기 · 숙주나물', LUNCH_PRICE, undefined, '12:00–12:30 붐빔', 1), D('비빔밥', '된장찌개 · 계란후라이', DINNER_PRICE)],
+    dorm: [L('카레라이스', '미니돈까스 · 샐러드 · 배추김치', LUNCH_PRICE), D('닭갈비덮밥', '어묵국 · 깍두기', DINNER_PRICE)],
   },
   8: {
-    student: [L('치킨마요덮밥', '유부장국 · 단무지 · 배추김치', '5,500원'), D('순두부찌개', '쌀밥 · 계란말이 · 김구이', '5,000원')],
-    staff: [L('생선구이 정식', '된장국 · 시금치나물 · 깍두기', '6,500원', undefined, '12:00–12:30 붐빔', 1), D('김치찌개', '쌀밥 · 두부조림', '6,000원')],
-    dorm: [L('돈부리', '미소된장국 · 샐러드', '5,000원'), D('떡볶이', '튀김 · 순대 · 어묵국', '5,000원')],
+    student: [L('치킨마요덮밥', '유부장국 · 단무지 · 배추김치', LUNCH_PRICE), D('순두부찌개', '쌀밥 · 계란말이 · 김구이', DINNER_PRICE)],
+    staff: [L('생선구이 정식', '된장국 · 시금치나물 · 깍두기', LUNCH_PRICE, undefined, '12:00–12:30 붐빔', 1), D('김치찌개', '쌀밥 · 두부조림', DINNER_PRICE)],
+    dorm: [L('돈부리', '미소된장국 · 샐러드', LUNCH_PRICE), D('떡볶이', '튀김 · 순대 · 어묵국', DINNER_PRICE)],
   },
   9: {
-    student: [L('함박스테이크', '크림스프 · 양배추 샐러드 · 피클', '5,500원'), D('콩나물국밥', '깍두기 · 김구이', '5,000원')],
-    staff: [L('불고기 정식', '미역국 · 잡채 · 배추김치', '6,500원', undefined, '12:00–12:30 붐빔', 1), D('잔치국수', '김밥 · 단무지', '6,000원')],
-    dorm: [L('오므라이스', '미니우동 · 단무지', '5,000원'), D('부대찌개', '쌀밥 · 계란찜', '5,000원')],
+    student: [L('함박스테이크', '크림스프 · 양배추 샐러드 · 피클', LUNCH_PRICE), D('콩나물국밥', '깍두기 · 김구이', DINNER_PRICE)],
+    staff: [L('불고기 정식', '미역국 · 잡채 · 배추김치', LUNCH_PRICE, undefined, '12:00–12:30 붐빔', 1), D('잔치국수', '김밥 · 단무지', DINNER_PRICE)],
+    dorm: [L('오므라이스', '미니우동 · 단무지', LUNCH_PRICE), D('부대찌개', '쌀밥 · 계란찜', DINNER_PRICE)],
   },
   10: {
-    student: [L('비빔국수', '군만두 · 단무지 · 요구르트', '5,500원', [0.2, 0.3, 0.42, 0.66, 0.72, 0.6, 0.34, 0.2], '12:15–12:40 조금 붐빔'), D('돼지국밥', '부추무침 · 깍두기', '5,000원')],
-    staff: [L('닭볶음탕', '쌀밥 · 계란말이 · 깍두기', '6,500원', undefined, '12:00–12:30 붐빔', 1), D('냉모밀', '유부초밥 · 단무지', '6,000원')],
-    dorm: [L('참치김치볶음밥', '계란국 · 깍두기', '5,000원'), D('치킨까스', '양배추 샐러드 · 크림스프', '5,000원')],
+    student: [L('비빔국수', '군만두 · 단무지 · 요구르트', LUNCH_PRICE, [0.2, 0.3, 0.42, 0.66, 0.72, 0.6, 0.34, 0.2], '12:15–12:40 조금 붐빔'), D('돼지국밥', '부추무침 · 깍두기', DINNER_PRICE)],
+    staff: [L('닭볶음탕', '쌀밥 · 계란말이 · 깍두기', LUNCH_PRICE, undefined, '12:00–12:30 붐빔', 1), D('냉모밀', '유부초밥 · 단무지', DINNER_PRICE)],
+    dorm: [L('참치김치볶음밥', '계란국 · 깍두기', LUNCH_PRICE), D('치킨까스', '양배추 샐러드 · 크림스프', DINNER_PRICE)],
   },
   11: {
     student: [
-      { ...L('돈까스', '우동 · 단무지 · 깍두기 · 요구르트', '5,500원') },
-      { ...D('김치볶음밥', '미역국 · 계란후라이 · 깍두기', '5,000원') },
+      { ...L('돈까스', '우동 · 단무지 · 깍두기 · 요구르트', LUNCH_PRICE) },
+      { ...D('김치볶음밥', '미역국 · 계란후라이 · 깍두기', DINNER_PRICE) },
     ],
-    staff: [L('소고기무국 정식', '잡곡밥 · 고등어구이 · 배추김치', '6,500원', undefined, '12:00–12:30 붐빔', 1), D('제육쌈밥', '된장국 · 쌈채소', '6,000원')],
-    dorm: [L('마파두부덮밥', '계란국 · 단무지', '5,000원'), D('쫄면', '김밥 · 어묵국', '5,000원')],
+    staff: [L('소고기무국 정식', '잡곡밥 · 고등어구이 · 배추김치', LUNCH_PRICE, undefined, '12:00–12:30 붐빔', 1), D('제육쌈밥', '된장국 · 쌈채소', DINNER_PRICE)],
+    dorm: [L('마파두부덮밥', '계란국 · 단무지', LUNCH_PRICE), D('쫄면', '김밥 · 어묵국', DINNER_PRICE)],
   },
 };
 
@@ -137,8 +142,10 @@ export const MEAL_TIP = {
 export type AcademicNotice = {
   id: string;
   chips: { label: string; tone: ChipTone; danger?: boolean }[];
-  /** 홈 목록 제목 (짧은 제목) */
+  /** 홈·공지 목록 제목 (짧은 제목) */
   short: string;
+  /** 목록 날짜 'MM.DD' */
+  date: string;
   title: string;
   author: string;
   meta: string;
@@ -159,6 +166,7 @@ export const ACADEMIC_NOTICES: AcademicNotice[] = [
       { label: '중요', tone: 'neutral', danger: true },
     ],
     short: '2학기 수강신청 정정 기간 안내',
+    date: '09.10',
     title: '2026학년도 2학기 수강신청 정정 기간 안내',
     author: '학사지원팀',
     meta: '09.10 (목) 14:00 · 조회 1,284',
@@ -176,6 +184,7 @@ export const ACADEMIC_NOTICES: AcademicNotice[] = [
     id: 'n2',
     chips: [{ label: '장학', tone: 'pulse' }],
     short: '교내 근로장학생 추가 모집',
+    date: '09.09',
     title: '2026학년도 2학기 교내 근로장학생 추가 모집',
     author: '학생지원팀',
     meta: '09.09 (수) 10:00 · 조회 862',
@@ -193,6 +202,7 @@ export const ACADEMIC_NOTICES: AcademicNotice[] = [
     id: 'n3',
     chips: [{ label: '행사', tone: 'neutral' }],
     short: '2026 하반기 취업박람회 참가 신청',
+    date: '09.05',
     title: '2026 하반기 교내 취업박람회 참가 신청 안내',
     author: '취업지원팀',
     meta: '09.05 (토) 10:00 · 조회 2,031',

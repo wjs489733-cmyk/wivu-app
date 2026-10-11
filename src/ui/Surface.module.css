@@ -106,13 +106,15 @@
 .sectionBody {
   padding-inline: var(--wivu-layout-gutter);
 }
+/* 터치 영역 44 — 보이는 크기(26)는 그대로, 위아래 음수 여백으로 헤더 높이 유지 */
 .moreLink {
   display: inline-flex;
   align-items: center;
   gap: var(--wivu-space-2);
   color: var(--wivu-color-text-tertiary);
-  margin-right: -4px;
-  padding: 4px 0 4px 8px;
+  min-height: 44px;
+  margin: -9px -4px -9px 0;
+  padding: 0 0 0 12px;
 }
 .moreLink:active {
   color: var(--wivu-color-text-secondary);

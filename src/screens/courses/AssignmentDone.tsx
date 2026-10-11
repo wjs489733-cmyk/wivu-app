@@ -4,7 +4,7 @@ import { Button, Screen, Text } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { USER } from '@/data/core';
-import { SUBMIT_TIME, findAssignment, getCourse, sampleFileName } from './data';
+import { SUBMIT_TIME, getAssignment, sampleFileName } from './data';
 import { useSubmissionOf } from './store';
 import s from './Courses.module.css';
 
@@ -15,8 +15,7 @@ import s from './Courses.module.css';
  */
 export function AssignmentDone() {
   const { id, aid } = useParams();
-  const { course, info } = getCourse(id);
-  const a = findAssignment(info, aid);
+  const { course, a } = getAssignment(id, aid);
   const nav = useNav();
   const sub = useSubmissionOf(course.id)(a);
   const files = sub?.files ?? [{ name: sampleFileName(a.title, USER.name), size: '3.8MB' }];

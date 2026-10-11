@@ -55,7 +55,8 @@ export function SessionRow({ r, note }: { r: Session; note?: string }) {
       </Text>
       <span className={s.recordMain}>
         <Text variant="subhead" as="span" tnum>
-          {r.date} ({r.dow})
+          {/* 사이버 강의는 주차별 수강 기간 (오픈일 – 마감일) */}
+          {r.opens ? `${r.opens} – ${r.date} (${r.dow})` : `${r.date} (${r.dow})`}
         </Text>
         <Text variant="caption-2" color="secondary" as="span" className="truncate" tnum>
           {recordMeta(r, true)}

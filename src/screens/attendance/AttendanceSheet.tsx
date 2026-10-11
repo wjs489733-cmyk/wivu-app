@@ -1,44 +1,70 @@
 import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router';
 import { BottomSheet, Button, IconButton, Keypad, PinBoxes, Text } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
 
 type Status = 'idle' | 'checking' | 'error' | 'success';
+/** 시트가 닫힌 이유 — dismiss: 딤·드래그·X·Esc / done: 인증 완료 화면으로 / qr: QR 화면으로 */
+export type SheetCloseReason = 'dismiss' | 'done' | 'qr';
+/** 출석 인증을 시작한 곳 — QR 화면에서 PIN으로 돌아올 때 아래 화면을 맞추는 데 씀 */
+export type AttendOrigin = 'home' | 'attendance';
+
+const MAX_TRIES = 3;
 
 /**
  * 출석 인증 PIN 시트 — Figma 372:7253(빈) · 432:9081(입력 중) · 432:9226(확인 중) · 432:9371(오류)
  * 실제 입력 로직: 아무 4자리 → 0.9초 확인 → 인증 완료(DISSOLVE). '0000' 또는 forceError면 오류(남은 시도 차감).
- * 어느 화면에서든 overlay로 띄울 수 있다 (홈 히어로, 출석 탭, 시간표 수업 시트).
+ * 남은 시도 0회면 키패드를 잠그고 QR로 안내. 하드웨어 키보드(0–9 · Backspace)도 받는다.
+ * 어느 화면에서든 overlay로 띄울 수 있다 (홈 히어로, 출석 탭, 시간표 수업 시트, /attendance/pin 라우트).
  */
-export function AttendanceSheet({ open, onClose, forceError = false }: { open: boolean; onClose: () => void; forceError?: boolean }) {
+export function AttendanceSheet({
+  open,
+  onClose,
+  forceError = false,
+  from,
+}: {
+  open: boolean;
+  onClose: (reason: SheetCloseReason) => void;
+  forceError?: boolean;
+  /** 시작한 곳 (없으면 지금 주소로 판단: /attendance… → 출석, 그 밖 → 홈) */
+  from?: AttendOrigin;
+}) {
   const nav = useNav();
+  const { pathname } = useLocation();
   const complete = useApp((st) => st.completeAttendance);
   const [value, setValue] = useState('');
   const [status, setStatus] = useState<Status>('idle');
-  const [left, setLeft] = useState(3);
-  const failedOnce = useRef(false);
+  const [left, setLeft] = useState(MAX_TRIES);
+  const [forcedUsed, setForcedUsed] = useState(false);
+  const [wasOpen, setWasOpen] = useState(open);
   const timers = useRef<number[]>([]);
 
-  useEffect(() => {
+  // 열릴 때마다 처음 상태로 (렌더 중 이전 값 비교 — effect 안 setState 대신)
+  if (open !== wasOpen) {
+    setWasOpen(open);
     if (open) {
       setValue('');
       setStatus('idle');
-      setLeft(3);
-      failedOnce.current = false;
+      setLeft(MAX_TRIES);
+      setForcedUsed(false);
     }
-  }, [open]);
+  }
   // 예약된 이동(QR 화면·완료 화면)은 시트가 닫혀도 실행돼야 하므로 언마운트 때만 정리
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   const later = (fn: () => void, ms: number) => timers.current.push(window.setTimeout(fn, ms));
+  const inPinRoute = pathname === P.attendancePin;
+  const origin: AttendOrigin = from ?? (pathname.startsWith(P.attendance) ? 'attendance' : 'home');
+  const locked = left === 0;
 
   const submit = (pin: string) => {
     setStatus('checking');
     later(() => {
-      const wrong = pin === '0000' || (forceError && !failedOnce.current);
+      const wrong = pin === '0000' || (forceError && !forcedUsed);
       if (wrong) {
-        failedOnce.current = true;
+        setForcedUsed(true);
         setStatus('error');
         setLeft((n) => Math.max(0, n - 1));
         return;
@@ -46,23 +72,57 @@ export function AttendanceSheet({ open, onClose, forceError = false }: { open: b
       setStatus('success');
       complete('PIN');
       later(() => {
-        onClose();
-        nav.fade(P.attendanceDone, { replace: false });
+        onClose('done');
+        // 시트 라우트(/attendance/pin)면 그 기록을 완료 화면으로 대체 → 완료에서 뒤로 = 시작한 곳
+        // 화면 위에 띄운 시트면 그 화면을 남겨 둔다
+        nav.fade(P.attendanceDone, { replace: inPinRoute });
       }, 450);
     }, 900);
   };
 
+  const busy = status === 'checking' || status === 'success';
+
   const onDigit = (d: string) => {
-    if (status === 'checking' || status === 'success') return;
+    if (busy || locked) return;
     const base = status === 'error' ? '' : value;
     if (status === 'error') setStatus('idle');
     const next = (base + d).slice(0, 4);
     setValue(next);
     if (next.length === 4) submit(next);
   };
+  const onDelete = () => {
+    if (status === 'idle') setValue((v) => v.slice(0, -1));
+  };
+  const toQr = () => {
+    onClose('qr');
+    // 시트 라우트에서는 그 기록을 QR로 대체 → QR을 닫으면 시작한 곳(알림함·홈·출석 탭)으로
+    later(() => nav.modal(P.attendanceQr, { from: origin }, { replace: inPinRoute }), 200);
+  };
 
-  const message =
-    status === 'checking'
+  // 하드웨어 키보드: 숫자 · Backspace (시트가 열려 있는 동안)
+  const keyRef = useRef({ onDigit, onDelete });
+  useEffect(() => {
+    keyRef.current = { onDigit, onDelete };
+  });
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+      if (/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+        keyRef.current.onDigit(e.key);
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        keyRef.current.onDelete();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
+
+  const message = locked
+    ? { text: '시도 횟수를 넘었어요 · QR로 인증해 주세요', color: 'error' as const }
+    : status === 'checking'
       ? { text: '확인 중…', color: 'brand' as const }
       : status === 'error'
         ? { text: `번호가 일치하지 않아요 · 남은 시도 ${left}회`, color: 'error' as const }
@@ -71,37 +131,30 @@ export function AttendanceSheet({ open, onClose, forceError = false }: { open: b
           : { text: '교수님이 알려준 4자리 번호를 입력하세요', color: 'tertiary' as const };
 
   return (
-    <BottomSheet open={open} onClose={onClose} label="출석 인증">
+    <BottomSheet open={open} onClose={() => onClose('dismiss')} label="출석 인증">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: -4 }}>
-        <Text variant="title-2" as="h2" style={{ fontSize: 20 }}>
+        <Text variant="title-2" as="h2">
           출석 인증
         </Text>
         <div style={{ marginRight: -10 }}>
-          <IconButton icon="close" label="닫기" onPress={onClose} />
+          <IconButton icon="close" label="닫기" onPress={() => onClose('dismiss')} />
         </div>
       </div>
       <Text variant="caption-1" color="secondary" as="p">
         서비스디자인 · 10:00 – 11:50 · 디자인관 302호
       </Text>
       <div style={{ marginTop: 20 }}>
-        <PinBoxes value={status === 'error' ? '••••' : value} status={status} />
+        <PinBoxes value={status === 'error' || locked ? '••••' : value} status={locked ? 'error' : status} />
       </div>
-      <Text variant="caption-1" color={message.color} as="p" align="center" style={{ minHeight: 18, margin: '10px 0 14px' }} role={status === 'error' ? 'alert' : undefined}>
+      <Text variant="caption-1" color={message.color} as="p" align="center" style={{ minHeight: 18, margin: '10px 0 14px' }} role={status === 'error' || locked ? 'alert' : undefined}>
         {message.text}
       </Text>
       <Keypad
         onDigit={onDigit}
-        onDelete={() => status === 'idle' && setValue((v) => v.slice(0, -1))}
-        disabled={status === 'checking' || status === 'success'}
+        onDelete={onDelete}
+        disabled={busy || locked}
         extraKey={
-          <Button
-            variant="soft"
-            size="m"
-            onClick={() => {
-              onClose();
-              later(() => nav.modal(P.attendanceQr), 200);
-            }}
-          >
+          <Button variant={locked ? 'primary' : 'soft'} size="m" onClick={toQr} disabled={busy}>
             QR
           </Button>
         }

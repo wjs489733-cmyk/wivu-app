@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode, type RefObject } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { AvatarStack, BottomSheet, Button, Card, Chip, Dialog, Icon, IconButton, ProgressBar, SearchField, StatusBar, Text, type IconName } from '@/ui';
 import { useNav } from '@/nav/nav';
@@ -10,16 +10,57 @@ import { useAllPosts, usePostStats, useRecruit } from './store';
 import { LocalIcon } from './icons';
 import s from './Board.module.css';
 
-/* ── 글쓰기 FAB (Figma 'FAB · 글쓰기' — 블루 pill + --wivu-elevation-fab) ── */
-export function Fab({ onPress, aboveTabBar }: { onPress: () => void; aboveTabBar?: boolean }) {
+/* ── 글쓰기 FAB (Figma 'FAB · 글쓰기' — 블루 pill + --wivu-elevation-fab) ──
+ * slot(제자리 위치·크기 고정) 안에서 버튼만 숨김/표시 애니메이션 → 겹침 계산은 slot 기준 */
+export function Fab({ onPress, aboveTabBar, hidden, slotRef }: { onPress: () => void; aboveTabBar?: boolean; hidden?: boolean; slotRef?: RefObject<HTMLDivElement | null> }) {
   return (
-    <button type="button" className={`${s.fab} ${aboveTabBar ? s.fabTab : s.fabPlain}`} onClick={onPress}>
-      <Icon name="edit" size={20} />
-      <Text variant="subhead" color="on-brand">
-        글쓰기
-      </Text>
-    </button>
+    <div ref={slotRef} className={`${s.fabSlot} ${aboveTabBar ? s.fabTab : s.fabPlain}`} data-hidden={!!hidden}>
+      <button type="button" className={s.fab} onClick={onPress} tabIndex={hidden ? -1 : undefined} aria-hidden={hidden || undefined}>
+        <Icon name="edit" size={20} />
+        <Text variant="subhead" color="on-brand">
+          글쓰기
+        </Text>
+      </button>
+    </div>
   );
+}
+
+/** FAB를 보여도 되는지 — 본문 안 '글쓰기' 버튼(anchor)이 보이는 동안은 숨기고(첫 화면에서 아무것도 가리지 않게),
+ *  그 뒤엔 [data-fab-avoid] 요소(팀플 '참여 신청' 등)와 겹칠 때만 잠깐 숨긴다. */
+export function useFabVisible(scrollRef: RefObject<HTMLDivElement | null>, slotRef: RefObject<HTMLDivElement | null>, anchorRef?: RefObject<HTMLElement | null>) {
+  const [shown, setShown] = useState(!anchorRef);
+  useEffect(() => {
+    const root = scrollRef.current;
+    if (!root) return;
+    let raf = 0;
+    const check = () => {
+      raf = 0;
+      const rr = root.getBoundingClientRect();
+      const a = anchorRef?.current?.getBoundingClientRect();
+      if (a && a.bottom > rr.top + 4 && a.top < rr.bottom) return setShown(false);
+      const f = slotRef.current?.getBoundingClientRect();
+      if (!f) return;
+      const M = 8;
+      const hit = Array.from(root.querySelectorAll('[data-fab-avoid]')).some((el) => {
+        const r = el.getBoundingClientRect();
+        return r.left < f.right + M && r.right > f.left - M && r.top < f.bottom + M && r.bottom > f.top - M;
+      });
+      setShown(!hit);
+    };
+    const schedule = () => {
+      if (!raf) raf = requestAnimationFrame(check);
+    };
+    check();
+    root.addEventListener('scroll', schedule, { passive: true });
+    const ro = new ResizeObserver(schedule);
+    ro.observe(root);
+    return () => {
+      root.removeEventListener('scroll', schedule);
+      ro.disconnect();
+      cancelAnimationFrame(raf);
+    };
+  }, [scrollRef, slotRef, anchorRef]);
+  return shown;
 }
 
 export function TagChip({ tag }: { tag: string }) {
@@ -208,7 +249,7 @@ export function RecruitFoot({ post, onApply }: { post: Post; onApply: (p: Post) 
   const { applied, current, max, full } = useRecruit(post);
   const names = useMemo(() => [...Array.from({ length: Math.min(current - (applied ? 1 : 0), 3) }, (_, i) => `팀원${i + 1}`), ...(applied ? [USER.initial] : [])], [current, applied]);
   return (
-    <div className={s.teamFoot}>
+    <div className={s.teamFoot} data-fab-avoid>
       <span className={s.teamAvatars}>
         <AvatarStack names={names} size={24} />
       </span>

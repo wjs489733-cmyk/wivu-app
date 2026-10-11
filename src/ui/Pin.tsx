@@ -35,7 +35,8 @@ type KeypadProps = {
 export function Keypad({ onDigit, onDelete, extraKey, disabled }: KeypadProps) {
   const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
   return (
-    <div className={s.keypad} aria-disabled={disabled}>
+    // 잠겨도 extraKey(QR 등)는 따로 쓸 수 있어야 하므로 컨테이너에 aria-disabled를 두지 않는다 — 숫자 키 각각이 disabled
+    <div className={s.keypad} role="group" aria-label="숫자 키패드">
       {keys.map((k) => (
         <button key={k} type="button" className={`${s.key} t-title-2`} onClick={() => onDigit(k)} disabled={disabled}>
           {k}

@@ -170,6 +170,11 @@
   height: max(var(--safe-bottom), 12px);
   pointer-events: auto;
 }
+/* 홈: 탭바에서 위로 밀어 퀵메뉴 — 브라우저 제스처(스크롤·당겨서 새로고침)가 가로채지 않게 */
+.tabBar[data-swipe='true'] .tabRow,
+.tabBar[data-swipe='true'] .tabSafe {
+  touch-action: none;
+}
 .tab {
   display: flex;
   flex-direction: column;

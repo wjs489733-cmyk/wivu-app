@@ -26,14 +26,14 @@ export function Intro({ step }: { step: 1 | 2 | 3 }) {
   const skip = () => nav.push(P.school);
   const onPanEnd = (_: unknown, info: PanInfo) => {
     if (info.offset.x < -60 && Math.abs(info.offset.y) < 60) next();
-    else if (info.offset.x > 60 && step > 1) nav.back();
+    else if (info.offset.x > 60 && step > 1) nav.back(P.intro((step - 1) as 1 | 2));
   };
 
   return (
     <Screen
       figma={c.figma}
       scroll={false}
-      header={<EntryHeader back={step > 1} progress={{ step, total: 3 }} />}
+      header={<EntryHeader back={step > 1} progress={{ step, total: 3 }} fallback={step > 1 ? P.intro((step - 1) as 1 | 2) : P.splash} />}
     >
       <motion.div className={s.intro} onPanEnd={onPanEnd} style={{ touchAction: 'pan-y' }}>
         <div className={s.hero}>

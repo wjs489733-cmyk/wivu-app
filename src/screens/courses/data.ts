@@ -1,9 +1,17 @@
 import { COURSES, NOW, courseById, type Course, type CourseId } from '@/data/core';
+import { ACADEMIC_NOTICES } from '@/screens/info/data';
 
 /* ────────────────────────────────────────────────────────────
  * 수강과목 섹션 데이터 — Figma 392:7404 · 398:7666 · 398:7694 · 398:7717 · 398:7759 · 398:7782 문구 그대로.
  * Figma에는 서비스디자인만 그려져 있어 나머지 5과목은 같은 구조로 그럴듯하게 채움(가상 인물 'OOO').
  * 기준 시각 core NOW = 2026-09-11(금) 9:41 · 1주차 9.1–9.4 · 2주차 9.7–9.11
+ *
+ * 단일 기준(single source of truth)
+ *  · 과제: 여기 COURSE_INFO[].assignments → ASSIGNMENT_LIST로 내보내고, 캘린더(timetable/data.ts)는 이 목록에서
+ *    과제 일정을 만든다. 날짜는 Figma 캘린더 392:7540의 과제 점(9.4 · 9.11 · 9.17 · 9.18 · 9.29)과
+ *    '다가오는 일정'(9.17 브랜드 무드보드 제출 · 23:59)에 맞춤 → 진행 중 4건 = Figma 연동 화면 '과제 4건'과 일치.
+ *  · 출석: 과목별 숫자는 attendance/data.ts courseStats()가 기준 (여기엔 두지 않음).
+ *  · 연동 화면 카운트: SYNC_COUNTS (과제 진행 중 · 이번 주 새 공지)
  * ──────────────────────────────────────────────────────────── */
 
 export type FileKind = 'pdf' | 'link' | 'video';
@@ -57,9 +65,7 @@ export type CourseInfo = {
   notices: Notice[];
   assignments: Assignment[];
   materials: MaterialGroup[];
-  attendance: { present: number; late: number; absent: number; rate: number; next: string };
-  /** 사이버 강의 진도 */
-  online?: { progress: number; label: string };
+  /* 출석 숫자·사이버 강의 진도는 attendance/data.ts(courseStats · nextAttendLabel · onlineProgress)에서 파생 */
 };
 
 const pdf = (id: string, name: string, size: string, date?: string): FileItem => ({ id, name, kind: 'pdf', size, date });
@@ -106,7 +112,7 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
         dateFull: '09.01 (화) 10:00',
         views: 126,
         body:
-          '2026-2학기 서비스디자인 강의계획서를 올렸습니다. 주차별 수업 내용과 평가 기준을 확인해 주세요.\n\n· 과제 및 실습 40%\n· 중간 발표 20%\n· 기말 프로젝트 30%\n· 출석 10%\n\n자세한 내용은 첨부한 강의계획서를 참고하세요.',
+          '2026-2학기 서비스디자인 강의계획서를 올렸습니다. 주차별 수업 내용과 과제·발표 일정, 평가 기준은 첨부한 강의계획서에서 확인해 주세요.',
         attachment: SD_SYLLABUS,
       },
     ],
@@ -119,12 +125,22 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
         desc: '지난 2주간 진행한 현장 관찰을 바탕으로 하나의 서비스를 선정해 고객 여정을 분석하고, 문제점과 개선 기회를 정리하세요.\n\n· 분석 대상 서비스 1개 선정\n· 고객 여정 지도(Journey Map) 1장 포함\n· 개선 기회 3가지 이상 도출\n· 분량: A4 5매 내외',
         attachments: [pdf('sd-guide', '과제 가이드_서비스분석.pdf', '820KB')],
       },
+      {
+        id: 'a0',
+        title: '1주차 리플렉션',
+        due: d(9, 4, 23, 59),
+        ...SUBMIT_DEFAULT,
+        points: '5점',
+        desc: '1주차 수업 내용을 정리한 리플렉션을 A4 1장 분량으로 제출해요.\n\n· 오늘 수업에서 새로 안 점\n· 관찰해 보고 싶은 서비스 1개',
+        attachments: [],
+        submitted: { file: '1주차리플렉션_김유진.pdf', size: '0.4MB', at: '09.04 20:15' },
+        closed: true,
+      },
     ],
     materials: [
       { label: '2주차 · 09.11', today: true, items: [SD_BLUEPRINT, SD_TEMPLATE] },
       { label: '1주차 · 09.04', items: [SD_OT, SD_SYLLABUS] },
     ],
-    attendance: { present: 1, late: 0, absent: 0, rate: 100, next: '다음 출석 · 오늘 10:00 (10:10까지 인증)' },
   },
 
   'brand-design': {
@@ -150,8 +166,8 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
     assignments: [
       {
         id: 'a1',
-        title: '브랜드 무드보드 제작',
-        due: d(9, 18, 23, 59),
+        title: '브랜드 무드보드',
+        due: d(9, 17, 23, 59),
         ...SUBMIT_DEFAULT,
         points: '15점',
         desc: '관심 있는 로컬 브랜드 하나를 골라 브랜드의 성격이 드러나는 무드보드를 만드세요.\n\n· 브랜드 키워드 3개 정의\n· 컬러·타이포·이미지 레퍼런스 포함\n· 키워드마다 근거 한 줄씩 작성\n· 분량: A3 1매',
@@ -162,7 +178,6 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       { label: '2주차 · 09.11', today: true, items: [pdf('bd-identity', '브랜드 아이덴티티 개론.pdf', '3.1MB', '09.11')] },
       { label: '1주차 · 09.04', items: [pdf('bd-ot', '오리엔테이션_브랜드디자인.pdf', '1.2MB', '09.04')] },
     ],
-    attendance: { present: 1, late: 0, absent: 0, rate: 100, next: '다음 출석 · 오늘 13:00 (13:10까지 인증)' },
   },
 
   'ux-research': {
@@ -201,13 +216,22 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       {
         id: 'a1',
         title: '리서치 질문 정리',
-        due: d(9, 8, 23, 59),
+        due: d(9, 4, 23, 59),
         ...SUBMIT_DEFAULT,
         points: '5점',
         desc: '관심 있는 서비스 하나를 골라 그 서비스 사용자에게 묻고 싶은 리서치 질문을 정리하세요.\n\n· 리서치 목표 1문장\n· 핵심 질문 5개 이상\n· 질문마다 알고 싶은 점 메모',
         attachments: [],
-        submitted: { file: '리서치질문정리_김유진.pdf', size: '1.1MB', at: '09.07 21:12' },
+        submitted: { file: '리서치질문정리_김유진.pdf', size: '1.1MB', at: '09.04 21:12' },
         closed: true,
+      },
+      {
+        id: 'a2',
+        title: '인터뷰 계획서',
+        due: d(9, 18, 23, 59),
+        ...SUBMIT_DEFAULT,
+        points: '10점',
+        desc: '다음 주 현장 인터뷰를 위해 팀별 인터뷰 대상과 질문지를 정리한 계획서를 제출하세요.\n\n· 인터뷰 대상과 섭외 방법\n· 질문지 (질문 5개 이상)\n· 일정과 역할 분담',
+        attachments: [UX_TEMPLATE],
       },
     ],
     materials: [
@@ -218,7 +242,6 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       },
       { label: '1주차 · 09.04', items: [pdf('ux-intro', '리서치 개요.pdf', '2.4MB', '09.04')] },
     ],
-    attendance: { present: 1, late: 0, absent: 0, rate: 100, next: '다음 출석 · 오늘 15:00 (15:10까지 인증)' },
   },
 
   'design-management': {
@@ -241,23 +264,13 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
         body: '토론 수업 조 편성 결과를 강의실 게시판과 과목 게시판에 올렸습니다. 조별 첫 모임은 2주차 수요일 수업 시간에 진행합니다.',
       },
     ],
-    assignments: [
-      {
-        id: 'a1',
-        title: '디자인 경영 사례 요약',
-        due: d(9, 16, 10, 30),
-        ...SUBMIT_DEFAULT,
-        points: '10점',
-        desc: '디자인을 경영 전략으로 활용한 기업 사례 하나를 골라 요약하세요.\n\n· 기업을 고른 이유\n· 디자인이 의사결정에 들어간 지점\n· 성과와 한계\n· 분량: A4 2매 내외',
-        attachments: [],
-      },
-    ],
+    // 토론 수업 — 이번 학기 등록된 과제 없음 (캘린더 9월 과제 점과 맞춤)
+    assignments: [],
     materials: [
       { label: '2주차 · 09.09', items: [pdf('dm-case', '디자인 주도 기업 사례 읽기.pdf', '3.4MB', '09.09'), pdf('dm-w2', '2주차 강의 슬라이드.pdf', '5.2MB', '09.09')] },
       { label: '2주차 · 09.07', items: [pdf('dm-def', '디자인 경영의 정의.pdf', '2.0MB', '09.07')] },
       { label: '1주차 · 09.02', items: [pdf('dm-ot', '오리엔테이션_디자인경영.pdf', '1.0MB', '09.02'), pdf('dm-syllabus', '강의계획서_디자인경영.pdf', '0.5MB', '09.02')] },
     ],
-    attendance: { present: 3, late: 0, absent: 0, rate: 100, next: '다음 출석 · 9.14(월) 10:30' },
   },
 
   'motion-graphics': {
@@ -275,20 +288,11 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       {
         id: 'a1',
         title: '키네틱 타이포그래피 스토리보드',
-        due: d(9, 15, 14, 0),
+        due: d(9, 29, 14, 0),
         ...SUBMIT_DEFAULT,
         points: '10점',
         desc: '짧은 문장 하나를 골라 움직임으로 의미를 전달하는 키네틱 타이포그래피 스토리보드를 그리세요.\n\n· 문장 선정 이유\n· 8컷 이상 스토리보드\n· 컷마다 움직임·속도 메모',
         attachments: [pdf('mg-guide', '스토리보드_양식.pdf', '380KB')],
-      },
-      {
-        id: 'a2',
-        title: '모션 레퍼런스 분석',
-        due: d(9, 22, 14, 0),
-        ...SUBMIT_DEFAULT,
-        points: '10점',
-        desc: '인상 깊은 모션 그래픽 작업 2개를 골라 타이밍과 이징을 분석하세요.\n\n· 작업별 핵심 장면 캡처\n· 타이밍·이징 분석\n· 내 작업에 가져올 점 정리',
-        attachments: [],
       },
     ],
     materials: [
@@ -298,7 +302,6 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       },
       { label: '1주차 · 09.01', items: [pdf('mg-ot', '오리엔테이션_모션그래픽스.pdf', '1.5MB', '09.01')] },
     ],
-    attendance: { present: 2, late: 0, absent: 0, rate: 100, next: '다음 출석 · 9.15(화) 14:00' },
   },
 
   writing: {
@@ -313,17 +316,8 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
         body: '3주차 강의는 9월 14일(월) 오전 9시에 열립니다. 주차별 학습 기간 안에 수강해야 진도가 인정되니 기간을 꼭 확인해 주세요.',
       },
     ],
-    assignments: [
-      {
-        id: 'a1',
-        title: '나를 소개하는 글쓰기',
-        due: d(9, 17, 23, 59),
-        ...SUBMIT_DEFAULT,
-        points: '10점',
-        desc: '1–2주차 강의에서 다룬 글의 구조를 활용해 나를 소개하는 글을 쓰세요.\n\n· 독자를 한 명 정하고 쓰기\n· 서론·본론·결론 구조\n· 분량: A4 1매 내외',
-        attachments: [],
-      },
-    ],
+    // 주차별 강의 수강이 출석·진도 — 이번 학기 등록된 과제 없음
+    assignments: [],
     materials: [
       {
         label: '2주차 · 09.07',
@@ -331,8 +325,6 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       },
       { label: '1주차 · 09.01', items: [{ id: 'wr-w1', name: '1주차 강의 · 소통으로서의 글쓰기', kind: 'video', size: '22분', date: '09.01' }] },
     ],
-    attendance: { present: 2, late: 0, absent: 0, rate: 100, next: '3주차 강의 · 9.14(월) 오픈' },
-    online: { progress: 13, label: '2주차 강의 수강 완료 · 3주차 9.14 오픈' },
   },
 };
 
@@ -350,6 +342,27 @@ export const allFiles = (info: CourseInfo) => info.materials.flatMap((g) => g.it
 export function findAssignment(info: CourseInfo, aid?: string) {
   return info.assignments.find((a) => a.id === aid) ?? info.assignments[0];
 }
+
+/** 과제 라우트용: 과제가 없는 과목(직접 주소 입력)은 서비스디자인 과제로 대체해 화면이 깨지지 않게 */
+export function getAssignment(id?: string, aid?: string): { course: Course; info: CourseInfo; a: Assignment } {
+  const got = getCourse(id);
+  if (got.info.assignments.length) return { ...got, a: findAssignment(got.info, aid) };
+  const sd = getCourse('service-design');
+  return { ...sd, a: findAssignment(sd.info, 'a1') };
+}
+
+/* ── 단일 기준 목록 (캘린더 · 게시판 과제 연결 · 연동 카운트가 모두 이걸 읽음) ── */
+export type CourseAssignment = Assignment & { courseId: CourseId };
+export const ASSIGNMENT_LIST: CourseAssignment[] = COURSES.flatMap((c) => COURSE_INFO[c.id].assignments.map((a) => ({ ...a, courseId: c.id })));
+/** 아직 마감 전인 과제 (오늘 마감 포함) */
+export const openAssignments = () => ASSIGNMENT_LIST.filter((a) => !a.closed && a.due.getTime() >= NOW.getTime());
+
+/** 학교 연동(진입 411:11957 · 마이 426:8952) 카운트 — 데이터에서 계산
+ *  과제 = 진행 중 과제 · 공지 = 이번 주(2주차) 과목 공지 + 학사 공지 */
+export const SYNC_COUNTS = {
+  assignments: openAssignments().length,
+  notices: COURSES.reduce((a, c) => a + COURSE_INFO[c.id].notices.filter((n) => n.thisWeek).length, 0) + ACADEMIC_NOTICES.length,
+};
 
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 const pad = (n: number) => String(n).padStart(2, '0');

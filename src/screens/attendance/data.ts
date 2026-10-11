@@ -6,6 +6,9 @@ import type { AttendMethod } from '@/store/app';
  * 학기: 2026-09-01(화) 개강, 오늘 = 09.11(금) 2주차 (core NOW)
  * 출석률 = (출석 + 지각) / 진행된 수업 — Figma 모션그래픽스 50%(0+1 / 2)와 일치
  * 출석 합계 6 · 지각 1 · 결석 1 = Figma 요약 타일과 일치
+ * ※ 출석 숫자의 단일 기준: 수강과목(과목 상세 '출석' 타일·출석 현황 카드)도 courseStats()를 그대로 읽는다.
+ * 사이버 강의(글쓰기와 소통): 주차별 강의는 월요일 09:00에 열리고 그 주 일요일까지 들으면 출석.
+ *   1주차(~09.06)·2주차(~09.13, 09.09에 수강) 완료 → 3주차는 09.14(월) 오픈 · 09.20(일)까지.
  * ──────────────────────────────────────────────────────────── */
 
 export type RecordStatus = '출석' | '지각' | '결석';
@@ -24,6 +27,10 @@ export type Session = {
   time?: string;
   method?: AttendMethod;
   lateMin?: number;
+  /** 사이버 강의: 실제로 수강한 날짜 'MM.DD' (date는 수강 마감일) */
+  doneDate?: string;
+  /** 사이버 강의: 강의가 열리는 날짜 'MM.DD' */
+  opens?: string;
   /** 정렬용 (MMDD + 시작 시각) */
   key: string;
 };
@@ -51,7 +58,8 @@ export const PAST: Session[] = [
   sess('motion-graphics', 2, '09.08', '화', '14:00', '16:50', '지각', { time: '14:12', method: 'QR', lateMin: 12 }),
   sess('design-management', 2, '09.09', '수', '10:30', '11:45', '출석', { time: '10:28', method: 'PIN' }),
   // 사이버 강의(글쓰기와 소통) — 출석 탭 목록엔 없음(Figma), 상세 라우트용
-  sess('writing', 1, '09.06', '일', '00:00', '23:59', '출석', { time: '21:40' }),
+  sess('writing', 1, '09.06', '일', '00:00', '23:59', '출석', { time: '21:40', doneDate: '09.06', opens: '09.01' }),
+  sess('writing', 2, '09.13', '일', '00:00', '23:59', '출석', { time: '22:10', doneDate: '09.09', opens: '09.07' }),
 ];
 
 /** 오늘(금 09.11) 수업 + 다음 예정 수업 */
@@ -64,11 +72,11 @@ const TODAY_AND_NEXT: Session[] = [
   sess('service-design', 3, '09.18', '금', '10:00', '11:50', '예정'),
   sess('brand-design', 3, '09.18', '금', '13:00', '14:50', '예정'),
   sess('ux-research', 3, '09.18', '금', '15:00', '16:50', '예정'),
-  sess('writing', 2, '09.13', '일', '00:00', '23:59', '예정'),
+  sess('writing', 3, '09.20', '일', '00:00', '23:59', '예정', { opens: '09.14' }),
 ];
 
 /** 학기 총 수업 횟수 (15주 · 주2회 과목은 개강 주 월요일 제외) */
-const TOTAL_SESSIONS: Record<CourseId, number> = {
+export const TOTAL_SESSIONS: Record<CourseId, number> = {
   'service-design': 15,
   'brand-design': 15,
   'ux-research': 15,
@@ -132,12 +140,39 @@ export function recordMeta(r: Session, detail = false) {
   const online = courseById(r.courseId).online;
   if (r.status === '결석') return '인증 기록 없음';
   if (r.status === '출석' || r.status === '지각') {
-    if (online) return `${r.date} ${r.time} 수강 완료`;
+    if (online) return `${r.doneDate ?? r.date} ${r.time} 수강 완료`;
     return [`${r.time} 인증`, r.method, detail && r.lateMin ? `${r.lateMin}분 지각` : null].filter(Boolean).join(' · ');
   }
-  if (online) return `${r.date} (${r.dow})까지 수강`;
+  if (online) return r.opens ? `${r.opens} 09:00 오픈 예정` : `${r.date} (${r.dow})까지 수강`;
   if (r.status === '인증 가능') return `${r.start} – ${r.end} · 10:10까지 인증`;
   return `${r.start} – ${r.end} 예정`;
+}
+
+/** 'MM.DD' → '9.14(월)' */
+export const shortDay = (r: Pick<Session, 'date' | 'dow'>) => `${Number(r.date.slice(0, 2))}.${Number(r.date.slice(3))}(${r.dow})`;
+/** 출석 인증 마감 = 시작 + 10분 */
+export const closesAt = (start: string) => {
+  const [h, m] = start.split(':').map(Number);
+  const t = h * 60 + m + 10;
+  return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+};
+
+/** 과목 상세(수강과목) '출석 현황' 카드 아래 줄 — 출석 데이터에서 파생 */
+export function nextAttendLabel(id: CourseId, t: TodayState) {
+  const n = nextSession(id, t);
+  if (!n) return '이번 학기 수업이 모두 끝났어요';
+  if (courseById(id).online) return `${n.week}주차 강의 · ${n.opens ? `${shortDay({ date: n.opens, dow: '월' })} 오픈` : `${shortDay(n)}까지`}`;
+  if (n.status === '인증 가능' || n.status === '오늘') return `다음 출석 · 오늘 ${n.start} (${closesAt(n.start)}까지 인증)`;
+  return `다음 출석 · ${shortDay(n)} ${n.start}`;
+}
+
+/** 사이버 강의 진도 — 수강 완료 주차 / 전체 주차 */
+export function onlineProgress(id: CourseId, t: TodayState) {
+  const st = courseStats(id, t);
+  const n = nextSession(id, t);
+  const progress = Math.round((st.present / TOTAL_SESSIONS[id]) * 100);
+  const label = `${st.present}주차 강의 수강 완료${n?.opens ? ` · ${n.week}주차 ${Number(n.opens.slice(0, 2))}.${Number(n.opens.slice(3))} 오픈` : ''}`;
+  return { progress, label };
 }
 
 export const courseName = (id: CourseId) => courseById(id).name;

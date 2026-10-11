@@ -1,6 +1,6 @@
 # 화면 맵 — 코드 라우트 ↔ Figma 프레임
 
-자동 생성: `node scripts/screen-map.mjs` · 라우트 42개 · Figma 프레임 53개 대응
+자동 생성: `node scripts/screen-map.mjs` · 라우트 43개 · Figma 프레임 53개 대응
 (Figma 파일 `WivU_Prototyping_v3-codex` · 페이지 `UXUI 디자인 (프로토타입_v4)`)
 
 ## 출석
@@ -73,6 +73,7 @@
 |---|---|---|
 | 알림함 | `/notifications` | `428:8938` |
 | 학식 | `/meal` | `429:8987` |
+| 학사 공지 | `/notices` |  |
 | 학사 공지 상세 | `/notices/:id` | `430:9007` |
 | 강의실 지도 | `/map` | `431:9033` |
 

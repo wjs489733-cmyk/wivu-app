@@ -148,7 +148,7 @@ function compactSlots(c: Course) {
 }
 
 function bannerSub(online: boolean, next: Session | undefined, t: TodayState) {
-  if (online) return next ? `${next.week}주차 강의는 ${next.date} (${next.dow})까지 들으면 돼요.` : '이번 학기 강의를 모두 들었어요.';
+  if (online) return next ? `${next.week}주차 강의는 ${next.opens ? `${next.opens}에 열리고 ` : ''}${next.date} (${next.dow})까지 들으면 돼요.` : '이번 학기 강의를 모두 들었어요.';
   if (!next) return t.complete ? `오늘 ${t.time} ${t.method} 인증까지 기록됐어요.` : '이번 학기 수업이 모두 끝났어요.';
   if (next.status === '인증 가능') return `오늘 ${next.start} 수업 · 10:10까지 출석을 인증해 주세요.`;
   if (next.status === '오늘') return `오늘 ${next.start} 수업이 남아 있어요.`;
@@ -238,7 +238,10 @@ function AppealForm({ onClose, courseId, sessions }: { onClose: () => void; cour
             </Chip>
           ))}
         </div>
-        <TextArea rows={3} placeholder="상황을 간단히 적어주세요 (선택)" value={memo} onChange={(e) => setMemo(e.target.value)} aria-label="상세 내용" />
+        {/* 입력 영역이 보이도록 필드 컨테이너(bg/subtle · 1px 보더 · r16 · p16) */}
+        <div className={s.memoField}>
+          <TextArea rows={3} className={s.memoArea} placeholder="상황을 간단히 적어주세요 (선택)" value={memo} maxLength={200} onChange={(e) => setMemo(e.target.value)} aria-label="상세 내용" />
+        </div>
       </div>
 
       <div className={s.sheetCta}>
