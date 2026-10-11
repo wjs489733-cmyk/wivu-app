@@ -28,6 +28,9 @@ export const ROUTES: RouteObject[] = [
   { path: '*', element: <Navigate to={has('/home') ? '/home' : '/design-system'} replace /> },
 ];
 
+// 문서 생성용 (scripts/screen-map.mjs가 읽음) — 개발 서버에서만
+if (import.meta.env.DEV) (window as unknown as { __WIVU_SCREENS__: unknown }).__WIVU_SCREENS__ = SCREENS.map(({ path, title, figma, section }) => ({ path, title, figma, section }));
+
 export function findScreen(pathname: string) {
   return SCREENS.find((sc) => matchPath({ path: sc.path, end: true }, pathname));
 }
