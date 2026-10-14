@@ -6,10 +6,12 @@ await p.goto('http://localhost:5173/?frame=1#/home'); await p.waitForTimeout(900
 await p.getByRole('button', { name: '출석 인증하기' }).first().click(); await p.waitForTimeout(600);
 await p.screenshot({ path: 'shots/f1-sheet.png' });
 for (const d of ['0','0','0','0']) await p.getByRole('button', { name: d, exact: true }).click();
+await p.getByRole('button', { name: '확인', exact: true }).click();
 await p.waitForTimeout(1200); await p.screenshot({ path: 'shots/f2-error.png' });
 for (const d of ['1','2','3']) await p.getByRole('button', { name: d, exact: true }).click();
 await p.waitForTimeout(150); await p.screenshot({ path: 'shots/f3-typing.png' });
 await p.getByRole('button', { name: '4', exact: true }).click();
+await p.getByRole('button', { name: '확인', exact: true }).click();
 await p.waitForTimeout(500); await p.screenshot({ path: 'shots/f4-checking.png' });
 await p.waitForTimeout(1500); await p.screenshot({ path: 'shots/f5-done.png' });
 await p.getByRole('button', { name: '홈으로' }).click(); await p.waitForTimeout(800);

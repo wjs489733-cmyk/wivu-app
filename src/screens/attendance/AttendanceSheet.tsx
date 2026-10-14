@@ -15,7 +15,8 @@ const MAX_TRIES = 3;
 
 /**
  * 출석 인증 PIN 시트 — Figma 372:7253(빈) · 432:9081(입력 중) · 432:9226(확인 중) · 432:9371(오류)
- * 실제 입력 로직: 자릿수(교수님이 정한 2·4자리)를 다 채우면 → 0.9초 확인 → 인증 완료(DISSOLVE).
+ * 실제 입력 로직: 자릿수(교수님이 정한 2·4자리)만큼 칸 → 다 채우면 [확인] 활성 → 누르면 0.9초 확인 → 인증 완료(DISSOLVE).
+ * 자동 제출 없음(2자리는 실수로 바로 넘어가기 쉬워서 2·4자리 공통으로 확인 버튼). Enter 키도 확인.
  * 전부 0('00'·'0000') 또는 forceError면 오류(남은 시도 차감).
  * 남은 시도 0회면 키패드를 잠그고 QR로 안내. 하드웨어 키보드(0–9 · Backspace)도 받는다.
  * 어느 화면에서든 overlay로 띄울 수 있다 (홈 히어로, 출석 탭, 시간표 수업 시트, /attendance/pin 라우트).
@@ -92,9 +93,12 @@ export function AttendanceSheet({
     if (busy || locked) return;
     const base = status === 'error' ? '' : value;
     if (status === 'error') setStatus('idle');
-    const next = (base + d).slice(0, len);
-    setValue(next);
-    if (next.length === len) submit(next);
+    if (base.length >= len) return;
+    setValue(base + d);
+  };
+  const canConfirm = value.length === len && status === 'idle' && !locked;
+  const onConfirm = () => {
+    if (canConfirm) submit(value);
   };
   const onDelete = () => {
     if (status === 'idle') setValue((v) => v.slice(0, -1));
@@ -106,9 +110,9 @@ export function AttendanceSheet({
   };
 
   // 하드웨어 키보드: 숫자 · Backspace (시트가 열려 있는 동안)
-  const keyRef = useRef({ onDigit, onDelete });
+  const keyRef = useRef({ onDigit, onDelete, onConfirm });
   useEffect(() => {
-    keyRef.current = { onDigit, onDelete };
+    keyRef.current = { onDigit, onDelete, onConfirm };
   });
   useEffect(() => {
     if (!open) return;
@@ -120,6 +124,9 @@ export function AttendanceSheet({
       } else if (e.key === 'Backspace') {
         e.preventDefault();
         keyRef.current.onDelete();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        keyRef.current.onConfirm();
       }
     };
     window.addEventListener('keydown', onKey);
@@ -134,7 +141,9 @@ export function AttendanceSheet({
         ? { text: `번호가 일치하지 않아요 · 남은 시도 ${left}회`, color: 'error' as const }
         : status === 'success'
           ? { text: '출석이 인증됐어요', color: 'brand' as const }
-          : { text: `교수님이 알려준 ${len}자리 번호를 입력하세요`, color: 'tertiary' as const };
+          : value.length === len
+            ? { text: '번호를 확인하고 [확인]을 눌러 주세요', color: 'secondary' as const }
+            : { text: `교수님이 알려준 ${len}자리 번호를 입력하세요`, color: 'tertiary' as const };
 
   return (
     <BottomSheet open={open} onClose={() => onClose('dismiss')} label="출석 인증">
@@ -165,6 +174,9 @@ export function AttendanceSheet({
           </Button>
         }
       />
+      <Button variant="primary" size="l" block disabled={!canConfirm} loading={status === 'checking'} onClick={onConfirm} style={{ marginTop: 12 }}>
+        확인
+      </Button>
     </BottomSheet>
   );
 }

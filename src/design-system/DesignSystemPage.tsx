@@ -504,17 +504,20 @@ function PinDemo() {
   const [status, setStatus] = useState<'idle' | 'checking' | 'error' | 'success'>('idle');
   const press = (d: string) => {
     if (status !== 'idle' && status !== 'error') return;
-    const next = (status === 'error' ? '' : v) + d;
+    const base = status === 'error' ? '' : v;
+    if (base.length >= n) return;
     setStatus('idle');
-    setV(next);
-    if (next.length === n) {
-      setStatus('checking');
-      setTimeout(() => setStatus(/^0+$/.test(next) ? 'error' : 'success'), 900);
-      setTimeout(() => {
-        setV('');
-        setStatus('idle');
-      }, 2400);
-    }
+    setV(base + d);
+  };
+  const confirm = () => {
+    if (v.length !== n || status !== 'idle') return;
+    const next = v;
+    setStatus('checking');
+    setTimeout(() => setStatus(/^0+$/.test(next) ? 'error' : 'success'), 900);
+    setTimeout(() => {
+      setV('');
+      setStatus('idle');
+    }, 2400);
   };
   return (
     <div style={{ display: 'grid', gap: 16 }}>
@@ -538,6 +541,9 @@ function PinDemo() {
           </Button>
         }
       />
+      <Button variant="primary" size="l" block disabled={v.length !== n || status !== 'idle'} loading={status === 'checking'} onClick={confirm}>
+        확인
+      </Button>
     </div>
   );
 }
