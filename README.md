@@ -12,7 +12,7 @@ main에 push하면 Vercel과 GitHub Pages(https://wjs489733-cmyk.github.io/wivu-
 
 | 항목 | 내용 |
 |---|---|
-| 화면 | 라우트 42개 · Figma 프레임 53개 대응 → [docs/screen-map.md](docs/screen-map.md) |
+| 화면 | 라우트 43개 · Figma 프레임 57개 대응 → [docs/screen-map.md](docs/screen-map.md) |
 | 디자인 시스템 | 앱 안 `#/design-system` 페이지 (토큰·타이포·버튼·아이콘·컴포넌트·규칙) |
 | 디자인 토큰 | W3C DTCG 포맷 `design/tokens/*.tokens.json` → Style Dictionary → `src/styles/tokens.css` |
 | 디자인 규칙 | [docs/design-rules.md](docs/design-rules.md) |
