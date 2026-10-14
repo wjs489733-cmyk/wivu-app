@@ -196,7 +196,7 @@ function CourseCheck({ course: c, status, credits, mine, onClose, onAdd }: { cou
       <div style={{ marginTop: 16 }}>
         <InfoBox>
           <InfoRow icon="clock" label="시간" value={slotText(c, ' – ')} />
-          <InfoRow icon="location" label="장소" value={c.room} />
+          <InfoRow icon="pin" label="장소" value={c.room} />
           <InfoRow icon="user" label="담당" value={c.online ? '사이버 강의' : `${c.professor} 교수`} />
         </InfoBox>
       </div>

@@ -1,0 +1,55 @@
+2026-10-14 · v2 변경 기록
+
+[수정 10]
+• home (홈): 아래 모서리 반경 1→2
+• attendance (출석): 반경 4→3
+• board (게시판): 1px 위로(가운데 정렬), 꼬리 안전 영역 안으로, 반경 2→3
+• back (뒤로): chevron-right와 좌우 대칭이 되도록 1px 이동
+• bell (알림): 위쪽 안전 영역 이탈 수정, 크기 정리
+• chevron-right (다음·이동): 기존 arrow·chevron(같은 모양)을 이 이름으로 통합
+• notice (공지): 안전 영역 안으로 축소, 소리선 3개→호 1개로 단순화
+• calendar (캘린더): 기존 schedule. 반경 4→3, 이름을 calendar로
+• orbit (빠른 메뉴): 점선 6조각으로 굵게(16px 가독성)
+• check (완료): 세로 가운데 정렬(1px 아래로)
+
+[신규 40]
+• timetable (시간표) — 시간표 탭용 격자. 달력 모양(calendar)과 구분
+• settings (설정)
+• chevron-down (펼치기)
+• chevron-up (접기)
+• arrow-right (바로가기) — 꼬리 있는 화살표. 텍스트 버튼 끝(지도 보기 →)
+• external-link (외부 링크) — 공지 원문, 학교 사이트
+• logout (로그아웃)
+• assignment (과제) — 클립보드
+• exam (시험) — 종이 + 연필
+• materials (강의자료) — 폴더. 파일 한 개는 file
+• library (도서관) — 책 세 권
+• locate (현재 위치)
+• rental (장소대여) — 문
+• school (학교) — 학사모 — 로고 심볼과 연결
+• qr (QR 인증)
+• nfc (NFC 태그) — 비접촉 파동
+• scan (스캔) — QR 스캔 화면
+• comment (댓글) — 둥근 말풍선 — 게시판(네모 말풍선)과 구분
+• heart (좋아요)
+• bookmark (스크랩)
+• edit (편집·글쓰기)
+• send (보내기) — 댓글 입력
+• image (사진) — 글쓰기 사진 첨부
+• users (팀·모집) — 팀플 모집
+• share (공유)
+• flag (신고)
+• ban (차단)
+• filter (필터)
+• sort (정렬)
+• check-circle (출석(상태))
+• x-circle (결석·오류)
+• warning (경고)
+• help (도움말·문의)
+• refresh (새로고침) — 학생증 QR 갱신
+• lock (잠금) — PIN·보안
+• eye (비밀번호 보기)
+• eye-off (비밀번호 숨기기)
+• bell-off (알림 끔) — 알림 설정
+• grip (순서 변경) — 퀵메뉴 편집·시간표 편집 드래그
+• backspace (지우기) — PIN 키패드

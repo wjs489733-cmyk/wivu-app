@@ -86,7 +86,7 @@ export function BoardFeed() {
                 {board.pinned.title}
               </Text>
             </span>
-            <Icon name="arrow-right" size={16} />
+            <Icon name="chevron-right" size={16} />
           </button>
         )}
         <div className={s.filters} role="tablist" aria-label="말머리 필터">

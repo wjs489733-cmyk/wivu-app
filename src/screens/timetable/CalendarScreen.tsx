@@ -71,8 +71,8 @@ export function CalendarScreen() {
           {y}년 {m}월
         </Text>
         <div className={s.monthNav}>
-          <SmallIconButton icon="arrow-right" flip label="이전 달" disabled={mi <= 0} onPress={() => moveMonth(-1)} />
-          <SmallIconButton icon="arrow-right" label="다음 달" disabled={mi >= MONTHS.length - 1} onPress={() => moveMonth(1)} />
+          <SmallIconButton icon="chevron-right" flip label="이전 달" disabled={mi <= 0} onPress={() => moveMonth(-1)} />
+          <SmallIconButton icon="chevron-right" label="다음 달" disabled={mi >= MONTHS.length - 1} onPress={() => moveMonth(1)} />
         </div>
       </div>
 
@@ -123,7 +123,7 @@ export function CalendarScreen() {
             onPress={open}
             empty={
               <EmptyNote
-                icon="nav-calendar"
+                icon="calendar"
                 title={filter === 'all' ? '이날은 일정이 없어요' : `이날은 ${CAT[filter].label} 일정이 없어요`}
                 desc="일정을 추가하면 알림으로 챙겨 드려요"
                 action={
@@ -147,7 +147,7 @@ export function CalendarScreen() {
           {next.length > 3 && <MoreLink label={expanded ? '접기' : '목록 보기'} onPress={() => setExpanded((v) => !v)} />}
         </div>
         <div className={s.body}>
-          <EventList items={shownNext} onPress={open} empty={<EmptyNote icon="nav-calendar" title="다가오는 일정이 없어요" />} />
+          <EventList items={shownNext} onPress={open} empty={<EmptyNote icon="calendar" title="다가오는 일정이 없어요" />} />
         </div>
       </section>
     </Screen>

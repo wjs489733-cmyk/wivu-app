@@ -66,7 +66,7 @@ export function AssignmentDetail() {
         {submission && (
           <Card variant="soft" className={s.submittedBox}>
             <div className={s.submittedHead}>
-              <Icon name="status-present" size={20} color="brand" />
+              <Icon name="check-circle" size={20} color="brand" />
               <Text variant="label" className="tnum">
                 제출 완료 · {submission.at.replace(/^(\d{2})\.(\d{2})/, (_m, mm, dd) => `${+mm}월 ${+dd}일`)}
               </Text>

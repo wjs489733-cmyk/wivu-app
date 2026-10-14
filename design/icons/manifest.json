@@ -1,0 +1,591 @@
+{
+  "name": "WivU Icons",
+  "version": "2.0",
+  "date": "2026-10-14",
+  "viewBox": "0 0 24 24",
+  "strokeWidth": 1.7,
+  "linecap": "round",
+  "linejoin": "round",
+  "grid": {
+    "size": 24,
+    "safeArea": "2–22 (선 두께 포함)",
+    "cornerRadius": "큰 틀 3 / 중간 2 / 작은 요소 1"
+  },
+  "sizes": [
+    16,
+    20,
+    24
+  ],
+  "count": 66,
+  "summary": {
+    "유지": 16,
+    "수정": 10,
+    "신규": 40
+  },
+  "aliases": {
+    "arrow": "chevron-right",
+    "chevron": "chevron-right",
+    "schedule": "calendar"
+  },
+  "icons": [
+    {
+      "name": "home",
+      "label": "홈",
+      "category": "탭",
+      "status": "수정",
+      "file": "svg/home.svg",
+      "web": "web/home.svg",
+      "note": "아래 모서리 반경 1→2"
+    },
+    {
+      "name": "attendance",
+      "label": "출석",
+      "category": "탭",
+      "status": "수정",
+      "file": "svg/attendance.svg",
+      "web": "web/attendance.svg",
+      "note": "반경 4→3"
+    },
+    {
+      "name": "courses",
+      "label": "수강과목",
+      "category": "탭",
+      "status": "유지",
+      "file": "svg/courses.svg",
+      "web": "web/courses.svg"
+    },
+    {
+      "name": "timetable",
+      "label": "시간표",
+      "category": "탭",
+      "status": "신규",
+      "file": "svg/timetable.svg",
+      "web": "web/timetable.svg",
+      "note": "시간표 탭용 격자. 달력 모양(calendar)과 구분"
+    },
+    {
+      "name": "board",
+      "label": "게시판",
+      "category": "탭",
+      "status": "수정",
+      "file": "svg/board.svg",
+      "web": "web/board.svg",
+      "note": "1px 위로(가운데 정렬), 꼬리 안전 영역 안으로, 반경 2→3"
+    },
+    {
+      "name": "back",
+      "label": "뒤로",
+      "category": "헤더·이동",
+      "status": "수정",
+      "file": "svg/back.svg",
+      "web": "web/back.svg",
+      "note": "chevron-right와 좌우 대칭이 되도록 1px 이동"
+    },
+    {
+      "name": "close",
+      "label": "닫기",
+      "category": "헤더·이동",
+      "status": "유지",
+      "file": "svg/close.svg",
+      "web": "web/close.svg"
+    },
+    {
+      "name": "bell",
+      "label": "알림",
+      "category": "헤더·이동",
+      "status": "수정",
+      "file": "svg/bell.svg",
+      "web": "web/bell.svg",
+      "note": "위쪽 안전 영역 이탈 수정, 크기 정리"
+    },
+    {
+      "name": "search",
+      "label": "검색",
+      "category": "헤더·이동",
+      "status": "유지",
+      "file": "svg/search.svg",
+      "web": "web/search.svg"
+    },
+    {
+      "name": "more",
+      "label": "더 보기",
+      "category": "헤더·이동",
+      "status": "유지",
+      "file": "svg/more.svg",
+      "web": "web/more.svg"
+    },
+    {
+      "name": "settings",
+      "label": "설정",
+      "category": "헤더·이동",
+      "status": "신규",
+      "file": "svg/settings.svg",
+      "web": "web/settings.svg"
+    },
+    {
+      "name": "chevron-right",
+      "label": "다음·이동",
+      "category": "헤더·이동",
+      "status": "수정",
+      "file": "svg/chevron-right.svg",
+      "web": "web/chevron-right.svg",
+      "note": "기존 arrow·chevron(같은 모양)을 이 이름으로 통합"
+    },
+    {
+      "name": "chevron-down",
+      "label": "펼치기",
+      "category": "헤더·이동",
+      "status": "신규",
+      "file": "svg/chevron-down.svg",
+      "web": "web/chevron-down.svg"
+    },
+    {
+      "name": "chevron-up",
+      "label": "접기",
+      "category": "헤더·이동",
+      "status": "신규",
+      "file": "svg/chevron-up.svg",
+      "web": "web/chevron-up.svg"
+    },
+    {
+      "name": "arrow-right",
+      "label": "바로가기",
+      "category": "헤더·이동",
+      "status": "신규",
+      "file": "svg/arrow-right.svg",
+      "web": "web/arrow-right.svg",
+      "note": "꼬리 있는 화살표. 텍스트 버튼 끝(지도 보기 →)"
+    },
+    {
+      "name": "external-link",
+      "label": "외부 링크",
+      "category": "헤더·이동",
+      "status": "신규",
+      "file": "svg/external-link.svg",
+      "web": "web/external-link.svg",
+      "note": "공지 원문, 학교 사이트"
+    },
+    {
+      "name": "logout",
+      "label": "로그아웃",
+      "category": "헤더·이동",
+      "status": "신규",
+      "file": "svg/logout.svg",
+      "web": "web/logout.svg"
+    },
+    {
+      "name": "student",
+      "label": "학생증",
+      "category": "학업",
+      "status": "유지",
+      "file": "svg/student.svg",
+      "web": "web/student.svg"
+    },
+    {
+      "name": "assignment",
+      "label": "과제",
+      "category": "학업",
+      "status": "신규",
+      "file": "svg/assignment.svg",
+      "web": "web/assignment.svg",
+      "note": "클립보드"
+    },
+    {
+      "name": "exam",
+      "label": "시험",
+      "category": "학업",
+      "status": "신규",
+      "file": "svg/exam.svg",
+      "web": "web/exam.svg",
+      "note": "종이 + 연필"
+    },
+    {
+      "name": "materials",
+      "label": "강의자료",
+      "category": "학업",
+      "status": "신규",
+      "file": "svg/materials.svg",
+      "web": "web/materials.svg",
+      "note": "폴더. 파일 한 개는 file"
+    },
+    {
+      "name": "file",
+      "label": "파일",
+      "category": "학업",
+      "status": "유지",
+      "file": "svg/file.svg",
+      "web": "web/file.svg"
+    },
+    {
+      "name": "notice",
+      "label": "공지",
+      "category": "학업",
+      "status": "수정",
+      "file": "svg/notice.svg",
+      "web": "web/notice.svg",
+      "note": "안전 영역 안으로 축소, 소리선 3개→호 1개로 단순화"
+    },
+    {
+      "name": "calendar",
+      "label": "캘린더",
+      "category": "학업",
+      "status": "수정",
+      "file": "svg/calendar.svg",
+      "web": "web/calendar.svg",
+      "note": "기존 schedule. 반경 4→3, 이름을 calendar로"
+    },
+    {
+      "name": "clock",
+      "label": "시간·지각",
+      "category": "학업",
+      "status": "유지",
+      "file": "svg/clock.svg",
+      "web": "web/clock.svg",
+      "note": "출석 상태 지각에도 사용"
+    },
+    {
+      "name": "library",
+      "label": "도서관",
+      "category": "학업",
+      "status": "신규",
+      "file": "svg/library.svg",
+      "web": "web/library.svg",
+      "note": "책 세 권"
+    },
+    {
+      "name": "upload",
+      "label": "업로드",
+      "category": "학업",
+      "status": "유지",
+      "file": "svg/upload.svg",
+      "web": "web/upload.svg"
+    },
+    {
+      "name": "download",
+      "label": "다운로드",
+      "category": "학업",
+      "status": "유지",
+      "file": "svg/download.svg",
+      "web": "web/download.svg"
+    },
+    {
+      "name": "meal",
+      "label": "학식",
+      "category": "캠퍼스",
+      "status": "유지",
+      "file": "svg/meal.svg",
+      "web": "web/meal.svg"
+    },
+    {
+      "name": "map",
+      "label": "지도",
+      "category": "캠퍼스",
+      "status": "유지",
+      "file": "svg/map.svg",
+      "web": "web/map.svg"
+    },
+    {
+      "name": "pin",
+      "label": "위치",
+      "category": "캠퍼스",
+      "status": "유지",
+      "file": "svg/pin.svg",
+      "web": "web/pin.svg"
+    },
+    {
+      "name": "locate",
+      "label": "현재 위치",
+      "category": "캠퍼스",
+      "status": "신규",
+      "file": "svg/locate.svg",
+      "web": "web/locate.svg"
+    },
+    {
+      "name": "rental",
+      "label": "장소대여",
+      "category": "캠퍼스",
+      "status": "신규",
+      "file": "svg/rental.svg",
+      "web": "web/rental.svg",
+      "note": "문"
+    },
+    {
+      "name": "school",
+      "label": "학교",
+      "category": "캠퍼스",
+      "status": "신규",
+      "file": "svg/school.svg",
+      "web": "web/school.svg",
+      "note": "학사모 — 로고 심볼과 연결"
+    },
+    {
+      "name": "qr",
+      "label": "QR 인증",
+      "category": "캠퍼스",
+      "status": "신규",
+      "file": "svg/qr.svg",
+      "web": "web/qr.svg"
+    },
+    {
+      "name": "nfc",
+      "label": "NFC 태그",
+      "category": "캠퍼스",
+      "status": "신규",
+      "file": "svg/nfc.svg",
+      "web": "web/nfc.svg",
+      "note": "비접촉 파동"
+    },
+    {
+      "name": "scan",
+      "label": "스캔",
+      "category": "캠퍼스",
+      "status": "신규",
+      "file": "svg/scan.svg",
+      "web": "web/scan.svg",
+      "note": "QR 스캔 화면"
+    },
+    {
+      "name": "spark",
+      "label": "추천",
+      "category": "캠퍼스",
+      "status": "유지",
+      "file": "svg/spark.svg",
+      "web": "web/spark.svg"
+    },
+    {
+      "name": "orbit",
+      "label": "빠른 메뉴",
+      "category": "캠퍼스",
+      "status": "수정",
+      "file": "svg/orbit.svg",
+      "web": "web/orbit.svg",
+      "note": "점선 6조각으로 굵게(16px 가독성)"
+    },
+    {
+      "name": "comment",
+      "label": "댓글",
+      "category": "커뮤니티",
+      "status": "신규",
+      "file": "svg/comment.svg",
+      "web": "web/comment.svg",
+      "note": "둥근 말풍선 — 게시판(네모 말풍선)과 구분"
+    },
+    {
+      "name": "heart",
+      "label": "좋아요",
+      "category": "커뮤니티",
+      "status": "신규",
+      "file": "svg/heart.svg",
+      "web": "web/heart.svg"
+    },
+    {
+      "name": "bookmark",
+      "label": "스크랩",
+      "category": "커뮤니티",
+      "status": "신규",
+      "file": "svg/bookmark.svg",
+      "web": "web/bookmark.svg"
+    },
+    {
+      "name": "edit",
+      "label": "편집·글쓰기",
+      "category": "커뮤니티",
+      "status": "신규",
+      "file": "svg/edit.svg",
+      "web": "web/edit.svg"
+    },
+    {
+      "name": "send",
+      "label": "보내기",
+      "category": "커뮤니티",
+      "status": "신규",
+      "file": "svg/send.svg",
+      "web": "web/send.svg",
+      "note": "댓글 입력"
+    },
+    {
+      "name": "image",
+      "label": "사진",
+      "category": "커뮤니티",
+      "status": "신규",
+      "file": "svg/image.svg",
+      "web": "web/image.svg",
+      "note": "글쓰기 사진 첨부"
+    },
+    {
+      "name": "users",
+      "label": "팀·모집",
+      "category": "커뮤니티",
+      "status": "신규",
+      "file": "svg/users.svg",
+      "web": "web/users.svg",
+      "note": "팀플 모집"
+    },
+    {
+      "name": "share",
+      "label": "공유",
+      "category": "커뮤니티",
+      "status": "신규",
+      "file": "svg/share.svg",
+      "web": "web/share.svg"
+    },
+    {
+      "name": "flag",
+      "label": "신고",
+      "category": "커뮤니티",
+      "status": "신규",
+      "file": "svg/flag.svg",
+      "web": "web/flag.svg"
+    },
+    {
+      "name": "ban",
+      "label": "차단",
+      "category": "커뮤니티",
+      "status": "신규",
+      "file": "svg/ban.svg",
+      "web": "web/ban.svg"
+    },
+    {
+      "name": "filter",
+      "label": "필터",
+      "category": "커뮤니티",
+      "status": "신규",
+      "file": "svg/filter.svg",
+      "web": "web/filter.svg"
+    },
+    {
+      "name": "sort",
+      "label": "정렬",
+      "category": "커뮤니티",
+      "status": "신규",
+      "file": "svg/sort.svg",
+      "web": "web/sort.svg"
+    },
+    {
+      "name": "check",
+      "label": "완료",
+      "category": "상태·액션",
+      "status": "수정",
+      "file": "svg/check.svg",
+      "web": "web/check.svg",
+      "note": "세로 가운데 정렬(1px 아래로)"
+    },
+    {
+      "name": "check-circle",
+      "label": "출석(상태)",
+      "category": "상태·액션",
+      "status": "신규",
+      "file": "svg/check-circle.svg",
+      "web": "web/check-circle.svg"
+    },
+    {
+      "name": "x-circle",
+      "label": "결석·오류",
+      "category": "상태·액션",
+      "status": "신규",
+      "file": "svg/x-circle.svg",
+      "web": "web/x-circle.svg"
+    },
+    {
+      "name": "warning",
+      "label": "경고",
+      "category": "상태·액션",
+      "status": "신규",
+      "file": "svg/warning.svg",
+      "web": "web/warning.svg"
+    },
+    {
+      "name": "info",
+      "label": "안내",
+      "category": "상태·액션",
+      "status": "유지",
+      "file": "svg/info.svg",
+      "web": "web/info.svg"
+    },
+    {
+      "name": "help",
+      "label": "도움말·문의",
+      "category": "상태·액션",
+      "status": "신규",
+      "file": "svg/help.svg",
+      "web": "web/help.svg"
+    },
+    {
+      "name": "plus",
+      "label": "추가",
+      "category": "상태·액션",
+      "status": "유지",
+      "file": "svg/plus.svg",
+      "web": "web/plus.svg"
+    },
+    {
+      "name": "trash",
+      "label": "삭제",
+      "category": "상태·액션",
+      "status": "유지",
+      "file": "svg/trash.svg",
+      "web": "web/trash.svg"
+    },
+    {
+      "name": "refresh",
+      "label": "새로고침",
+      "category": "상태·액션",
+      "status": "신규",
+      "file": "svg/refresh.svg",
+      "web": "web/refresh.svg",
+      "note": "학생증 QR 갱신"
+    },
+    {
+      "name": "lock",
+      "label": "잠금",
+      "category": "상태·액션",
+      "status": "신규",
+      "file": "svg/lock.svg",
+      "web": "web/lock.svg",
+      "note": "PIN·보안"
+    },
+    {
+      "name": "eye",
+      "label": "비밀번호 보기",
+      "category": "상태·액션",
+      "status": "신규",
+      "file": "svg/eye.svg",
+      "web": "web/eye.svg"
+    },
+    {
+      "name": "eye-off",
+      "label": "비밀번호 숨기기",
+      "category": "상태·액션",
+      "status": "신규",
+      "file": "svg/eye-off.svg",
+      "web": "web/eye-off.svg"
+    },
+    {
+      "name": "bell-off",
+      "label": "알림 끔",
+      "category": "상태·액션",
+      "status": "신규",
+      "file": "svg/bell-off.svg",
+      "web": "web/bell-off.svg",
+      "note": "알림 설정"
+    },
+    {
+      "name": "grip",
+      "label": "순서 변경",
+      "category": "상태·액션",
+      "status": "신규",
+      "file": "svg/grip.svg",
+      "web": "web/grip.svg",
+      "note": "퀵메뉴 편집·시간표 편집 드래그"
+    },
+    {
+      "name": "backspace",
+      "label": "지우기",
+      "category": "상태·액션",
+      "status": "신규",
+      "file": "svg/backspace.svg",
+      "web": "web/backspace.svg",
+      "note": "PIN 키패드"
+    }
+  ]
+}

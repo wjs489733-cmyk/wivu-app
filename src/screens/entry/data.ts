@@ -54,10 +54,10 @@ export const NEARBY = SCHOOLS.filter((s) => s.region === HOME_REGION);
 
 /** 알림 설정 (411:12022) */
 export const NOTI_OPTIONS = [
-  { id: 'attendance', icon: 'nav-attendance' as const, title: '출석 시작 알림', meta: '수업 시작 10분 전 · 인증 마감 3분 전', on: true },
+  { id: 'attendance', icon: 'attendance' as const, title: '출석 시작 알림', meta: '수업 시작 10분 전 · 인증 마감 3분 전', on: true },
   { id: 'assignment', icon: 'assignment' as const, title: '과제 마감 알림', meta: '마감 하루 전 · 3시간 전', on: true },
   { id: 'notice', icon: 'notice' as const, title: '학사·장학 공지', meta: '수강정정, 장학, 학사 일정', on: true },
-  { id: 'board', icon: 'user' as const, title: '게시판 활동', meta: '댓글 · 좋아요', on: false },
+  { id: 'board', icon: 'comment' as const, title: '게시판 활동', meta: '댓글 · 좋아요', on: false },
 ];
 
 /** 연동 중 체크리스트 (411:11957) — 숫자는 실제 데이터에서 계산

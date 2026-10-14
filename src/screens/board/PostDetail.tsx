@@ -289,7 +289,7 @@ function PostView({ post }: { post: Post }) {
               <Text variant="caption-2-strong" color="inherit" className="truncate">
                 연결된 과제 · {post.linked.title}
               </Text>
-              <Icon name="arrow-right" size={16} />
+              <Icon name="chevron-right" size={16} />
             </button>
           )}
         </div>

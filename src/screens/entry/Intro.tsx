@@ -95,9 +95,9 @@ function Visual1() {
       <motion.span className={`${s.pill} t-caption-2-strong`} {...pop(0)}>
         앱 3개 → WivU 1개
       </motion.span>
-      <FloatCard i={1} x={0} y={236} icon="nav-attendance" iconBg="var(--wivu-color-bg-brand-soft)" title="출석 인증 완료" meta="서비스디자인 · 10:01" />
+      <FloatCard i={1} x={0} y={236} icon="attendance" iconBg="var(--wivu-color-bg-brand-soft)" title="출석 인증 완료" meta="서비스디자인 · 10:01" />
       <FloatCard i={2} x={120} y={296} icon="assignment" iconBg="var(--wivu-color-bg-subtle)" title="과제 마감 D-DAY" titleColor="error" meta="서비스 분석 리포트 · 23:59" />
-      <FloatCard i={3} x={24} y={356} icon="nav-calendar" iconBg="var(--wivu-color-bg-pulse-soft)" title="취업박람회 9.14" meta="학생회관 대강당 · 14:00" />
+      <FloatCard i={3} x={24} y={356} icon="calendar" iconBg="var(--wivu-color-bg-pulse-soft)" title="취업박람회 9.14" meta="학생회관 대강당 · 14:00" />
     </>
   );
 }
@@ -137,15 +137,15 @@ function Visual2() {
 
 function Visual3() {
   const slots: { icon: IconName; label: string }[] = [
-    { icon: 'quick-attendance', label: '출석' },
-    { icon: 'student-id', label: '학생증' },
+    { icon: 'attendance', label: '출석' },
+    { icon: 'student', label: '학생증' },
     { icon: 'meal', label: '학식' },
-    { icon: 'quick-calendar', label: '캘린더' },
+    { icon: 'calendar', label: '캘린더' },
   ];
   return (
     <>
       <motion.span className={`${s.pill} t-caption-2-strong`} {...pop(0)}>
-        <Icon name="arrow-right" size={16} style={{ transform: 'rotate(-90deg)' }} />
+        <Icon name="chevron-up" size={16} />
         홈에서 위로 밀면 열려요
       </motion.span>
       <motion.div className={s.quickPreview} {...pop(1)}>

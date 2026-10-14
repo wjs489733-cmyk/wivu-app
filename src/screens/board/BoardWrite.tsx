@@ -141,7 +141,7 @@ export function BoardWrite() {
             과제 연결
           </button>
           <button type="button" className={`${s.tool} t-caption-1-strong`} onClick={() => toast('일정 첨부는 다음 버전에서 열려요')}>
-            <Icon name="nav-calendar" size={20} />
+            <Icon name="calendar" size={20} />
             일정
           </button>
           <span className={s.toolSpacer} />
@@ -211,7 +211,7 @@ export function BoardWrite() {
     >
       <div className={s.write}>
         <button type="button" className={s.boardSelect} onClick={() => setSheet('board')} aria-label={`게시판 선택: ${board.name}`}>
-          <Icon name={board.kind === 'course' ? 'nav-board' : board.icon} size={20} />
+          <Icon name={board.kind === 'course' ? 'board' : board.icon} size={20} />
           <Text variant="label" className="truncate">
             {board.kind === 'course' ? `${board.name} · 수업 게시판` : board.name}
           </Text>

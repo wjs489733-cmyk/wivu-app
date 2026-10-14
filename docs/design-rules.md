@@ -46,7 +46,9 @@ Figma 52장 롤아웃의 기준으로도 쓸 수 있습니다. **확정(Figma �
 - **버튼 = Button v4만.** L h52 r14 Headline / M h44 r12 Label / S h32 pill Caption 1 Strong.
   Type: Primary(화면당 1개) · Soft · Outline · OnBrand · OnBrandGhost. **확정**
   - 코드 보완: Pressed(98% 축소+밝기 94%), 모든 타입 Disabled(`bg/disabled` — Figma는 흰 배경에서 안 보이는 `bg/subtle`), 로딩, `dark`(라임 카드 위 진한 버튼).
-- **아이콘**: 16/20/24, 선 두께 = 크기/12, `currentColor`. 레이디얼 1.6 stroke 아이콘은 2(round)로 보정. `chevron-down/left/up`은 코드 파생. **확정 + 보완**
+- **아이콘 — WivU Icons v2 (2026-10-14)**: 24 그리드 · 선 1.7 · 둥근 끝/꺾임 · 채움 없음 · 안전 영역 2px · 모서리 3/2/1 · 사용 크기 16/20/24(선은 크기에 비례: 1.7/1.42/1.13) · `currentColor`. 원본 `design/icons` (66개). **확정**
+  - 쓰임: 목록 행 끝 이동 `chevron-right` / 텍스트 버튼 끝(지도 보기 →) `arrow-right` / 외부 링크 `external-link` / 출석 상태 `check-circle`·`clock`·`x-circle` / 게시판 탭 `board`(네모 말풍선) · 댓글 `comment`(둥근 말풍선) / 시간표 `timetable` · 캘린더 `calendar`
+  - 세트에 없어 같은 규격으로 코드 보충(세트 추가 후보): `user`(작성자·담당 교수), 게시판 `link`·`reply`, 수강과목 링크·재생. 눌린 상태(좋아요·스크랩)는 세트 모양에 채움만 더함
 - **섹션**: 제목 Title 2 + '전체 N ›'(Caption 1 tertiary + 셰브론 16, 오른쪽 정렬선). 섹션 사이 전폭 1px 구분선. **확정**
 - **리스트**: 흰 카드 안 그룹 리스트, 행 패딩 14, 행 사이 1px. **확정**
 - **칩 색 매핑**: 학사·전공·중식 → brand / 장학·UX리서치 → pulse / 행사·석식·학점 → neutral / D-DAY → danger. 필터 칩 선택 = brand(코드 통일; Figma 일부는 ink).

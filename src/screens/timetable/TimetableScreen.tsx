@@ -175,7 +175,7 @@ export function TimetableScreen() {
               {c.onlineNote}
             </Text>
           </span>
-          <Icon name={editing && !c.core ? 'close' : 'arrow-right'} size={20} color={editing && !c.core ? 'error' : 'primary'} />
+          <Icon name={editing && !c.core ? 'close' : 'chevron-right'} size={20} color={editing && !c.core ? 'error' : 'primary'} />
         </button>
       ))}
 

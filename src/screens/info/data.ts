@@ -45,13 +45,13 @@ export const NOTI_FILTERS: { value: NotiFilter; label: string }[] = [
 /* 시간 흐름: 상태바 9:41은 장식. 시나리오는 '수업이 막 시작돼 10:10까지 출석 인증 가능'(≈10:00).
  * 게시판 상대 시각(p1 '12분 전' ≈ 09:48, 댓글 '8분 전'·'3분 전')과 맞춰 댓글 알림은 09:57 — 글보다 앞서지 않게. */
 export const NOTIFICATIONS: Noti[] = [
-  { id: 'nt-comment', group: '오늘', category: '게시판', filter: 'board', icon: 'nav-board', tone: 'brand', time: '09:57', title: '내 글에 댓글 2개가 달렸어요', body: '“서비스 분석 리포트, 분석 대상 겹쳐도…”', unread: true, to: { kind: 'boardPost', id: 'p1' } },
-  { id: 'nt-attend', group: '오늘', category: '출석', filter: 'attendance', icon: 'nav-attendance', tone: 'brand', time: '09:50', title: '서비스디자인 출석 인증 10분 전이에요', body: '디자인관 302호 · 10:00–10:10 인증', unread: true, to: { kind: 'attendance' } },
+  { id: 'nt-comment', group: '오늘', category: '게시판', filter: 'board', icon: 'board', tone: 'brand', time: '09:57', title: '내 글에 댓글 2개가 달렸어요', body: '“서비스 분석 리포트, 분석 대상 겹쳐도…”', unread: true, to: { kind: 'boardPost', id: 'p1' } },
+  { id: 'nt-attend', group: '오늘', category: '출석', filter: 'attendance', icon: 'attendance', tone: 'brand', time: '09:50', title: '서비스디자인 출석 인증 10분 전이에요', body: '디자인관 302호 · 10:00–10:10 인증', unread: true, to: { kind: 'attendance' } },
   { id: 'nt-assign', group: '오늘', category: '과제', filter: 'assignment', icon: 'assignment', tone: 'error', time: '09:00', title: '서비스 분석 리포트 오늘 마감', body: '23:59까지 · 아직 제출하지 않았어요', unread: true, to: { kind: 'assignment' } },
   { id: 'nt-course-notice', group: '오늘', category: '공지', filter: 'notice', icon: 'notice', tone: 'brand', time: '08:30', title: '서비스디자인 새 공지', body: '오늘 수업 진행 방식 안내', unread: true, to: { kind: 'courseNotice' } },
   { id: 'nt-academic', group: '어제', category: '학사', filter: 'notice', icon: 'notice', tone: 'brand', time: '18:20', title: '2학기 수강신청 정정 기간 안내', body: '9.15(화) 18:00 마감', unread: false, to: { kind: 'academicNotice', id: 'n1' } },
-  { id: 'nt-team', group: '어제', category: '팀플', filter: 'board', icon: 'user', tone: 'pulse', time: '13:05', title: 'UX 리서치 팀플 모집이 곧 마감돼요', body: '사용자 인터뷰 팀원 · D-2', unread: false, to: { kind: 'boardPost', id: 'u1' } },
-  { id: 'nt-fair', group: '이번 주', category: '일정', filter: null, icon: 'quick-calendar', tone: 'neutral', time: '9.07', title: '취업박람회가 캘린더에 추가됐어요', body: '9.14(월) 14:00 · 학생회관 대강당', unread: false, to: { kind: 'calendarEvent' } },
+  { id: 'nt-team', group: '어제', category: '팀플', filter: 'board', icon: 'users', tone: 'pulse', time: '13:05', title: 'UX 리서치 팀플 모집이 곧 마감돼요', body: '사용자 인터뷰 팀원 · D-2', unread: false, to: { kind: 'boardPost', id: 'u1' } },
+  { id: 'nt-fair', group: '이번 주', category: '일정', filter: null, icon: 'calendar', tone: 'neutral', time: '9.07', title: '취업박람회가 캘린더에 추가됐어요', body: '9.14(월) 14:00 · 학생회관 대강당', unread: false, to: { kind: 'calendarEvent' } },
 ];
 export const NOTI_GROUPS = ['오늘', '어제', '이번 주'] as const;
 
@@ -176,7 +176,7 @@ export const ACADEMIC_NOTICES: AcademicNotice[] = [
       { label: '대상', value: '2026-2학기 재학생 전체' },
     ],
     body: '수강 정정 기간에는 과목 추가와 취소를 모두 할 수 있어요. 정원이 찬 과목은 대기 신청 후 결원이 생기면 순서대로 배정돼요.\n\n· 신청 가능 학점은 학사 규정을 따라요.\n· 정정 후 시간표는 WivU에 자동으로 다시 동기화돼요.',
-    context: { icon: 'nav-timetable', text: `현재 ${TOTAL_CREDITS}학점 · 정정하면 시간표·과제가 자동으로 다시 맞춰져요` },
+    context: { icon: 'timetable', text: `현재 ${TOTAL_CREDITS}학점 · 정정하면 시간표·과제가 자동으로 다시 맞춰져요` },
     calendarLabel: '수강정정 기간',
     primary: { label: '수업 찾아보기', action: 'timetableAdd' },
   },
@@ -194,7 +194,7 @@ export const ACADEMIC_NOTICES: AcademicNotice[] = [
       { label: '대상', value: '2026-2학기 재학생' },
     ],
     body: '교내 여러 부서에서 함께 일할 근로장학생을 추가로 모집해요. 근무 부서와 시간은 수업 시간표와 겹치지 않게 고를 수 있어요.\n\n· 근무 조건과 선발 기준은 학교 포털 공지의 첨부 파일을 확인해 주세요.\n· 선발 결과는 WivU 알림과 학교 포털에서 함께 안내돼요.',
-    context: { icon: 'nav-timetable', text: '목요일은 수업이 없어서 근무 시간으로 고르기 좋아요' },
+    context: { icon: 'timetable', text: '목요일은 수업이 없어서 근무 시간으로 고르기 좋아요' },
     calendarLabel: '근로장학생 모집 마감',
     primary: { label: '신청하러 가기', action: 'portal' },
   },
@@ -212,7 +212,7 @@ export const ACADEMIC_NOTICES: AcademicNotice[] = [
       { label: '사전 신청', value: '9.13(일)까지 · WivU에서 바로' },
     ],
     body: '기업 상담 부스와 포트폴리오 리뷰, 현직자 특강이 함께 열려요. 미리 신청하면 상담 순서를 먼저 받을 수 있어요.\n\n· 참가 기업과 부스 배치는 행사 전날 WivU 공지로 안내돼요.\n· 포트폴리오 리뷰는 신청한 순서대로 진행돼요.',
-    context: { icon: 'nav-timetable', text: '월 14:00엔 수업이 없어요 · 디자인경영(10:30–11:45) 뒤 바로 갈 수 있어요' },
+    context: { icon: 'timetable', text: '월 14:00엔 수업이 없어요 · 디자인경영(10:30–11:45) 뒤 바로 갈 수 있어요' },
     calendarLabel: '취업박람회',
     inCalendar: true,
     primary: { label: '참가 신청하기', doneLabel: '신청 완료', action: 'apply' },

@@ -10,10 +10,10 @@ export type QuietKey = 'quiet' | 'classMute';
 
 /** 알림 종류 (426:8846) — 기본값도 Figma 그대로 (게시판 활동만 꺼짐) */
 export const NOTI_TYPES: { id: NotiKey; icon: IconName; title: string; meta: string; on: boolean }[] = [
-  { id: 'attendance', icon: 'nav-attendance', title: '출석 시작 알림', meta: '수업 시작 10분 전 · 인증 마감 3분 전', on: true },
+  { id: 'attendance', icon: 'attendance', title: '출석 시작 알림', meta: '수업 시작 10분 전 · 인증 마감 3분 전', on: true },
   { id: 'assignment', icon: 'assignment', title: '과제 마감 알림', meta: '마감 하루 전 · 3시간 전', on: true },
   { id: 'notice', icon: 'notice', title: '학사·장학 공지', meta: '수강정정, 장학, 학사 일정', on: true },
-  { id: 'board', icon: 'user', title: '게시판 활동', meta: '댓글 · 좋아요', on: false },
+  { id: 'board', icon: 'comment', title: '게시판 활동', meta: '댓글 · 좋아요', on: false },
 ];
 
 export const QUIET_OPTIONS: { id: QuietKey; title: string; meta: string; on: boolean }[] = [
@@ -31,11 +31,11 @@ export const NOTI_PREVIEW: Record<NotiKey, { title: string; meta: string; time: 
 
 /** 학교 연동으로 불러온 데이터 (426:8952) — 숫자는 실제 데이터에서 계산 (진입 연동 화면과 같은 SYNC_COUNTS) */
 export const SYNC_ITEMS: { id: string; icon: IconName; title: string; value: string }[] = [
-  { id: 'courses', icon: 'nav-courses', title: '수강 과목', value: `${COURSES.length}과목 · ${TOTAL_CREDITS}학점` },
-  { id: 'timetable', icon: 'nav-timetable', title: '시간표', value: `주 ${COURSES.reduce((a, c) => a + c.slots.length, 0)}개 수업` },
+  { id: 'courses', icon: 'courses', title: '수강 과목', value: `${COURSES.length}과목 · ${TOTAL_CREDITS}학점` },
+  { id: 'timetable', icon: 'timetable', title: '시간표', value: `주 ${COURSES.reduce((a, c) => a + c.slots.length, 0)}개 수업` },
   { id: 'assignments', icon: 'assignment', title: '과제', value: `진행 중 ${SYNC_COUNTS.assignments}건` },
   { id: 'notices', icon: 'notice', title: '공지', value: `새 글 ${SYNC_COUNTS.notices}건` },
-  { id: 'attendance', icon: 'nav-attendance', title: '출석 기록', value: `${allRecords({ complete: false, method: null, time: null }).length}회차` },
+  { id: 'attendance', icon: 'attendance', title: '출석 기록', value: `${allRecords({ complete: false, method: null, time: null }).length}회차` },
 ];
 
 export const APP_VERSION = '1.0.0';

@@ -113,7 +113,7 @@ function CourseCard({ course }: { course: Course }) {
             {cardMeta(course)}
           </Text>
         </div>
-        <Icon name="arrow-right" size={20} color="primary" />
+        <Icon name="chevron-right" size={20} color="primary" />
       </div>
 
       {online ? (

@@ -80,7 +80,7 @@ export function BoardRoot() {
               return (
                 <button key={c.id} type="button" className={s.courseCard} data-new={fresh} onClick={() => nav.push(P.boardCourse(c.id))}>
                   <span className={s.courseIcon}>
-                    <Icon name="nav-board" size={20} />
+                    <Icon name="board" size={20} />
                   </span>
                   <Text variant="subhead" className="truncate" style={{ maxWidth: '100%' }}>
                     {course.name}

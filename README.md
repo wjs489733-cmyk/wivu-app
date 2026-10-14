@@ -15,7 +15,8 @@
 | 디자인 규칙 | [docs/design-rules.md](docs/design-rules.md) |
 | 소스 카탈로그 | 참고한 가이드·오픈소스·레퍼런스 앱과 라이선스 → [docs/sources-catalog.md](docs/sources-catalog.md) |
 | 구현 가이드 | 화면 추가·수정 규칙 → [docs/BUILD_GUIDE.md](docs/BUILD_GUIDE.md) |
-| Figma 원본 데이터 | `design/figma/` (변수·텍스트 스타일·컴포넌트 스펙·아이콘 SVG·프레임/인터랙션 맵·스크린샷) |
+| 아이콘 | WivU Icons v2 — 66개 · 24 그리드 · 선 1.7 → `design/icons/` ([사용 안내](design/icons/USAGE.txt) · [변경 기록](design/icons/CHANGELOG.txt)) |
+| Figma 원본 데이터 | `design/figma/` — Figma 읽기 전용 추출본. **공개 저장소에는 넣지 않고 로컬에만 보관** (`npm run tokens:figma`에 필요) |
 
 ## 실행
 
@@ -47,13 +48,15 @@ npm run build:single # dist-single/index.html — 파일 하나로 된 버전(US
 
 ```
 design/
-  figma/        Figma에서 읽기 전용으로 추출한 원본 (variables.json, text-styles.json, components.json, frames.json, icons/, screens/)
+  icons/        WivU Icons v2 (web/*.svg · manifest.json · 미리보기) + supplement/(세트 보충)
+  logos/        로고·스플래시 SVG (확정본 — 수정 금지)
+  figma/        Figma 읽기 전용 추출본 (로컬 전용 · 저장소 제외)
   tokens/       W3C DTCG 토큰 (primitive · semantic · layout · typography · elevation · motion · component)
 docs/           디자인 규칙 · 화면 맵 · 소스 카탈로그 · 구현 가이드
 scripts/        figma-to-dtcg · build-icons · subset-font · screen-map · crawl(전 화면 점검) · shot(캡처) · figma-dump(Figma 읽기용)
 src/
   styles/       tokens.css · typography.css (자동 생성) + global.css
-  icons/        Figma 아이콘 → React (자동 생성)
+  icons/        아이콘·로고 SVG → TS 모듈 (자동 생성)
   ui/           디자인 시스템 컴포넌트 (Button v4, Card, ListRow, Section, TabBar, Screen, BottomSheet, PinPad …)
   nav/          Figma 전환 규칙(push · modal · dissolve · 탭 즉시)을 옮긴 스택 내비게이션
   app/          라우트 경로(paths.ts) · 화면 레지스트리 · 데스크톱 전시 프레임
@@ -67,7 +70,7 @@ src/
 
 ```bash
 npm run tokens   # design/figma/*.json → design/tokens/*.tokens.json (DTCG) → src/styles/tokens.css · typography.css · tokens.ts
-npm run icons    # design/figma/icons/*.svg → src/icons/icons.generated.ts (currentColor, 16/20/24)
+npm run icons    # design/icons/web/*.svg + design/logos → src/icons/icons.generated.ts (currentColor, 16/20/24)
 npm run font:subset  # Pretendard Variable → 앱에 쓰인 글자 + KS X 1001 한글 2,350자 서브셋 (2MB → 약 450KB)
 ```
 CSS 변수 이름은 `--wivu-color-bg-surface`, `--wivu-space-16`, `--wivu-radius-14`처럼 Figma 변수 경로를 그대로 따릅니다.

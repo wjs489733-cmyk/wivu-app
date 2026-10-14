@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
+import { Icon } from './Icon';
 import s from './Pin.module.css';
 
 /* ── PIN 칸 4개 (68×76 r16): 입력됨 = 점, 현재 칸 = 커서, 남은 칸 = brand-soft ── */
@@ -47,10 +48,7 @@ export function Keypad({ onDigit, onDelete, extraKey, disabled }: KeypadProps) {
         0
       </button>
       <button type="button" className={s.key} onClick={onDelete} disabled={disabled} aria-label="지우기">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1Z" />
-          <path d="m12.5 9.5 5 5m0-5-5 5" />
-        </svg>
+        <Icon name="backspace" size={24} />
       </button>
     </div>
   );

@@ -99,7 +99,7 @@ export function SchoolRow({ school, highlight, selected, onPress }: { school: Sc
         </Text>
       </span>
       {selected && <Chip tone="brand" pill>가장 가까움</Chip>}
-      <Icon name="arrow-right" size={20} color="primary" />
+      <Icon name="chevron-right" size={20} color="primary" />
     </button>
   );
 }

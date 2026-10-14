@@ -6,13 +6,13 @@ export type QuickItem = { id: string; label: string; icon: IconName; path?: stri
 
 export const QUICK_ITEMS: QuickItem[] = [
   { id: 'notice', label: '공지', icon: 'notice', path: P.academicNotice('n1'), mode: 'push' },
-  { id: 'student-id', label: '학생증', icon: 'student-id', path: P.studentId, mode: 'modal' },
+  { id: 'student-id', label: '학생증', icon: 'student', path: P.studentId, mode: 'modal' },
   { id: 'rental', label: '장소대여', icon: 'rental', note: '장소대여는 다음 버전에서 열려요' },
-  { id: 'board', label: '게시판', icon: 'nav-board', path: P.board, mode: 'tab' },
-  { id: 'calendar', label: '캘린더', icon: 'quick-calendar', path: P.calendar, mode: 'tab' },
-  { id: 'attendance', label: '출석', icon: 'quick-attendance', path: P.attendance, mode: 'tab' },
+  { id: 'board', label: '게시판', icon: 'board', path: P.board, mode: 'tab' },
+  { id: 'calendar', label: '캘린더', icon: 'calendar', path: P.calendar, mode: 'tab' },
+  { id: 'attendance', label: '출석', icon: 'attendance', path: P.attendance, mode: 'tab' },
   { id: 'meal', label: '학식', icon: 'meal', path: P.meal, mode: 'push' },
-  { id: 'assignment', label: '과제', icon: 'quick-assignment', path: P.assignment(), mode: 'push' },
+  { id: 'assignment', label: '과제', icon: 'assignment', path: P.assignment(), mode: 'push' },
   { id: 'qr', label: 'QR 인증', icon: 'qr', path: P.attendanceQr, mode: 'modal' },
   { id: 'map', label: '강의실 지도', icon: 'map', path: P.campusMap, mode: 'push' },
   { id: 'library', label: '도서관', icon: 'library', note: '도서관 좌석 연동은 다음 버전에서 열려요' },

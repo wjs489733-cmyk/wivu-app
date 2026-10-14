@@ -60,7 +60,7 @@ export function NoticeDetail() {
             <Text variant="label" className="truncate" style={{ flex: 1 }}>
               {sibling.title}
             </Text>
-            <Icon name="arrow-right" size={20} color="primary" />
+            <Icon name="chevron-right" size={20} color="primary" />
           </button>
         )}
       </article>

@@ -102,7 +102,7 @@ function LeftPanel() {
                 <button type="button" className={s.flow} data-active={active} onClick={() => go(f.path, f.id === 'start')}>
                   <span className={`${s.flowNo} t-caption-2-strong tnum`}>{String(i + 1).padStart(2, '0')}</span>
                   <span className="t-label">{f.label}</span>
-                  <Icon name="arrow-right" size={16} />
+                  <Icon name="chevron-right" size={16} />
                 </button>
               </li>
             );
@@ -164,7 +164,7 @@ function RightPanel() {
           <Icon name="materials" size={20} /> 디자인 시스템
         </button>
         <button type="button" className={`${s.action} t-label`} onClick={restart}>
-          <Icon name="arrow-right" size={20} /> 처음부터
+          <Icon name="refresh" size={20} /> 처음부터
         </button>
       </div>
     </aside>

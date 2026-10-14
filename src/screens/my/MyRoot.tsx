@@ -74,7 +74,7 @@ export function MyRoot() {
             </div>
           </div>
           <div className={s.profileActions}>
-            <Button variant="onBrandGhost" size="m" grow leadingIcon="student-id" onClick={() => nav.modal(P.studentId)}>
+            <Button variant="onBrandGhost" size="m" grow leadingIcon="student" onClick={() => nav.modal(P.studentId)}>
               모바일 학생증
             </Button>
             <Button variant="onBrandGhost" size="m" grow leadingIcon="comment" onClick={() => nav.tab(P.board)}>
@@ -100,7 +100,7 @@ export function MyRoot() {
                 오늘 {lastSync} 동기화 · {COURSES.length}과목 {TOTAL_CREDITS}학점
               </Text>
             </span>
-            <Icon name="arrow-right" size={20} color="primary" />
+            <Icon name="chevron-right" size={20} color="primary" />
           </div>
         </Card>
       </div>
@@ -108,16 +108,16 @@ export function MyRoot() {
       <SectionDivider />
       <Group title="앱 설정">
         <SettingRow icon="bell" title="알림 설정" value={`${notiOn}개 켜짐`} onPress={() => nav.push(P.myNotifications)} />
-        <SettingRow icon="quick-attendance" title="퀵메뉴 편집" value={`${quickCount}개`} onPress={() => nav.push(P.myQuickMenu)} />
+        <SettingRow icon="attendance" title="퀵메뉴 편집" value={`${quickCount}개`} onPress={() => nav.push(P.myQuickMenu)} />
         <SettingRow icon="settings" title="화면 테마" value="라이트" onPress={() => toast('다크 모드는 다음 버전에서 열려요')} />
-        <SettingRow icon="location" title="기본 캠퍼스" value={USER.campus} onPress={() => toast('캠퍼스 변경은 다음 버전에서 열려요')} />
+        <SettingRow icon="pin" title="기본 캠퍼스" value={USER.campus} onPress={() => toast('캠퍼스 변경은 다음 버전에서 열려요')} />
       </Group>
 
       <SectionDivider />
       <Group title="지원">
         <SettingRow icon="notice" title="공지사항" onPress={() => nav.push(P.notices)} />
-        <SettingRow icon="comment" title="문의하기" onPress={() => toast('문의하기는 다음 버전에서 열려요')} />
-        <SettingRow icon="user" title="개인정보 처리방침" onPress={() => toast('개인정보 처리방침은 다음 버전에서 열려요')} />
+        <SettingRow icon="help" title="문의하기" onPress={() => toast('문의하기는 다음 버전에서 열려요')} />
+        <SettingRow icon="lock" title="개인정보 처리방침" onPress={() => toast('개인정보 처리방침은 다음 버전에서 열려요')} />
         <SettingRow title="앱 버전" value={APP_VERSION} onPress={() => toast('최신 버전을 쓰고 있어요', 'check')} />
       </Group>
 

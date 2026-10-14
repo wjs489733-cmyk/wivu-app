@@ -175,14 +175,14 @@ function HeroCarousel({ onAttend }: { onAttend: () => void }) {
           <Text variant="display" color="on-brand" as="h2">
             서비스디자인
           </Text>
-          <Icon name="status-present" size={24} color="on-brand" />
+          <Icon name="check-circle" size={24} color="on-brand" />
         </div>
         <MetaLine items={['디자인관 302호', '전공', '김OO 교수']} color="on-brand-muted" variant="callout" />
         <div className={s.heroActions}>
           <Button variant="onBrandGhost" grow onClick={() => nav.push(P.courseMaterials('service-design'))}>
             강의자료 보기
           </Button>
-          <Button variant="onBrandGhost" leadingIcon="student-id" onClick={() => nav.modal(P.studentId)}>
+          <Button variant="onBrandGhost" leadingIcon="student" onClick={() => nav.modal(P.studentId)}>
             학생증
           </Button>
         </div>
@@ -205,7 +205,7 @@ function HeroCarousel({ onAttend }: { onAttend: () => void }) {
           <Button variant="onBrand" grow onClick={onAttend}>
             출석 인증하기
           </Button>
-          <Button variant="onBrandGhost" leadingIcon="student-id" onClick={() => nav.modal(P.studentId)}>
+          <Button variant="onBrandGhost" leadingIcon="student" onClick={() => nav.modal(P.studentId)}>
             학생증
           </Button>
         </div>
@@ -283,7 +283,7 @@ function NextCard({ variant, chip, time, name, meta, primary }: { variant: 'bran
         <Button variant="onBrandGhost" grow onClick={primary.onPress}>
           {primary.label}
         </Button>
-        <Button variant="onBrandGhost" leadingIcon="student-id" onClick={() => nav.modal(P.studentId)}>
+        <Button variant="onBrandGhost" leadingIcon="student" onClick={() => nav.modal(P.studentId)}>
           학생증
         </Button>
       </div>

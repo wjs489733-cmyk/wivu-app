@@ -41,7 +41,7 @@ export function SchoolSelect() {
             가까운 학교
           </Text>
           <button type="button" className={`${s.locBtn} t-caption-2`} onClick={() => setSheet(true)}>
-            <Icon name="location" size={16} color="primary" />
+            <Icon name="pin" size={16} color="primary" />
             {HOME_LOCATION} 기준 ·
             <Text variant="caption-2-strong" color="brand">
               변경
@@ -82,10 +82,10 @@ function RegionSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
         style={{ marginTop: 12 }}
         onClick={() => {
           onClose();
-          toast(`현재 위치: ${HOME_LOCATION_FULL}`, 'location');
+          toast(`현재 위치: ${HOME_LOCATION_FULL}`, 'pin');
         }}
       >
-        <Icon name="location" size={20} color="primary" />
+        <Icon name="pin" size={20} color="primary" />
         <span style={{ flex: 1 }}>
           <Text variant="headline" color="brand" as="p">
             현재 위치로 찾기
@@ -94,7 +94,7 @@ function RegionSheet({ open, onClose }: { open: boolean; onClose: () => void }) 
             {HOME_LOCATION_FULL}
           </Text>
         </span>
-        <Icon name="arrow-right" size={20} color="primary" />
+        <Icon name="chevron-right" size={20} color="primary" />
       </button>
       <Text variant="caption-1" color="secondary" as="p" style={{ margin: '24px 0 12px' }}>
         다른 지역

@@ -227,14 +227,14 @@ export function EventNew() {
                 알림
               </Text>
               <Text variant="label">{alarm}</Text>
-              <Icon name="arrow-right" size={16} />
+              <Icon name="chevron-right" size={16} />
             </button>
             <button type="button" className={s.groupRow} onClick={() => open('repeat')}>
               <Text variant="body" color="secondary" className={s.rowLabel}>
                 반복
               </Text>
               <Text variant="label">{repeat}</Text>
-              <Icon name="arrow-right" size={16} />
+              <Icon name="chevron-right" size={16} />
             </button>
           </div>
         </div>
@@ -256,8 +256,8 @@ function DatePicker({ value, onPick }: { value: string; onPick: (d: string) => v
           {y}년 {m}월
         </Text>
         <div style={{ display: 'flex' }}>
-          <SmallIconButton icon="arrow-right" flip label="이전 달" disabled={mi <= 0} onPress={() => setMonth(MONTHS[mi - 1])} />
-          <SmallIconButton icon="arrow-right" label="다음 달" disabled={mi >= MONTHS.length - 1} onPress={() => setMonth(MONTHS[mi + 1])} />
+          <SmallIconButton icon="chevron-right" flip label="이전 달" disabled={mi <= 0} onPress={() => setMonth(MONTHS[mi - 1])} />
+          <SmallIconButton icon="chevron-right" label="다음 달" disabled={mi >= MONTHS.length - 1} onPress={() => setMonth(MONTHS[mi + 1])} />
         </div>
       </div>
       <MonthGrid month={month} selected={value} onSelect={onPick} isHoliday={(d) => holidayOn(events, d)} canSelect={(d) => MONTHS.includes(d.slice(0, 7))} />

@@ -349,7 +349,7 @@ function ApplySheetBody({ post, note, setNote, loading, onConfirm, onClose }: { 
       </Card>
       <input className={`${s.noteField} t-body`} value={note} onChange={(e) => setNote(e.target.value)} maxLength={40} placeholder="작성자에게 한마디 (선택) · 예) 인터뷰 진행해봤어요!" aria-label="작성자에게 한마디" />
       <div className={s.notice}>
-        <Icon name="user" size={16} />
+        <Icon name="lock" size={16} />
         <Text variant="caption-1" color="tertiary" as="p">
           신청하면 작성자에게 학과·학년({USER.department} {USER.year}학년)만 공개돼요. 수락되면 알림으로 알려드릴게요.
         </Text>

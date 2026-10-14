@@ -84,7 +84,7 @@ export function Login() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 24 }}>
           <div className={s.schoolCard}>
             <span className={s.schoolIcon}>
-              <Icon name="nav-courses" size={16} />
+              <Icon name="courses" size={16} />
             </span>
             <Text variant="label" style={{ flex: 1 }}>
               {school}
@@ -138,7 +138,7 @@ export function Login() {
             </Text>
           </div>
           <div className={s.hintLine}>
-            <Icon name="student-id" size={16} color="tertiary" />
+            <Icon name="student" size={16} color="tertiary" />
             <Text variant="caption-2" color="tertiary">
               학번은 학생증이나 학교 포털 마이페이지에서 확인할 수 있어요
             </Text>

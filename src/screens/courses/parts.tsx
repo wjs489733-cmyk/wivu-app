@@ -8,10 +8,10 @@ import s from './Courses.module.css';
  * 수강과목 섹션 로컬 부품 (공통화 후보: FileRow · DownloadAction · LinkIcon/PlayIcon · CountChip)
  * ──────────────────────────────────────────────────────────── */
 
-/* ── 없는 아이콘 (24 viewBox · stroke 2 · round cap · currentColor) ── */
+/* ── 세트에 없는 아이콘 (WivU Icons v2 규격: 24 · 선 1.7 · round · currentColor) ── */
 export function LinkIcon({ size = 20 }: { size?: 16 | 20 | 24 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2" />
       <path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2" />
     </svg>
@@ -19,7 +19,7 @@ export function LinkIcon({ size = 20 }: { size?: 16 | 20 | 24 }) {
 }
 export function PlayIcon({ size = 20 }: { size?: 16 | 20 | 24 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M7.5 5.5v13l11-6.5-11-6.5Z" />
     </svg>
   );
@@ -33,7 +33,7 @@ function KindIcon({ kind, size = 20 }: { kind: FileItem['kind']; size?: 16 | 20 
 
 /** 오른쪽 20 아이콘: 다운로드 ↓ / 진행 링 / 완료 ✓ / 링크 · 영상 */
 export function DownloadGlyph({ file, status, progress }: { file: FileItem; status: DlState['status']; progress: number }) {
-  if (file.kind === 'link') return <Icon name="arrow-right" size={20} color="secondary" />;
+  if (file.kind === 'link') return <Icon name="external-link" size={20} color="secondary" />;
   if (file.kind === 'video') return <PlayIcon size={20} />;
   if (status === 'loading') {
     return (

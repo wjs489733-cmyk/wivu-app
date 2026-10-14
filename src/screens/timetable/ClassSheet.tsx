@@ -72,7 +72,7 @@ function SheetBody({ course: c, onClose, onAttend, onRemove }: { course: TTCours
         <InfoBox>
           <InfoRow icon="clock" label="시간" value={time} />
           <InfoRow
-            icon="location"
+            icon="pin"
             label="장소"
             value={c.room}
             trailing={

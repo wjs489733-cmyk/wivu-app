@@ -45,7 +45,7 @@ const courseBoards: Board[] = COURSES.map((c) => ({
   name: c.name,
   kind: 'course',
   sub: `수업 게시판 · 수강생 ${COURSE_HEADCOUNT[c.id]}명`,
-  icon: 'nav-board',
+  icon: 'board',
   filters: COURSE_FILTERS,
   categories: COURSE_FILTERS,
   // 서비스디자인만 Figma 공지 상세(398:7759)와 연결. 나머지 과목은 과목 상세(공지 탭)로.
@@ -60,10 +60,10 @@ const GUIDE_PIN = { label: '운영 안내 · 재학생 인증 게시판', title:
 const campusBoards: Board[] = [
   { id: 'free', name: '자유게시판', kind: 'campus', sub: '재학생 인증 · 익명 게시판', icon: 'comment', filters: ['잡담', '질문', '고민'], categories: ['잡담', '질문', '고민'], pinned: GUIDE_PIN, dot: true },
   { id: 'info', name: '정보게시판', kind: 'campus', sub: '재학생 인증 · 학교생활 정보', icon: 'notice', filters: ['학사', '행사', '생활'], categories: ['학사', '행사', '생활'], pinned: GUIDE_PIN },
-  { id: 'team', name: '팀플·스터디', kind: 'campus', sub: '재학생 인증 · 팀원·스터디 모집', icon: 'user', filters: ['모집 중', '스터디', '공모전'], categories: ['스터디', '공모전', '팀플'], pinned: GUIDE_PIN, dot: true },
+  { id: 'team', name: '팀플·스터디', kind: 'campus', sub: '재학생 인증 · 팀원·스터디 모집', icon: 'users', filters: ['모집 중', '스터디', '공모전'], categories: ['스터디', '공모전', '팀플'], pinned: GUIDE_PIN, dot: true },
   { id: 'dept', name: '시각디자인과', kind: 'campus', sub: '학과 게시판 · 시각디자인과 인증', icon: 'library', filters: ['공지', '과제', '졸업전시'], categories: ['과제', '졸업전시', '잡담'], pinned: GUIDE_PIN },
   { id: 'market', name: '장터', kind: 'campus', sub: '재학생 인증 · 중고거래·나눔', icon: 'bookmark', filters: ['팝니다', '삽니다', '나눔'], categories: ['팝니다', '삽니다', '나눔'], pinned: GUIDE_PIN },
-  { id: 'lost', name: '분실물', kind: 'campus', sub: '재학생 인증 · 분실물 찾기', icon: 'location', filters: ['찾아요', '주웠어요'], categories: ['찾아요', '주웠어요'], pinned: GUIDE_PIN },
+  { id: 'lost', name: '분실물', kind: 'campus', sub: '재학생 인증 · 분실물 찾기', icon: 'pin', filters: ['찾아요', '주웠어요'], categories: ['찾아요', '주웠어요'], pinned: GUIDE_PIN },
 ];
 
 const guideBoard: Board = { id: 'guide', name: '운영 안내', kind: 'system', sub: '', icon: 'notice', filters: [], categories: [] };

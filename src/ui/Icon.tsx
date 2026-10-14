@@ -3,7 +3,7 @@ import { icons, logos, type IconName, type LogoName } from '@/icons/icons.genera
 
 export type { IconName, LogoName };
 
-/** 아이콘 규격 (10-12): 16/20/24. 선 두께는 viewBox 24 기준 2 → 크기에 비례(크기/12) */
+/** 아이콘 규격 (WivU Icons v2): 24 그리드 · 선 1.7 · 사용 크기 16/20/24 — 선 두께는 크기에 비례(24→1.7, 20→1.42, 16→1.13) */
 export type IconSize = 16 | 20 | 24;
 
 type IconProps = {

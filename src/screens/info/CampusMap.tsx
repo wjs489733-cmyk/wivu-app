@@ -261,7 +261,7 @@ export function CampusMap() {
                 toast(guide === 'arrived' ? `지금 ${b.name} 앞이에요` : '지금 학생회관 앞이에요');
               }}
             >
-              <Icon name="location" size={20} />
+              <Icon name="pin" size={20} />
             </button>
             <motion.section className={s.sheet} layout transition={{ duration: 0.26, ease: [0.32, 0.72, 0, 1] }} aria-label="경로 안내">
               <motion.button layout="position" type="button" className={s.grabber} aria-label={expanded ? '건물 정보 접기' : '건물 정보 펼치기'} aria-expanded={expanded} onClick={() => setExpanded((v) => !v)} />
@@ -369,7 +369,7 @@ function ResultRow({ label, meta, onPress }: { label: string; meta: string; onPr
   return (
     <button type="button" className={s.result} onClick={onPress}>
       <span className={s.resultIcon}>
-        <Icon name="location" size={16} />
+        <Icon name="pin" size={16} />
       </span>
       <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <Text variant="subhead" className="truncate">

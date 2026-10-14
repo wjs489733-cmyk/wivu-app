@@ -8,11 +8,11 @@ import s from './Screen.module.css';
 export type TabKey = 'attendance' | 'courses' | 'home' | 'timetable' | 'board';
 
 const TABS: { key: TabKey; label: string; icon: IconName; path: string }[] = [
-  { key: 'attendance', label: '출석', icon: 'nav-attendance', path: P.attendance },
-  { key: 'courses', label: '수강과목', icon: 'nav-courses', path: P.courses },
-  { key: 'home', label: '홈', icon: 'nav-home', path: P.home },
-  { key: 'timetable', label: '시간표', icon: 'nav-timetable', path: P.timetable },
-  { key: 'board', label: '게시판', icon: 'nav-board', path: P.board },
+  { key: 'attendance', label: '출석', icon: 'attendance', path: P.attendance },
+  { key: 'courses', label: '수강과목', icon: 'courses', path: P.courses },
+  { key: 'home', label: '홈', icon: 'home', path: P.home },
+  { key: 'timetable', label: '시간표', icon: 'timetable', path: P.timetable },
+  { key: 'board', label: '게시판', icon: 'board', path: P.board },
 ];
 
 /** 위로 밀기 판정 거리 (px) */

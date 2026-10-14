@@ -104,7 +104,7 @@ export function CourseAttendance() {
           </div>
         ) : (
           <div className={s.banner} data-tone="brand" role="note">
-            <Icon name="status-present" size={20} color="brand" />
+            <Icon name="check-circle" size={20} color="brand" />
             <div className={s.bannerText}>
               <Text variant="label" color="brand">
                 {c.online ? '빠짐없이 수강하고 있어요' : '결석 없이 출석하고 있어요'}

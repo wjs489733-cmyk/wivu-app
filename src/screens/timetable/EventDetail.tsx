@@ -37,7 +37,7 @@ export function EventDetail() {
     return (
       <Screen header={<TopNav title="일정" fallback={P.calendar} />}>
         <div style={{ padding: 16 }}>
-          <EmptyNote icon="nav-calendar" title="일정을 찾을 수 없어요" desc="삭제됐거나 지난 일정이에요" />
+          <EmptyNote icon="calendar" title="일정을 찾을 수 없어요" desc="삭제됐거나 지난 일정이에요" />
         </div>
       </Screen>
     );
@@ -149,10 +149,10 @@ export function EventDetail() {
         </div>
 
         <InfoBox>
-          <InfoRow icon="nav-calendar" label="날짜" value={dateText} />
+          <InfoRow icon="calendar" label="날짜" value={dateText} />
           <InfoRow icon="clock" label="시간" value={timeText} />
-          {e.place && <InfoRow icon="location" label="장소" value={e.place} trailing={e.onCampus ? <MapChip onPress={() => nav.push(P.campusMap)} /> : undefined} />}
-          {course && <InfoRow icon="nav-courses" label="과목" value={`${course.name} · ${course.professor} 교수`} />}
+          {e.place && <InfoRow icon="pin" label="장소" value={e.place} trailing={e.onCampus ? <MapChip onPress={() => nav.push(P.campusMap)} /> : undefined} />}
+          {course && <InfoRow icon="courses" label="과목" value={`${course.name} · ${course.professor} 교수`} />}
           {e.repeat && e.repeat !== '반복 안 함' && <InfoRow icon="clock" label="반복" value={e.repeat} />}
           <InfoRow icon="notice" label="출처" value={e.user ? '직접 추가한 일정' : e.source ?? cat.detail} />
         </InfoBox>

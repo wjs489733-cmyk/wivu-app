@@ -1,0 +1,29 @@
+WivU 공통 아이콘 세트 v2 (2026-10-14)
+
+v1(WivU-Icons 폴더의 기존 파일)은 그대로 두고, 수정·추가한 결과를 이 v2 폴더에 따로 담았습니다.
+총 66개 — 유지 16 · 수정 10 · 신규 40
+
+규격
+• 24 × 24, 선 두께 1.7, 선 끝·꺾임 둥글게(round), 채움 없음
+• 안전 영역 2px: 선 두께까지 포함해 2–22 안에 들어가도록 맞춤 (66개 전부 자동 검사 통과)
+• 모서리 반경: 큰 틀(14 이상) 3 / 중간 2 / 작은 요소 1
+• 사용 크기 16 · 20 · 24. 크기를 줄일 때는 선 두께도 비례해서 줄어듭니다(24→1.7, 20→1.42, 16→1.13).
+
+구성
+• svg/ : Figma 등 디자인 도구용. 기본 색 #18243A
+• web/ : 앱 코드용. stroke="currentColor"라서 부모 글자색을 따릅니다(img 태그로 넣으면 색이 전달되지 않음)
+• manifest.json : 이름, 한국어 용도, 분류, 상태(유지/수정/신규), 메모, 옛 이름 → 새 이름(aliases)
+• WivU-Icons-v2.svg : 전체 아이콘 벡터 모음(편집용)
+• WivU-Icons-v2-preview.png : 분류별 미리보기 (NEW = 신규, 수정 = 원본 수정)
+• WivU-Icons-v2-keyline.png : 키라인 검수 시트 (빨간 점선 = 2px 안전 영역)
+
+이름이 바뀐 것
+• arrow, chevron → chevron-right (같은 모양이던 두 파일을 하나로)
+• schedule → calendar (달력 모양이라 캘린더용. 시간표 탭은 새 timetable 사용 권장)
+
+사용 메모
+• 시간표 탭: timetable(격자) / 캘린더: calendar(달력) / 출석: attendance(달력+체크)
+• 게시판 탭: board(네모 말풍선) / 댓글: comment(둥근 말풍선)
+• 목록 행 끝 이동 표시: chevron-right / 텍스트 버튼 끝(지도 보기 →): arrow-right
+• 출석 상태: check-circle(출석) · clock(지각) · x-circle(결석)
+• 강의자료 묶음: materials(폴더) / 파일 한 개: file

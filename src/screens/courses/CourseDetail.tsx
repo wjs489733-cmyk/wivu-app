@@ -75,7 +75,7 @@ export function CourseDetail() {
           </Text>
           <ListGroup plain style={{ paddingInline: 0 }}>
             <ListRow
-              leading={<LeadingIcon icon="nav-board" />}
+              leading={<LeadingIcon icon="board" />}
               title="과목 게시판"
               meta="공지 · 질문 · 팀플 글 모아 보기"
               chevron
@@ -85,7 +85,7 @@ export function CourseDetail() {
               }}
             />
             <ListRow
-              leading={<LeadingIcon icon="nav-timetable" />}
+              leading={<LeadingIcon icon="timetable" />}
               title="시간표에서 보기"
               meta={course.online ? '사이버 강의 · 시간표 하단 표시' : course.slots.map((sl) => `${sl.day} ${sl.start}–${sl.end}`).join(', ')}
               chevron
@@ -96,7 +96,7 @@ export function CourseDetail() {
             />
             {!course.online && (
               <ListRow
-                leading={<LeadingIcon icon="location" />}
+                leading={<LeadingIcon icon="pin" />}
                 title="강의실 위치"
                 meta={course.room}
                 chevron
@@ -137,7 +137,7 @@ export function CourseDetail() {
           onPress={() => (main ? nav.push(P.assignment(course.id, main.id)) : toast('진행 중인 과제가 없어요'))}
         />
         <Tile icon="materials" label="강의자료" sub={`${files.length}개`} onPress={() => nav.push(P.courseMaterials(course.id))} />
-        <Tile icon="nav-attendance" label="출석" sub={`${att.rate}%`} subColor={attendWarn ? 'error' : 'tertiary'} onPress={() => nav.push(P.attendanceCourse(course.id))} />
+        <Tile icon="attendance" label="출석" sub={`${att.rate}%`} subColor={attendWarn ? 'error' : 'tertiary'} onPress={() => nav.push(P.attendanceCourse(course.id))} />
       </div>
 
       {main && (

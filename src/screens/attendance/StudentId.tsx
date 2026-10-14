@@ -58,7 +58,7 @@ export function StudentId() {
     const m: Mode = mode === 'id' ? 'library' : 'id';
     setMode(m);
     refresh();
-    toast(m === 'library' ? '도서관 출입용 QR로 바꿨어요' : '학생증 QR로 돌아왔어요', m === 'library' ? 'library' : 'student-id');
+    toast(m === 'library' ? '도서관 출입용 QR로 바꿨어요' : '학생증 QR로 돌아왔어요', m === 'library' ? 'library' : 'student');
   };
 
   const mmss = `00:${String(Math.max(0, left)).padStart(2, '0')}`;
@@ -142,7 +142,7 @@ export function StudentId() {
           <Button variant="onBrandGhost" grow leadingIcon="nfc" onClick={() => setNfc(true)}>
             NFC 태그
           </Button>
-          <Button variant="onBrandGhost" grow leadingIcon={mode === 'id' ? 'library' : 'student-id'} onClick={toggleMode} aria-pressed={mode === 'library'}>
+          <Button variant="onBrandGhost" grow leadingIcon={mode === 'id' ? 'library' : 'student'} onClick={toggleMode} aria-pressed={mode === 'library'}>
             {mode === 'id' ? '도서관 출입' : '학생증 QR'}
           </Button>
         </div>

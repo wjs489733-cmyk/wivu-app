@@ -5,7 +5,7 @@ import semantic from '../../design/tokens/semantic.tokens.json';
 import typography from '../../design/tokens/typography.tokens.json';
 import layout from '../../design/tokens/layout.tokens.json';
 import elevation from '../../design/tokens/elevation.tokens.json';
-import { icons, type IconName } from '@/icons/icons.generated';
+import { icons, ICON_SET, type IconName } from '@/icons/icons.generated';
 import {
   Avatar,
   AvatarStack,
@@ -95,7 +95,7 @@ export default function DesignSystemPage() {
         <div className={s.pipeline}>
           {['Figma 변수 67 · 스타일 17', 'design/tokens (DTCG 2025.10)', 'Style Dictionary 5', 'tokens.css · typography.css', 'React UI'].map((step, i) => (
             <span key={step} className={s.pipeStep}>
-              {i > 0 && <Icon name="arrow-right" size={16} color="tertiary" />}
+              {i > 0 && <Icon name="chevron-right" size={16} color="tertiary" />}
               <span className="t-caption-1-strong">{step}</span>
             </span>
           ))}
@@ -264,7 +264,7 @@ export default function DesignSystemPage() {
                 <Button variant="onBrand" grow>
                   출석 인증하기
                 </Button>
-                <Button variant="onBrandGhost" leadingIcon="student-id">
+                <Button variant="onBrandGhost" leadingIcon="student">
                   학생증
                 </Button>
               </div>
@@ -315,13 +315,13 @@ export default function DesignSystemPage() {
             <Tile icon="notice" label="공지" sub="1개 새 글" subColor="brand" />
             <Tile icon="assignment" label="과제" sub="1개 진행" />
             <Tile icon="materials" label="강의자료" sub="4개" />
-            <Tile icon="nav-attendance" label="출석" sub="100%" />
+            <Tile icon="attendance" label="출석" sub="100%" />
           </div>
           <SectionDivider />
           <div className={s.tiles3}>
             <Tile variant="outline" icon="comment" label="자유게시판" dot />
             <Tile variant="outline" icon="notice" label="정보게시판" />
-            <Tile variant="outline" icon="user" label="팀플·스터디" dot />
+            <Tile variant="outline" icon="users" label="팀플·스터디" dot />
           </div>
         </Panel>
 
@@ -340,10 +340,10 @@ export default function DesignSystemPage() {
         </Panel>
 
         {/* ── 7. 아이콘 ───────────────────── */}
-        <Panel title={`Icons · ${Object.keys(icons).length}`} sub="Figma 아이콘 컴포넌트 SVG → currentColor · 16/20/24 (선 = 크기/12)" span={2}>
+        <Panel title={`Icons · ${Object.keys(icons).length}`} sub={`${ICON_SET.name} v${ICON_SET.version} · 24 그리드 · 선 ${ICON_SET.strokeWidth} 둥근 끝 · 안전 영역 2px · currentColor · 16/20/24 (선은 크기에 비례)`} span={2}>
           <div className={s.iconGrid}>
             {(Object.keys(icons) as IconName[]).map((n) => (
-              <div key={n} className={s.iconCell} title={icons[n].figma}>
+              <div key={n} className={s.iconCell} title={`${icons[n].label} · ${icons[n].category}`}>
                 <div style={{ display: 'flex', alignItems: 'end', gap: 8 }}>
                   <Icon name={n} size={24} color="primary" />
                   <Icon name={n} size={20} color="secondary" />
@@ -351,7 +351,7 @@ export default function DesignSystemPage() {
                 </div>
                 <span className="t-caption-2 truncate">{n}</span>
                 <span className="t-micro truncate" style={{ color: 'var(--wivu-color-text-tertiary)', fontWeight: 400 }}>
-                  {icons[n].figma}
+                  {icons[n].label} · {icons[n].status}
                 </span>
               </div>
             ))}
@@ -449,7 +449,7 @@ function ButtonMatrix() {
               {v}
               {v === 'dark' && ' *'}
             </span>
-            <Button variant={v} size="l" leadingIcon={v === 'onBrandGhost' ? 'student-id' : undefined}>
+            <Button variant={v} size="l" leadingIcon={v === 'onBrandGhost' ? 'student' : undefined}>
               {v === 'onBrandGhost' ? '학생증' : '출석 인증하기'}
             </Button>
             <Button variant={v} size="m" trailingIcon={v === 'soft' ? 'arrow-right' : undefined}>
