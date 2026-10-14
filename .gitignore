@@ -5,3 +5,5 @@ artifact
 shots
 *.tsbuildinfo
 .DS_Store
+# Figma 읽기 전용 추출본 — 로컬 전용 (공개 저장소 제외)
+design/figma
