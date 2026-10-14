@@ -51,6 +51,17 @@ const PALETTES = {
       'error-500': '#E5484D', 'warning-500': '#E0952B',
     })}}${NEUTRAL_ICON}`,
   },
+  I: {
+    name: '이사벨식 · 파랑 1색 + 차콜 + 순회색 (연한 파랑 면 제거)',
+    css: `:root{${P({
+      'brand-100': '#F2F2F2', 'brand-200': '#E6E6E6',
+      'ink-900': '#131313', 'ink-950': '#363A3D',
+      'gray-50': '#FAFAFA', 'gray-100': '#F5F5F5', 'gray-200': '#EEEEEE', 'gray-300': '#E6E6E6', 'gray-350': '#D9D9D9',
+      'gray-400': '#CCCCCC', 'gray-450': '#A6A6A6', 'gray-500': '#767676', 'gray-600': '#474747',
+      'accent-lime-100': '#F5F5F5', 'accent-lime-500': '#363A3D', 'accent-lime-700': '#4C80F0',
+      'error-500': '#E5484D', 'warning-500': '#E0952B',
+    })}--wivu-color-text-on-pulse:#FFFFFF;}${NEUTRAL_ICON}`,
+  },
 };
 const SCREENS = [
   ['home', '/home'],
