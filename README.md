@@ -5,6 +5,9 @@
 > Figma 디자인(`WivU_Prototyping_v3-codex`)을 디자인 토큰 → 컴포넌트 → 화면 순서로 코드화했습니다.
 > **백엔드 없음.** 모든 데이터는 가상이고, 상태는 새로고침하면 처음으로 돌아갑니다(전시용 의도).
 
+**바로 보기 → https://wivu.vercel.app** (PC: 전시용 폰 프레임 · 폰: 앱 전체 화면 · 홈 화면에 추가 가능)
+main에 push하면 Vercel과 GitHub Pages(https://wjs489733-cmyk.github.io/wivu-app/)에 자동 배포됩니다.
+
 ## 무엇이 들어 있나
 
 | 항목 | 내용 |
