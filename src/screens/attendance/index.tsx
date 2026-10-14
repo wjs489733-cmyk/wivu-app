@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router';
 import type { ScreenDef } from '@/app/registry';
 import { P } from '@/app/paths';
 import { useNav, useNavState } from '@/nav/nav';
+import { useApp, type PinDigits } from '@/store/app';
 import { HomeScreen } from '@/screens/home/HomeScreen';
 import { AttendanceDone } from './AttendanceDone';
 import { AttendanceRoot } from './AttendanceRoot';
@@ -16,7 +17,7 @@ const SHEET_EXIT_MS = 320;
 
 /**
  * /attendance/pin — 시작한 화면(홈 또는 출석 탭) 위에 PIN 시트가 열린 상태
- * 알림함·QR 화면의 PIN·전시 패널 '예외 · PIN 오류'(?error=1)에서 들어온다.
+ * 알림함·QR 화면의 PIN·전시 패널 '예외 · PIN 오류'(?error=1)·'출석 번호 2자리'(?digits=2)에서 들어온다.
  * 시트를 그냥 닫을 때(dismiss)만 들어온 곳으로 돌아가고, 인증 완료·QR 전환은 시트가 직접 다음 화면으로 보낸다.
  */
 function PinRoute() {
@@ -26,6 +27,12 @@ function PinRoute() {
   const origin: AttendOrigin = from === 'attendance' ? 'attendance' : 'home';
   const [open, setOpen] = useState(true);
   const timer = useRef(0);
+  const q2 = q.get('digits');
+  const digits: PinDigits | undefined = q2 === '2' ? 2 : q2 === '4' ? 4 : undefined;
+  const setPinDigits = useApp((st) => st.setPinDigits);
+  useEffect(() => {
+    if (digits) setPinDigits(digits);
+  }, [digits, setPinDigits]);
   useEffect(() => () => clearTimeout(timer.current), []);
 
   return (
@@ -35,6 +42,7 @@ function PinRoute() {
         open={open}
         from={origin}
         forceError={q.get('error') === '1'}
+        digits={digits}
         onClose={(reason) => {
           setOpen(false);
           if (reason === 'dismiss') timer.current = window.setTimeout(() => nav.back(origin === 'attendance' ? P.attendance : P.home), SHEET_EXIT_MS);

@@ -74,7 +74,7 @@ const FIGMA_FRAMES = new Set(SCREENS.flatMap((sc) => sc.figma)).size;
 function LeftPanel() {
   const navigate = useNavigate();
   const demoReset = useApp((st) => st.demoReset);
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const go = (path: string, fresh = false) => {
     if (fresh) return restart();
     demoReset(); // 로그아웃 잠금까지 풀고 해당 플로우 시작점으로
@@ -96,7 +96,8 @@ function LeftPanel() {
         <p className={`${s.blockTitle} t-caption-2-strong`}>프로토타입 플로우</p>
         <ol className={s.flows}>
           {FLOWS.map((f, i) => {
-            const active = pathname === f.path.split('?')[0];
+            const [fp, fq] = f.path.split('?');
+            const active = pathname === fp && (fq ? search === `?${fq}` : !search);
             return (
               <li key={f.id}>
                 <button type="button" className={s.flow} data-active={active} onClick={() => go(f.path, f.id === 'start')}>

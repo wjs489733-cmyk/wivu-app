@@ -330,7 +330,7 @@ export default function DesignSystemPage() {
           <FormDemo />
         </Panel>
 
-        <Panel title="PIN · Keypad" sub="실제 입력 로직 (캔버스 메모 반영: 모든 버튼 입력 가능)">
+        <Panel title="PIN · Keypad" sub="실제 입력 로직 (캔버스 메모 반영: 모든 버튼 입력 가능) · 자릿수 2/4 — 교수님이 정한 자릿수만큼 칸 표시">
           <PinDemo />
         </Panel>
 
@@ -499,6 +499,7 @@ function FormDemo() {
 }
 
 function PinDemo() {
+  const [n, setN] = useState<2 | 4>(4);
   const [v, setV] = useState('');
   const [status, setStatus] = useState<'idle' | 'checking' | 'error' | 'success'>('idle');
   const press = (d: string) => {
@@ -506,9 +507,9 @@ function PinDemo() {
     const next = (status === 'error' ? '' : v) + d;
     setStatus('idle');
     setV(next);
-    if (next.length === 4) {
+    if (next.length === n) {
       setStatus('checking');
-      setTimeout(() => setStatus(next === '0000' ? 'error' : 'success'), 900);
+      setTimeout(() => setStatus(/^0+$/.test(next) ? 'error' : 'success'), 900);
       setTimeout(() => {
         setV('');
         setStatus('idle');
@@ -517,9 +518,16 @@ function PinDemo() {
   };
   return (
     <div style={{ display: 'grid', gap: 16 }}>
-      <PinBoxes value={v} status={status} />
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }} role="group" aria-label="자릿수">
+        {([4, 2] as const).map((k) => (
+          <Button key={k} variant={n === k ? 'primary' : 'soft'} size="s" aria-pressed={n === k} onClick={() => { setN(k); setV(''); setStatus('idle'); }}>
+            {k}자리
+          </Button>
+        ))}
+      </div>
+      <PinBoxes length={n} value={v} status={status} />
       <Text variant="caption-1" color={status === 'error' ? 'error' : 'tertiary'} align="center" as="p">
-        {status === 'checking' ? '확인 중…' : status === 'error' ? 'PIN이 맞지 않아요 (데모: 0000)' : status === 'success' ? '인증 완료' : '아무 4자리 입력 · 0000은 오류 상태'}
+        {status === 'checking' ? '확인 중…' : status === 'error' ? `PIN이 맞지 않아요 (데모: ${'0'.repeat(n)})` : status === 'success' ? '인증 완료' : `아무 ${n}자리 입력 · ${'0'.repeat(n)}은 오류 상태`}
       </Text>
       <Keypad
         onDigit={press}

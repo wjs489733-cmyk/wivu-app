@@ -3,7 +3,7 @@ import { useLocation } from 'react-router';
 import { BottomSheet, Button, IconButton, Keypad, PinBoxes, Text } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { useApp } from '@/store/app';
+import { useApp, type PinDigits } from '@/store/app';
 
 type Status = 'idle' | 'checking' | 'error' | 'success';
 /** 시트가 닫힌 이유 — dismiss: 딤·드래그·X·Esc / done: 인증 완료 화면으로 / qr: QR 화면으로 */
@@ -15,7 +15,8 @@ const MAX_TRIES = 3;
 
 /**
  * 출석 인증 PIN 시트 — Figma 372:7253(빈) · 432:9081(입력 중) · 432:9226(확인 중) · 432:9371(오류)
- * 실제 입력 로직: 아무 4자리 → 0.9초 확인 → 인증 완료(DISSOLVE). '0000' 또는 forceError면 오류(남은 시도 차감).
+ * 실제 입력 로직: 자릿수(교수님이 정한 2·4자리)를 다 채우면 → 0.9초 확인 → 인증 완료(DISSOLVE).
+ * 전부 0('00'·'0000') 또는 forceError면 오류(남은 시도 차감).
  * 남은 시도 0회면 키패드를 잠그고 QR로 안내. 하드웨어 키보드(0–9 · Backspace)도 받는다.
  * 어느 화면에서든 overlay로 띄울 수 있다 (홈 히어로, 출석 탭, 시간표 수업 시트, /attendance/pin 라우트).
  */
@@ -24,16 +25,21 @@ export function AttendanceSheet({
   onClose,
   forceError = false,
   from,
+  digits: digitsProp,
 }: {
   open: boolean;
   onClose: (reason: SheetCloseReason) => void;
   forceError?: boolean;
   /** 시작한 곳 (없으면 지금 주소로 판단: /attendance… → 출석, 그 밖 → 홈) */
   from?: AttendOrigin;
+  /** 인증 번호 자릿수 (없으면 지금 출석 세션 값) */
+  digits?: PinDigits;
 }) {
   const nav = useNav();
   const { pathname } = useLocation();
   const complete = useApp((st) => st.completeAttendance);
+  const sessionDigits = useApp((st) => st.pinDigits);
+  const len = digitsProp ?? sessionDigits;
   const [value, setValue] = useState('');
   const [status, setStatus] = useState<Status>('idle');
   const [left, setLeft] = useState(MAX_TRIES);
@@ -62,7 +68,7 @@ export function AttendanceSheet({
   const submit = (pin: string) => {
     setStatus('checking');
     later(() => {
-      const wrong = pin === '0000' || (forceError && !forcedUsed);
+      const wrong = /^0+$/.test(pin) || (forceError && !forcedUsed);
       if (wrong) {
         setForcedUsed(true);
         setStatus('error');
@@ -86,9 +92,9 @@ export function AttendanceSheet({
     if (busy || locked) return;
     const base = status === 'error' ? '' : value;
     if (status === 'error') setStatus('idle');
-    const next = (base + d).slice(0, 4);
+    const next = (base + d).slice(0, len);
     setValue(next);
-    if (next.length === 4) submit(next);
+    if (next.length === len) submit(next);
   };
   const onDelete = () => {
     if (status === 'idle') setValue((v) => v.slice(0, -1));
@@ -128,7 +134,7 @@ export function AttendanceSheet({
         ? { text: `번호가 일치하지 않아요 · 남은 시도 ${left}회`, color: 'error' as const }
         : status === 'success'
           ? { text: '출석이 인증됐어요', color: 'brand' as const }
-          : { text: '교수님이 알려준 4자리 번호를 입력하세요', color: 'tertiary' as const };
+          : { text: `교수님이 알려준 ${len}자리 번호를 입력하세요`, color: 'tertiary' as const };
 
   return (
     <BottomSheet open={open} onClose={() => onClose('dismiss')} label="출석 인증">
@@ -144,7 +150,7 @@ export function AttendanceSheet({
         서비스디자인 · 10:00 – 11:50 · 디자인관 302호
       </Text>
       <div style={{ marginTop: 20 }}>
-        <PinBoxes value={status === 'error' || locked ? '••••' : value} status={locked ? 'error' : status} />
+        <PinBoxes length={len} value={status === 'error' || locked ? '•'.repeat(len) : value} status={locked ? 'error' : status} />
       </div>
       <Text variant="caption-1" color={message.color} as="p" align="center" style={{ minHeight: 18, margin: '10px 0 14px' }} role={status === 'error' || locked ? 'alert' : undefined}>
         {message.text}

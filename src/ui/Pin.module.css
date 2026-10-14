@@ -1,6 +1,8 @@
 .boxes {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* 칸 크기는 4자리 기준(68×76) 고정 — 2자리면 같은 크기 2칸을 가운데에 */
+  grid-template-columns: repeat(var(--pin-n, 4), calc((100% - 36px) / 4));
+  justify-content: center;
   gap: 12px;
 }
 .box {

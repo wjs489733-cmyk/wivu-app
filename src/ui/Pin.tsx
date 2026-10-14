@@ -3,14 +3,15 @@ import type { ReactNode } from 'react';
 import { Icon } from './Icon';
 import s from './Pin.module.css';
 
-/* ── PIN 칸 4개 (68×76 r16): 입력됨 = 점, 현재 칸 = 커서, 남은 칸 = brand-soft ── */
+/* ── PIN 칸 (68×76 r16, 자릿수 2·4): 입력됨 = 점, 현재 칸 = 커서, 남은 칸 = brand-soft ── */
 export function PinBoxes({ value, length = 4, status = 'idle' }: { value: string; length?: number; status?: 'idle' | 'checking' | 'error' | 'success' }) {
   return (
     <motion.div
       className={s.boxes}
       animate={status === 'error' ? { x: [0, -10, 10, -8, 8, -4, 0] } : { x: 0 }}
       transition={{ duration: 0.42 }}
-      aria-label={`PIN ${value.length}자리 입력됨`}
+      style={{ ['--pin-n' as string]: length }}
+      aria-label={`PIN ${length}자리 중 ${value.length}자리 입력됨`}
     >
       {Array.from({ length }, (_, i) => {
         const filled = i < value.length;

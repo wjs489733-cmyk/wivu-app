@@ -74,5 +74,6 @@ export const FLOWS = [
   { id: 'board', label: '게시판', path: P.board, figma: '418:8600' },
   { id: 'err-login', label: '예외 · 로그인 오류', path: `${P.login}?error=1`, figma: '411:8258' },
   { id: 'err-pin', label: '예외 · PIN 오류', path: `${P.attendancePin}?error=1`, figma: '432:9371' },
+  { id: 'pin-2', label: '예외 · 출석 번호 2자리', path: `${P.attendancePin}?digits=2`, figma: '432:9081' }, // 코드 추가(대구가톨릭대 2자리 번호)
   { id: 'free-day', label: '예외 · 공강 홈', path: P.homeFreeDay, figma: '433:9519' },
 ] as const;
