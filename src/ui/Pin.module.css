@@ -29,6 +29,16 @@
 .box[data-status='success'] .dot {
   background: #fff;
 }
+/* 선택 칸 — 안 채워도 되는 칸(2~4자리 유연 입력의 3·4번째). 채우면 일반 칸과 같다 */
+.box[data-optional='true'][data-filled='false'] {
+  background: transparent;
+  box-shadow: none;
+  outline: 1.5px dashed var(--wivu-color-border-strong);
+  outline-offset: -1.5px;
+}
+.box[data-optional='true'][data-filled='false'][data-current='true'] {
+  outline-color: var(--wivu-color-border-brand);
+}
 .dot {
   width: 14px;
   height: 14px;

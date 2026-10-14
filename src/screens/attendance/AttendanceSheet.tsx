@@ -14,10 +14,11 @@ export type AttendOrigin = 'home' | 'attendance';
 const MAX_TRIES = 3;
 
 /**
- * 출석 인증 PIN 시트 — Figma 372:7253(빈) · 432:9081(입력 중) · 432:9226(확인 중) · 432:9371(오류)
- *   [확인] 버튼·2자리 (Figma 섹션 '출석 · PIN [확인] 버튼 · 2자리 번호' 508:3117): 508:3118 4자리 완료 · 508:3344 2자리 빈 · 508:3568 2자리 완료 · 508:3786 2자리 오류
- * 실제 입력 로직: 자릿수(교수님이 정한 2·4자리)만큼 칸 → 다 채우면 [확인] 활성 → 누르면 0.9초 확인 → 인증 완료(DISSOLVE).
- * 자동 제출 없음(2자리는 실수로 바로 넘어가기 쉬워서 2·4자리 공통으로 확인 버튼). Enter 키도 확인.
+ * 출석 인증 PIN 시트 — Figma 372:7253(빈) · 432:9081(입력 중) · 432:9226(확인 중) · 432:9371(오류) — 구 시안(자동 제출 · 4칸 고정)
+ *   현행 (Figma 섹션 '출석 · PIN [확인] 버튼 · 2~4자리 입력' 508:3117): 508:3344 빈 · 519:3437 2자리 입력 · 508:3118 4자리 입력 · 508:3786 오류 · 508:3568 자릿수 지정(2자리)
+ * 실제 입력 로직: 자릿수를 모르면(기본) 4칸 중 앞 2칸 필수 · 뒤 2칸 선택(점선) → 2자리부터 [확인] 활성.
+ * 수업이 자릿수를 알려주면(2·4) 그 칸 수만, 다 채우면 [확인] 활성. 누르면 0.9초 확인 → 인증 완료(DISSOLVE).
+ * 자동 제출 없음 — Enter 키도 확인. 자릿수만 틀린 경우는 서버가 판단해 시도 횟수를 깎지 않음(데모에선 2~4자리 모두 통과).
  * 전부 0('00'·'0000') 또는 forceError면 오류(남은 시도 차감).
  * 남은 시도 0회면 키패드를 잠그고 QR로 안내. 하드웨어 키보드(0–9 · Backspace)도 받는다.
  * 어느 화면에서든 overlay로 띄울 수 있다 (홈 히어로, 출석 탭, 시간표 수업 시트, /attendance/pin 라우트).
@@ -34,14 +35,16 @@ export function AttendanceSheet({
   forceError?: boolean;
   /** 시작한 곳 (없으면 지금 주소로 판단: /attendance… → 출석, 그 밖 → 홈) */
   from?: AttendOrigin;
-  /** 인증 번호 자릿수 (없으면 지금 출석 세션 값) */
+  /** 인증 번호 자릿수 (없으면 지금 출석 세션 값, 그것도 없으면 2~4자리 유연 입력) */
   digits?: PinDigits;
 }) {
   const nav = useNav();
   const { pathname } = useLocation();
   const complete = useApp((st) => st.completeAttendance);
   const sessionDigits = useApp((st) => st.pinDigits);
-  const len = digitsProp ?? sessionDigits;
+  const exact = digitsProp ?? sessionDigits;
+  const maxLen = exact ?? 4;
+  const minLen = exact ?? 2;
   const [value, setValue] = useState('');
   const [status, setStatus] = useState<Status>('idle');
   const [left, setLeft] = useState(MAX_TRIES);
@@ -94,10 +97,10 @@ export function AttendanceSheet({
     if (busy || locked) return;
     const base = status === 'error' ? '' : value;
     if (status === 'error') setStatus('idle');
-    if (base.length >= len) return;
+    if (base.length >= maxLen) return;
     setValue(base + d);
   };
-  const canConfirm = value.length === len && status === 'idle' && !locked;
+  const canConfirm = value.length >= minLen && status === 'idle' && !locked;
   const onConfirm = () => {
     if (canConfirm) submit(value);
   };
@@ -142,9 +145,9 @@ export function AttendanceSheet({
         ? { text: `번호가 일치하지 않아요 · 남은 시도 ${left}회`, color: 'error' as const }
         : status === 'success'
           ? { text: '출석이 인증됐어요', color: 'brand' as const }
-          : value.length === len
-            ? { text: '번호를 확인하고 [확인]을 눌러 주세요', color: 'secondary' as const }
-            : { text: `교수님이 알려준 ${len}자리 번호를 입력하세요`, color: 'tertiary' as const };
+          : value.length >= minLen
+            ? { text: value.length < maxLen ? '번호를 다 입력했으면 [확인]을 눌러 주세요' : '번호를 확인하고 [확인]을 눌러 주세요', color: 'secondary' as const }
+            : { text: exact ? `교수님이 알려준 ${exact}자리 번호를 입력하세요` : '교수님이 알려준 번호(2~4자리)를 입력하세요', color: 'tertiary' as const };
 
   return (
     <BottomSheet open={open} onClose={() => onClose('dismiss')} label="출석 인증">
@@ -160,7 +163,7 @@ export function AttendanceSheet({
         서비스디자인 · 10:00 – 11:50 · 디자인관 302호
       </Text>
       <div style={{ marginTop: 20 }}>
-        <PinBoxes length={len} value={status === 'error' || locked ? '•'.repeat(len) : value} status={locked ? 'error' : status} />
+        <PinBoxes length={maxLen} optionalFrom={minLen} value={status === 'error' || locked ? '•'.repeat(value.length || minLen) : value} status={locked ? 'error' : status} />
       </div>
       <Text variant="caption-1" color={message.color} as="p" align="center" style={{ minHeight: 18, margin: '10px 0 14px' }} role={status === 'error' || locked ? 'alert' : undefined}>
         {message.text}

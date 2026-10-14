@@ -26,9 +26,10 @@ type AppState = {
   onboarded: boolean;
   /** 사용자가 직접 로그아웃했는지 — true면 진입 화면 밖으로 못 나감 (새로고침하면 초기화) */
   loggedOut: boolean;
-  /** 지금 출석 세션의 인증 번호 자릿수 — 교수님이 정함(학교·수업마다 2 또는 4).
-   *  실제 서비스에선 서버가 출석 세션과 함께 내려줌. 데모: 기본 4, 전시 패널 '출석 번호 2자리'(?digits=2)로 2 */
-  pinDigits: PinDigits;
+  /** 지금 출석 세션의 인증 번호 자릿수 — 교수님이 정함(학교·수업마다 2·4자리 등).
+   *  null = 앱이 자릿수를 모름 → 2~4자리 유연 입력(기본, 여러 학교 출석 시스템 호환)
+   *  2 · 4 = 수업이 자릿수를 알려준 경우 → 그 칸 수만. 데모: 전시 패널 '자릿수 지정 수업'(?digits=2) */
+  pinDigits: PinDigits | null;
 
   setSchool: (name: string) => void;
   login: () => void;
@@ -37,7 +38,7 @@ type AppState = {
   setQuickMenu: (ids: string[]) => void;
   markRead: (id: string) => void;
   finishOnboarding: () => void;
-  setPinDigits: (n: PinDigits) => void;
+  setPinDigits: (n: PinDigits | null) => void;
   /** 로그아웃: 상태 초기화 + 잠금 */
   logout: () => void;
   /** 스플래시 진입 시 초기화 (Figma: 스플래시 AFTER_TIMEOUT → 변수 리셋).
@@ -59,7 +60,7 @@ const INITIAL = {
   readNotifications: [] as string[],
   onboarded: false,
   loggedOut: false,
-  pinDigits: 4 as PinDigits,
+  pinDigits: null as PinDigits | null,
 };
 
 export const useApp = create<AppState>((set) => ({

@@ -3,21 +3,28 @@ import type { ReactNode } from 'react';
 import { Icon } from './Icon';
 import s from './Pin.module.css';
 
-/* ── PIN 칸 (68×76 r16, 자릿수 2·4): 입력됨 = 점, 현재 칸 = 커서, 남은 칸 = brand-soft ── */
-export function PinBoxes({ value, length = 4, status = 'idle' }: { value: string; length?: number; status?: 'idle' | 'checking' | 'error' | 'success' }) {
+/* ── PIN 칸 (68×76 r16): 입력됨 = 점, 현재 칸 = 커서, 남은 칸 = brand-soft, 선택 칸(optionalFrom~) = 점선 ── */
+type PinBoxesProps = {
+  value: string;
+  length?: number;
+  status?: 'idle' | 'checking' | 'error' | 'success';
+  /** 이 순번(0부터)부터는 안 채워도 되는 칸 — 2~4자리 유연 입력이면 2 */
+  optionalFrom?: number;
+};
+export function PinBoxes({ value, length = 4, status = 'idle', optionalFrom = length }: PinBoxesProps) {
   return (
     <motion.div
       className={s.boxes}
       animate={status === 'error' ? { x: [0, -10, 10, -8, 8, -4, 0] } : { x: 0 }}
       transition={{ duration: 0.42 }}
       style={{ ['--pin-n' as string]: length }}
-      aria-label={`PIN ${length}자리 중 ${value.length}자리 입력됨`}
+      aria-label={optionalFrom < length ? `PIN ${optionalFrom}~${length}자리 중 ${value.length}자리 입력됨` : `PIN ${length}자리 중 ${value.length}자리 입력됨`}
     >
       {Array.from({ length }, (_, i) => {
         const filled = i < value.length;
         const current = i === value.length && status === 'idle';
         return (
-          <div key={i} className={s.box} data-filled={filled} data-current={current} data-status={status}>
+          <div key={i} className={s.box} data-filled={filled} data-current={current} data-status={status} data-optional={i >= optionalFrom}>
             {filled ? <span className={s.dot} /> : current ? <span className={s.caret} /> : null}
           </div>
         );

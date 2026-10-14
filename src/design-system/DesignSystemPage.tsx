@@ -330,7 +330,7 @@ export default function DesignSystemPage() {
           <FormDemo />
         </Panel>
 
-        <Panel title="PIN · Keypad" sub="실제 입력 로직 (캔버스 메모 반영: 모든 버튼 입력 가능) · 자릿수 2/4 — 교수님이 정한 자릿수만큼 칸 표시">
+        <Panel title="PIN · Keypad" sub="실제 입력 로직 · 기본 2~4자리 유연 입력(뒤 2칸 점선 = 선택) · 수업이 자릿수를 알려주면 그 칸 수만 · [확인]으로 제출">
           <PinDemo />
         </Panel>
 
@@ -499,7 +499,9 @@ function FormDemo() {
 }
 
 function PinDemo() {
-  const [n, setN] = useState<2 | 4>(4);
+  const [mode, setMode] = useState<'flex' | 4 | 2>('flex');
+  const n = mode === 'flex' ? 4 : mode;
+  const min = mode === 'flex' ? 2 : mode;
   const [v, setV] = useState('');
   const [status, setStatus] = useState<'idle' | 'checking' | 'error' | 'success'>('idle');
   const press = (d: string) => {
@@ -510,7 +512,7 @@ function PinDemo() {
     setV(base + d);
   };
   const confirm = () => {
-    if (v.length !== n || status !== 'idle') return;
+    if (v.length < min || status !== 'idle') return;
     const next = v;
     setStatus('checking');
     setTimeout(() => setStatus(/^0+$/.test(next) ? 'error' : 'success'), 900);
@@ -522,15 +524,15 @@ function PinDemo() {
   return (
     <div style={{ display: 'grid', gap: 16 }}>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'center' }} role="group" aria-label="자릿수">
-        {([4, 2] as const).map((k) => (
-          <Button key={k} variant={n === k ? 'primary' : 'soft'} size="s" aria-pressed={n === k} onClick={() => { setN(k); setV(''); setStatus('idle'); }}>
-            {k}자리
+        {(['flex', 4, 2] as const).map((k) => (
+          <Button key={k} variant={mode === k ? 'primary' : 'soft'} size="s" aria-pressed={mode === k} onClick={() => { setMode(k); setV(''); setStatus('idle'); }}>
+            {k === 'flex' ? '2~4자리' : `${k}자리 지정`}
           </Button>
         ))}
       </div>
-      <PinBoxes length={n} value={v} status={status} />
+      <PinBoxes length={n} optionalFrom={min} value={status === 'error' ? '•'.repeat(v.length) : v} status={status} />
       <Text variant="caption-1" color={status === 'error' ? 'error' : 'tertiary'} align="center" as="p">
-        {status === 'checking' ? '확인 중…' : status === 'error' ? `PIN이 맞지 않아요 (데모: ${'0'.repeat(n)})` : status === 'success' ? '인증 완료' : `아무 ${n}자리 입력 · ${'0'.repeat(n)}은 오류 상태`}
+        {status === 'checking' ? '확인 중…' : status === 'error' ? 'PIN이 맞지 않아요 (데모: 전부 0)' : status === 'success' ? '인증 완료' : `${min === n ? `${n}자리` : '2~4자리'} 입력 후 [확인] · 전부 0이면 오류 상태`}
       </Text>
       <Keypad
         onDigit={press}
@@ -541,7 +543,7 @@ function PinDemo() {
           </Button>
         }
       />
-      <Button variant="primary" size="l" block disabled={v.length !== n || status !== 'idle'} loading={status === 'checking'} onClick={confirm}>
+      <Button variant="primary" size="l" block disabled={v.length < min || status !== 'idle'} loading={status === 'checking'} onClick={confirm}>
         확인
       </Button>
     </div>

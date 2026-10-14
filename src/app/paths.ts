@@ -27,7 +27,7 @@ export const P = {
   // 출석
   attendance: '/attendance', // 392:7302 탭 루트
   attendanceCourse: (id = 'service-design') => `/attendance/course/${id}`, // 406:8047
-  attendancePin: '/attendance/pin', // 372:7253 · 432:9081 · 432:9226 · 432:9371(?error=1) · [확인]·2자리 508:3118 · 508:3344 · 508:3568 · 508:3786(?digits=2)
+  attendancePin: '/attendance/pin', // 372:7253 · 432:9081 · 432:9226 · 432:9371(?error=1) · 현행 [확인]·2~4자리 508:3344 · 519:3437 · 508:3118 · 508:3786 · 508:3568(?digits=2)
   attendanceDone: '/attendance/done', // 372:7221
   attendanceQr: '/attendance/qr', // 408:8098
   studentId: '/student-id', // 407:8067
@@ -74,6 +74,6 @@ export const FLOWS = [
   { id: 'board', label: '게시판', path: P.board, figma: '418:8600' },
   { id: 'err-login', label: '예외 · 로그인 오류', path: `${P.login}?error=1`, figma: '411:8258' },
   { id: 'err-pin', label: '예외 · PIN 오류', path: `${P.attendancePin}?error=1`, figma: '432:9371' },
-  { id: 'pin-2', label: '예외 · 출석 번호 2자리', path: `${P.attendancePin}?digits=2`, figma: '508:3344' }, // 대구가톨릭대 2자리 번호 (Figma 10-14 추가 섹션)
+  { id: 'pin-2', label: '예외 · 자릿수 지정 수업(2자리)', path: `${P.attendancePin}?digits=2`, figma: '508:3568' }, // 수업이 자릿수를 알려준 경우 (Figma 508:3117 섹션)
   { id: 'free-day', label: '예외 · 공강 홈', path: P.homeFreeDay, figma: '433:9519' },
 ] as const;
