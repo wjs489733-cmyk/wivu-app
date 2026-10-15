@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Chip, Icon, Screen, Segmented, Text, TopNav } from '@/ui';
 import { P } from '@/app/paths';
-import { CAFETERIAS, MEAL_DAYS, MEAL_TIME, MEAL_TIP, MEAL_TODAY, MENUS, type CafeteriaId, type Meal as MealT, type MealKind } from './data';
+import { CAFETERIAS, MEAL_DAYS, MEAL_MONTH, MEAL_TIME, MEAL_TIP, MEAL_TODAY, MENUS, type CafeteriaId, type Meal as MealT, type MealKind } from './data';
 import s from './Info.module.css';
 
 /**
  * 학식 — Figma 429:8987 (홈 '오늘의 학식' 카드 · 퀵메뉴 → PUSH)
- * 요일(월–금 9/7–9/11, 오늘 금 선택) · 식당 탭 · 시간표 기준 추천(오늘만) · 중식/석식 카드.
+ * 요일(월–금 10/5–10/9, 오늘 금 선택) · 식당 탭 · 시간표 기준 추천(오늘만) · 중식/석식 카드.
  * 카드를 누르면 그 끼니의 혼잡도 그래프가 펼쳐진다(기본: 중식).
  */
 export function Meal() {
@@ -19,13 +19,13 @@ export function Meal() {
   const meals = MENUS[day][cafe];
 
   return (
-    <Screen figma="429:8987" header={<TopNav title={isToday ? '오늘의 학식' : `9월 ${day}일 학식`} fallback={P.home} />}>
+    <Screen figma="429:8987" header={<TopNav title={isToday ? '오늘의 학식' : `${MEAL_MONTH}월 ${day}일 학식`} fallback={P.home} />}>
       <div className={s.page}>
         <div className={s.days} role="tablist" aria-label="요일">
           {MEAL_DAYS.map((w) => {
             const on = w.d === day;
             return (
-              <button key={w.d} type="button" role="tab" aria-selected={on} className={s.day} onClick={() => setDay(w.d)} aria-label={`9월 ${w.d}일 ${w.dow}요일${w.d === MEAL_TODAY ? ' 오늘' : ''}`}>
+              <button key={w.d} type="button" role="tab" aria-selected={on} className={s.day} onClick={() => setDay(w.d)} aria-label={`${MEAL_MONTH}월 ${w.d}일 ${w.dow}요일${w.d === MEAL_TODAY ? ' 오늘' : ''}`}>
                 <Text variant="caption-2" color={on ? 'on-brand' : 'tertiary'}>
                   {w.dow}
                 </Text>

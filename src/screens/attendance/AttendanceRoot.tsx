@@ -5,7 +5,7 @@ import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useHasUnread } from '@/app/useUnread';
 import { useApp } from '@/store/app';
-import { courseById, SEMESTER, WEEK_LABEL } from '@/data/core';
+import { courseById, SEMESTER, SEMESTER_WEEK, TODAY_MD } from '@/data/core';
 import { AttendanceSheetHost } from './AttendanceSheetHost';
 import { allRecords, ATTENDANCE_COURSES, courseStats, totals, type TodayState } from './data';
 import { RecordRow } from './parts';
@@ -50,7 +50,7 @@ export function AttendanceRoot() {
       </div>
 
       <SectionDivider />
-      <Section title="과목별 출석" aside={`${SEMESTER} · ${WEEK_LABEL.replace('9월 ', '')}`}>
+      <Section title="과목별 출석" aside={`${SEMESTER} · ${SEMESTER_WEEK}주차`}>
         <ListGroup>
           {ATTENDANCE_COURSES.map((id) => {
             const c = courseById(id);
@@ -95,7 +95,7 @@ export function AttendanceRoot() {
                 exit={{ height: 0, opacity: 0 }}
                 transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1], delay: i >= RECENT_COUNT ? (i - RECENT_COUNT) * 0.03 : 0 }}
               >
-                <RecordRow r={r} highlight={complete && r.date === '09.11'} onPress={() => nav.push(P.attendanceCourse(r.courseId))} />
+                <RecordRow r={r} highlight={complete && r.date === TODAY_MD} onPress={() => nav.push(P.attendanceCourse(r.courseId))} />
               </motion.div>
             ))}
           </AnimatePresence>

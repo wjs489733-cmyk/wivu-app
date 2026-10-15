@@ -1,4 +1,5 @@
 import { Chip, Icon, Text, type ChipTone } from '@/ui';
+import { TODAY_MD } from '@/data/core';
 import { courseName, recordMeta, type Session, type SessionStatus } from './data';
 import s from './Attendance.module.css';
 
@@ -49,7 +50,7 @@ export function RecordRow({ r, onPress, highlight }: { r: Session; onPress?: () 
 /** 회차별 기록 행 — 주차 · 날짜(요일) · 인증 정보 · 상태 칩 (Figma 406:8047 session row) */
 export function SessionRow({ r, note }: { r: Session; note?: string }) {
   return (
-    <div className={s.sessionRow} data-today={r.date === '09.11'}>
+    <div className={s.sessionRow} data-today={r.date === TODAY_MD}>
       <Text variant="caption-1-strong" color="secondary" className={s.sessionWeek}>
         {r.week}주차
       </Text>

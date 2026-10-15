@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { create } from 'zustand';
 import { useApp } from '@/store/app';
-import { USER } from '@/data/core';
+import { TODAY_MD, USER } from '@/data/core';
 import { ASSIGNMENT_LIST, SUBMIT_TIME, type Assignment } from './data';
 
 /* ────────────────────────────────────────────────────────────
@@ -56,7 +56,7 @@ function resolveSubmission(
   if (isGlobalAssignment(courseId, a.id)) {
     // 전역 상태가 기준 (스플래시 리셋 등으로 전역이 false면 미제출)
     if (!globalDone) return null;
-    return local ?? { files: [{ name: globalFile ?? `서비스분석리포트_${USER.name}.pdf`, size: '3.8MB' }], at: `09.11 ${SUBMIT_TIME}` };
+    return local ?? { files: [{ name: globalFile ?? `서비스분석리포트_${USER.name}.pdf`, size: '3.8MB' }], at: `${TODAY_MD} ${SUBMIT_TIME}` };
   }
   if (local) return local;
   if (a.submitted) return { files: [{ name: a.submitted.file, size: a.submitted.size }], at: a.submitted.at };

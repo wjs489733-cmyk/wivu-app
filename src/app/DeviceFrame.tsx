@@ -112,7 +112,7 @@ function LeftPanel() {
       </div>
 
       <div className={s.meta}>
-        <MetaItem k="기준 시각" v="2026.09.11 (금) 9:41" />
+        <MetaItem k="기준 시각" v="2026.10.09 (금) 9:41" />
         <MetaItem k="사용자" v="김유진 · 시각디자인과 4학년 (가상)" />
         <MetaItem k="화면" v={`${SCREENS.length}개 라우트 · Figma ${FIGMA_FRAMES} 프레임 대응`} />
         <MetaItem k="데이터" v="가상 데이터 · 백엔드 없음 · 새로고침 시 초기화" />

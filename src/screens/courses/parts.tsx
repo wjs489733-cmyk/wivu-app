@@ -53,7 +53,7 @@ export function DownloadGlyph({ file, status, progress }: { file: FileItem; stat
 type FileRowProps = {
   file: FileItem;
   variant?: 'list' | 'boxed';
-  /** 메타에 날짜까지 ('PDF · 4.2MB · 09.11') */
+  /** 메타에 날짜까지 ('PDF · 4.2MB · 10.09') */
   withDate?: boolean;
   /** 아이콘 박스 색 — 지난 주차 자료는 subtle */
   tone?: 'brand' | 'subtle';
@@ -97,7 +97,7 @@ export function CountChip({ icon, label, count, dot }: { icon: IconName; label: 
   );
 }
 
-/* ── 정보 표 한 줄 (과제 상세: '마감 | 9월 11일 (금) 23:59 | D-DAY') ── */
+/* ── 정보 표 한 줄 (과제 상세: '마감 | 10월 9일 (금) 23:59 | D-DAY') ── */
 export function InfoLine({ label, children, aside }: { label: string; children: ReactNode; aside?: ReactNode }) {
   return (
     <div className={s.infoLine}>

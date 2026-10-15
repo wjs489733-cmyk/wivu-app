@@ -1,12 +1,12 @@
 import type { CSSProperties } from 'react';
 import { Icon, Text } from '@/ui';
-import { WEEK_LABEL } from '@/data/core';
+import { NOW, WEEK_LABEL } from '@/data/core';
 import { DAYS, NOW_MIN, toMin, type TTCourse } from './data';
 import s from './Timetable.module.css';
 
-/* 이번 주 월~금 날짜 (core: 9월 2주차, 오늘 금 11) */
-const WEEK_DATES = [7, 8, 9, 10, 11];
-const TODAY_COL = 4;
+/* 이번 주 월~금 날짜 (core NOW 기준: 10월 2주차 10/5–10/9, 오늘 금 9) */
+const WEEK_DATES = Array.from({ length: 5 }, (_, i) => new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() - NOW.getDay() + 1 + i).getDate());
+const TODAY_COL = NOW.getDay() - 1;
 const HOUR_H = 52;
 const HEAD_H = 32;
 

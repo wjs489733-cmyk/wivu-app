@@ -1,10 +1,11 @@
 import type { ChipTone, IconName } from '@/ui';
-import { TOTAL_CREDITS } from '@/data/core';
+import { COURSES, NOW } from '@/data/core';
 
 /* ────────────────────────────────────────────────────────────
  * 홈 › 알림·정보 데이터
  *   알림함 428:8938 · 학식 429:8987 · 학사 공지 430:9007 · 강의실 지도 431:9033
  * Figma 문구 그대로. n2·n3 공지와 월–목 식단, 지도 건물 정보는 '가상' 데이터(실제 규정·수치 아님).
+ * 기준 core NOW = 10.09(금) 6주차 — n1은 수강정정(9월) → 중간고사 시행 안내로 바뀜(Figma 430:9007 갱신 필요).
  * ──────────────────────────────────────────────────────────── */
 
 /* ── 알림함 ─────────────────────────────────────────────── */
@@ -49,9 +50,9 @@ export const NOTIFICATIONS: Noti[] = [
   { id: 'nt-attend', group: '오늘', category: '출석', filter: 'attendance', icon: 'attendance', tone: 'brand', time: '09:50', title: '서비스디자인 출석 인증 10분 전이에요', body: '디자인관 302호 · 10:00–10:10 인증', unread: true, to: { kind: 'attendance' } },
   { id: 'nt-assign', group: '오늘', category: '과제', filter: 'assignment', icon: 'assignment', tone: 'error', time: '09:00', title: '서비스 분석 리포트 오늘 마감', body: '23:59까지 · 아직 제출하지 않았어요', unread: true, to: { kind: 'assignment' } },
   { id: 'nt-course-notice', group: '오늘', category: '공지', filter: 'notice', icon: 'notice', tone: 'brand', time: '08:30', title: '서비스디자인 새 공지', body: '오늘 수업 진행 방식 안내', unread: true, to: { kind: 'courseNotice' } },
-  { id: 'nt-academic', group: '어제', category: '학사', filter: 'notice', icon: 'notice', tone: 'brand', time: '18:20', title: '2학기 수강신청 정정 기간 안내', body: '9.15(화) 18:00 마감', unread: false, to: { kind: 'academicNotice', id: 'n1' } },
+  { id: 'nt-academic', group: '어제', category: '학사', filter: 'notice', icon: 'notice', tone: 'brand', time: '18:20', title: '2학기 중간고사 시행 안내', body: '10.19(월) – 10.23(금) 시험 기간', unread: false, to: { kind: 'academicNotice', id: 'n1' } },
   { id: 'nt-team', group: '어제', category: '팀플', filter: 'board', icon: 'users', tone: 'pulse', time: '13:05', title: 'UX 리서치 팀플 모집이 곧 마감돼요', body: '사용자 인터뷰 팀원 · D-2', unread: false, to: { kind: 'boardPost', id: 'u1' } },
-  { id: 'nt-fair', group: '이번 주', category: '일정', filter: null, icon: 'calendar', tone: 'neutral', time: '9.07', title: '취업박람회가 캘린더에 추가됐어요', body: '9.14(월) 14:00 · 학생회관 대강당', unread: false, to: { kind: 'calendarEvent' } },
+  { id: 'nt-fair', group: '이번 주', category: '일정', filter: null, icon: 'calendar', tone: 'neutral', time: '10.05', title: '취업박람회가 캘린더에 추가됐어요', body: '10.12(월) 14:00 · 학생회관 대강당', unread: false, to: { kind: 'calendarEvent' } },
 ];
 export const NOTI_GROUPS = ['오늘', '어제', '이번 주'] as const;
 
@@ -63,14 +64,16 @@ export const CAFETERIAS: { value: CafeteriaId; label: string; place: string }[] 
   { value: 'dorm', label: '기숙사식당', place: '기숙사 1층' },
 ];
 
+/** 이번 주 월–금 (10/5 – 10/9) · 오늘 금 9 */
 export const MEAL_DAYS = [
-  { d: 7, dow: '월' },
-  { d: 8, dow: '화' },
-  { d: 9, dow: '수' },
-  { d: 10, dow: '목' },
-  { d: 11, dow: '금' },
+  { d: 5, dow: '월' },
+  { d: 6, dow: '화' },
+  { d: 7, dow: '수' },
+  { d: 8, dow: '목' },
+  { d: 9, dow: '금' },
 ] as const;
-export const MEAL_TODAY = 11;
+export const MEAL_TODAY = NOW.getDate(); // 9
+export const MEAL_MONTH = NOW.getMonth() + 1; // 10
 
 export type MealKind = '중식' | '석식';
 export type Meal = {
@@ -99,29 +102,29 @@ const DINNER_PRICE = '5,000원';
 const L = (main: string, sides: string, price: string, crowd = [0.3, 0.44, 0.6, 0.94, 1, 0.86, 0.5, 0.3], peak = '12:10–12:40 붐빔', best = 2): Meal => ({ kind: '중식', main, sides, price, crowd, peak, best });
 const D = (main: string, sides: string, price: string, crowd = [0.36, 0.62, 0.9, 0.82, 0.48, 0.3, 0.2, 0.14], peak = '17:20–17:50 붐빔', best = 5): Meal => ({ kind: '석식', main, sides, price, crowd, peak, best });
 
-/** 식단[날짜][식당] — 금(11) 학생식당은 Figma 429:8987 그대로, 나머지는 가상 식단 */
+/** 식단[날짜][식당] — 금(9) 학생식당은 Figma 429:8987 그대로, 나머지는 가상 식단 */
 export const MENUS: Record<number, Record<CafeteriaId, Meal[]>> = {
-  7: {
+  5: {
     student: [L('제육덮밥', '미소된장국 · 단무지 · 배추김치', LUNCH_PRICE), D('짜장면', '군만두 · 단무지 · 양파', DINNER_PRICE)],
     staff: [L('갈비탕', '잡곡밥 · 깍두기 · 숙주나물', LUNCH_PRICE, undefined, '12:00–12:30 붐빔', 1), D('비빔밥', '된장찌개 · 계란후라이', DINNER_PRICE)],
     dorm: [L('카레라이스', '미니돈까스 · 샐러드 · 배추김치', LUNCH_PRICE), D('닭갈비덮밥', '어묵국 · 깍두기', DINNER_PRICE)],
   },
-  8: {
+  6: {
     student: [L('치킨마요덮밥', '유부장국 · 단무지 · 배추김치', LUNCH_PRICE), D('순두부찌개', '쌀밥 · 계란말이 · 김구이', DINNER_PRICE)],
     staff: [L('생선구이 정식', '된장국 · 시금치나물 · 깍두기', LUNCH_PRICE, undefined, '12:00–12:30 붐빔', 1), D('김치찌개', '쌀밥 · 두부조림', DINNER_PRICE)],
     dorm: [L('돈부리', '미소된장국 · 샐러드', LUNCH_PRICE), D('떡볶이', '튀김 · 순대 · 어묵국', DINNER_PRICE)],
   },
-  9: {
+  7: {
     student: [L('함박스테이크', '크림스프 · 양배추 샐러드 · 피클', LUNCH_PRICE), D('콩나물국밥', '깍두기 · 김구이', DINNER_PRICE)],
     staff: [L('불고기 정식', '미역국 · 잡채 · 배추김치', LUNCH_PRICE, undefined, '12:00–12:30 붐빔', 1), D('잔치국수', '김밥 · 단무지', DINNER_PRICE)],
     dorm: [L('오므라이스', '미니우동 · 단무지', LUNCH_PRICE), D('부대찌개', '쌀밥 · 계란찜', DINNER_PRICE)],
   },
-  10: {
+  8: {
     student: [L('비빔국수', '군만두 · 단무지 · 요구르트', LUNCH_PRICE, [0.2, 0.3, 0.42, 0.66, 0.72, 0.6, 0.34, 0.2], '12:15–12:40 조금 붐빔'), D('돼지국밥', '부추무침 · 깍두기', DINNER_PRICE)],
     staff: [L('닭볶음탕', '쌀밥 · 계란말이 · 깍두기', LUNCH_PRICE, undefined, '12:00–12:30 붐빔', 1), D('냉모밀', '유부초밥 · 단무지', DINNER_PRICE)],
     dorm: [L('참치김치볶음밥', '계란국 · 깍두기', LUNCH_PRICE), D('치킨까스', '양배추 샐러드 · 크림스프', DINNER_PRICE)],
   },
-  11: {
+  9: {
     student: [
       { ...L('돈까스', '우동 · 단무지 · 깍두기 · 요구르트', LUNCH_PRICE) },
       { ...D('김치볶음밥', '미역국 · 계란후라이 · 깍두기', DINNER_PRICE) },
@@ -165,31 +168,31 @@ export const ACADEMIC_NOTICES: AcademicNotice[] = [
       { label: '학사', tone: 'brand' },
       { label: '중요', tone: 'neutral', danger: true },
     ],
-    short: '2학기 수강신청 정정 기간 안내',
-    date: '09.10',
-    title: '2026학년도 2학기 수강신청 정정 기간 안내',
+    short: '2학기 중간고사 시행 안내',
+    date: '10.08',
+    title: '2026학년도 2학기 중간고사 시행 안내',
     author: '학사지원팀',
-    meta: '09.10 (목) 14:00 · 조회 1,284',
+    meta: '10.08 (목) 14:00 · 조회 1,284',
     keyDates: [
-      { label: '정정 기간', value: '9.14(월) 10:00 – 9.15(화) 18:00', emphasis: true },
-      { label: '신청 방법', value: '학교 포털 > 수강신청 > 정정' },
+      { label: '시험 기간', value: '10.19(월) – 10.23(금)', emphasis: true },
+      { label: '시험 시간표', value: '과목별 공지 확인' },
       { label: '대상', value: '2026-2학기 재학생 전체' },
     ],
-    body: '수강 정정 기간에는 과목 추가와 취소를 모두 할 수 있어요. 정원이 찬 과목은 대기 신청 후 결원이 생기면 순서대로 배정돼요.\n\n· 신청 가능 학점은 학사 규정을 따라요.\n· 정정 후 시간표는 WivU에 자동으로 다시 동기화돼요.',
-    context: { icon: 'timetable', text: `현재 ${TOTAL_CREDITS}학점 · 정정하면 시간표·과제가 자동으로 다시 맞춰져요` },
-    calendarLabel: '수강정정 기간',
-    primary: { label: '수업 찾아보기', action: 'timetableAdd' },
+    body: '중간고사 기간에는 과목별로 시험이나 시험을 대신하는 과제·발표가 진행돼요. 시험 시간과 장소는 과목마다 다르니 담당 교수님의 과목 공지를 꼭 확인해 주세요.\n\n· 시험을 볼 때는 학생증을 지참해 주세요.\n· 시험 시간이나 장소가 바뀌면 과목 공지로 다시 안내돼요.',
+    context: { icon: 'timetable', text: `${COURSES.length}과목 수강 중 · 시험 공지가 올라오면 바로 알려 드려요` },
+    calendarLabel: '중간고사 기간',
+    primary: { label: '시험 시간표 보기', action: 'portal' },
   },
   {
     id: 'n2',
     chips: [{ label: '장학', tone: 'pulse' }],
     short: '교내 근로장학생 추가 모집',
-    date: '09.09',
+    date: '10.07',
     title: '2026학년도 2학기 교내 근로장학생 추가 모집',
     author: '학생지원팀',
-    meta: '09.09 (수) 10:00 · 조회 862',
+    meta: '10.07 (수) 10:00 · 조회 862',
     keyDates: [
-      { label: '모집 기간', value: '9.9(수) – 9.16(수) 17:00', emphasis: true },
+      { label: '모집 기간', value: '10.7(수) – 10.14(수) 17:00', emphasis: true },
       { label: '신청 방법', value: '학교 포털 > 장학 > 근로장학' },
       { label: '대상', value: '2026-2학기 재학생' },
     ],
@@ -202,14 +205,14 @@ export const ACADEMIC_NOTICES: AcademicNotice[] = [
     id: 'n3',
     chips: [{ label: '행사', tone: 'neutral' }],
     short: '2026 하반기 취업박람회 참가 신청',
-    date: '09.05',
+    date: '10.03',
     title: '2026 하반기 교내 취업박람회 참가 신청 안내',
     author: '취업지원팀',
-    meta: '09.05 (토) 10:00 · 조회 2,031',
+    meta: '10.03 (토) 10:00 · 조회 2,031',
     keyDates: [
-      { label: '일시', value: '9.14(월) 14:00 – 17:00', emphasis: true },
+      { label: '일시', value: '10.12(월) 14:00 – 17:00', emphasis: true },
       { label: '장소', value: '학생회관 대강당' },
-      { label: '사전 신청', value: '9.13(일)까지 · WivU에서 바로' },
+      { label: '사전 신청', value: '10.11(일)까지 · WivU에서 바로' },
     ],
     body: '기업 상담 부스와 포트폴리오 리뷰, 현직자 특강이 함께 열려요. 미리 신청하면 상담 순서를 먼저 받을 수 있어요.\n\n· 참가 기업과 부스 배치는 행사 전날 WivU 공지로 안내돼요.\n· 포트폴리오 리뷰는 신청한 순서대로 진행돼요.',
     context: { icon: 'timetable', text: '월 14:00엔 수업이 없어요 · 디자인경영(10:30–11:45) 뒤 바로 갈 수 있어요' },

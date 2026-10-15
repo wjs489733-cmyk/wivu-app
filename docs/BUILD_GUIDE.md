@@ -85,7 +85,7 @@ export function NoticeDetail() {
 
 ## 5. 데이터·상태
 
-- 공통 데이터: `src/data/core.ts` (기준 시각 2026-09-11(금) 9:41, 김유진, 6과목 17학점, 과제·학사일정). 섹션 데이터는 `src/screens/<section>/data.ts`.
+- 공통 데이터: `src/data/core.ts` (기준 시각 2026-10-09(금) 9:41 · 6주차, 김유진, 6과목 17학점, 과제·학사일정). 섹션 데이터는 `src/screens/<section>/data.ts`.
 - 문구는 Figma 텍스트 그대로. Figma끼리 서로 어긋나는 값은 core.ts 기준으로 맞추고 보고에 적는다.
 - 실제 학교 규정·수치처럼 보이는 가상 정보는 만들지 않는다. 사람 이름은 'OOO' 패턴(김OO 등)·가상 인물만.
 - 전역 상태 `useApp`: `selectedSchool`, `loggedIn`, `attendanceComplete`, `attendanceMethod`, `attendanceTime`, `assignmentSubmitted`, `submittedFile`, `quickMenu`, `readNotifications` + 액션

@@ -1,14 +1,16 @@
-import { COURSES, courseById, type CourseId } from '@/data/core';
+import { COURSES, courseById, TODAY_MD, type CourseId } from '@/data/core';
 import type { AttendMethod } from '@/store/app';
 
 /* ────────────────────────────────────────────────────────────
  * 출석 섹션 데이터 — Figma 392:7302 · 406:8047 텍스트 기준
- * 학기: 2026-09-01(화) 개강, 오늘 = 09.11(금) 2주차 (core NOW)
- * 출석률 = (출석 + 지각) / 진행된 수업 — Figma 모션그래픽스 50%(0+1 / 2)와 일치
- * 출석 합계 6 · 지각 1 · 결석 1 = Figma 요약 타일과 일치
+ * 학기: 2026-09-01(화) 개강, 오늘 = 10.09(금) 6주차 (core NOW · TODAY_MD)
+ *   4주차 추석 연휴(9.24–9.26) → 금요일 수업 휴강 · 6주차 10.05(월) 개천절 대체공휴일 → 월요일 수업 휴강
+ * 출석률 = (출석 + 지각) / 진행된 수업 — 모션그래픽스 83%(4+1 / 6)
+ * 출석 합계 23 · 지각 3 · 결석 2 (5과목, 오늘 출석 전 기준)
+ *   ※ Figma 요약 타일(이전 기준 6/1/1)과 다름 → Figma 갱신 필요
  * ※ 출석 숫자의 단일 기준: 수강과목(과목 상세 '출석' 타일·출석 현황 카드)도 courseStats()를 그대로 읽는다.
  * 사이버 강의(글쓰기와 소통): 주차별 강의는 월요일 09:00에 열리고 그 주 일요일까지 들으면 출석.
- *   1주차(~09.06)·2주차(~09.13, 09.09에 수강) 완료 → 3주차는 09.14(월) 오픈 · 09.20(일)까지.
+ *   1–6주차 수강 완료(6주차 ~10.11, 10.07에 수강) → 7주차는 10.12(월) 오픈 · 10.18(일)까지.
  * ──────────────────────────────────────────────────────────── */
 
 export type RecordStatus = '출석' | '지각' | '결석';
@@ -49,30 +51,60 @@ const sess = (courseId: CourseId, week: number, date: string, dow: Session['dow'
 
 /** 지난 출석 기록 (오늘 이전) — 최신순 정렬은 아래 함수에서 */
 export const PAST: Session[] = [
+  // 1주차
   sess('motion-graphics', 1, '09.01', '화', '14:00', '16:50', '결석'),
   sess('design-management', 1, '09.02', '수', '10:30', '11:45', '출석', { time: '10:27', method: 'PIN' }),
   sess('service-design', 1, '09.04', '금', '10:00', '11:50', '출석', { time: '09:57', method: 'PIN' }),
   sess('brand-design', 1, '09.04', '금', '13:00', '14:50', '출석', { time: '12:56', method: 'NFC' }),
   sess('ux-research', 1, '09.04', '금', '15:00', '16:50', '출석', { time: '14:58', method: 'PIN' }),
+  // 2주차
   sess('design-management', 2, '09.07', '월', '10:30', '11:45', '출석', { time: '10:29', method: 'NFC' }),
   sess('motion-graphics', 2, '09.08', '화', '14:00', '16:50', '지각', { time: '14:12', method: 'QR', lateMin: 12 }),
   sess('design-management', 2, '09.09', '수', '10:30', '11:45', '출석', { time: '10:28', method: 'PIN' }),
-  // 사이버 강의(글쓰기와 소통) — 출석 탭 목록엔 없음(Figma), 상세 라우트용
+  sess('service-design', 2, '09.11', '금', '10:00', '11:50', '출석', { time: '09:58', method: 'PIN' }),
+  sess('brand-design', 2, '09.11', '금', '13:00', '14:50', '출석', { time: '12:58', method: 'PIN' }),
+  sess('ux-research', 2, '09.11', '금', '15:00', '16:50', '출석', { time: '14:57', method: 'PIN' }),
+  // 3주차
+  sess('design-management', 3, '09.14', '월', '10:30', '11:45', '출석', { time: '10:26', method: 'PIN' }),
+  sess('motion-graphics', 3, '09.15', '화', '14:00', '16:50', '출석', { time: '13:58', method: 'PIN' }),
+  sess('design-management', 3, '09.16', '수', '10:30', '11:45', '출석', { time: '10:29', method: 'NFC' }),
+  sess('service-design', 3, '09.18', '금', '10:00', '11:50', '출석', { time: '09:55', method: 'NFC' }),
+  sess('brand-design', 3, '09.18', '금', '13:00', '14:50', '지각', { time: '13:08', method: 'QR', lateMin: 8 }),
+  sess('ux-research', 3, '09.18', '금', '15:00', '16:50', '결석'),
+  // 4주차 (9.25(금) 추석 연휴 휴강)
+  sess('design-management', 4, '09.21', '월', '10:30', '11:45', '출석', { time: '10:27', method: 'PIN' }),
+  sess('motion-graphics', 4, '09.22', '화', '14:00', '16:50', '출석', { time: '13:57', method: 'NFC' }),
+  sess('design-management', 4, '09.23', '수', '10:30', '11:45', '지각', { time: '10:41', method: 'QR', lateMin: 11 }),
+  // 5주차
+  sess('design-management', 5, '09.28', '월', '10:30', '11:45', '출석', { time: '10:28', method: 'PIN' }),
+  sess('motion-graphics', 5, '09.29', '화', '14:00', '16:50', '출석', { time: '13:59', method: 'PIN' }),
+  sess('design-management', 5, '09.30', '수', '10:30', '11:45', '출석', { time: '10:25', method: 'NFC' }),
+  sess('service-design', 5, '10.02', '금', '10:00', '11:50', '출석', { time: '09:59', method: 'PIN' }),
+  sess('brand-design', 5, '10.02', '금', '13:00', '14:50', '출석', { time: '12:57', method: 'NFC' }),
+  sess('ux-research', 5, '10.02', '금', '15:00', '16:50', '출석', { time: '14:59', method: 'QR' }),
+  // 6주차 (10.05(월) 대체공휴일 휴강)
+  sess('motion-graphics', 6, '10.06', '화', '14:00', '16:50', '출석', { time: '13:56', method: 'PIN' }),
+  sess('design-management', 6, '10.07', '수', '10:30', '11:45', '출석', { time: '10:27', method: 'PIN' }),
+  // 사이버 강의(글쓰기와 소통) — 출석 탭 목록엔 없음(Figma), 상세 라우트용 (date = 수강 마감일)
   sess('writing', 1, '09.06', '일', '00:00', '23:59', '출석', { time: '21:40', doneDate: '09.06', opens: '09.01' }),
   sess('writing', 2, '09.13', '일', '00:00', '23:59', '출석', { time: '22:10', doneDate: '09.09', opens: '09.07' }),
+  sess('writing', 3, '09.20', '일', '00:00', '23:59', '출석', { time: '20:30', doneDate: '09.17', opens: '09.14' }),
+  sess('writing', 4, '09.27', '일', '00:00', '23:59', '출석', { time: '21:05', doneDate: '09.23', opens: '09.21' }),
+  sess('writing', 5, '10.04', '일', '00:00', '23:59', '출석', { time: '22:40', doneDate: '09.30', opens: '09.28' }),
+  sess('writing', 6, '10.11', '일', '00:00', '23:59', '출석', { time: '21:15', doneDate: '10.07', opens: '10.05' }),
 ];
 
-/** 오늘(금 09.11) 수업 + 다음 예정 수업 */
+/** 오늘(금 10.09) 수업 + 다음 예정 수업 */
 const TODAY_AND_NEXT: Session[] = [
-  sess('service-design', 2, '09.11', '금', '10:00', '11:50', '인증 가능'),
-  sess('brand-design', 2, '09.11', '금', '13:00', '14:50', '오늘'),
-  sess('ux-research', 2, '09.11', '금', '15:00', '16:50', '오늘'),
-  sess('design-management', 3, '09.14', '월', '10:30', '11:45', '예정'),
-  sess('motion-graphics', 3, '09.15', '화', '14:00', '16:50', '예정'),
-  sess('service-design', 3, '09.18', '금', '10:00', '11:50', '예정'),
-  sess('brand-design', 3, '09.18', '금', '13:00', '14:50', '예정'),
-  sess('ux-research', 3, '09.18', '금', '15:00', '16:50', '예정'),
-  sess('writing', 3, '09.20', '일', '00:00', '23:59', '예정', { opens: '09.14' }),
+  sess('service-design', 6, TODAY_MD, '금', '10:00', '11:50', '인증 가능'),
+  sess('brand-design', 6, TODAY_MD, '금', '13:00', '14:50', '오늘'),
+  sess('ux-research', 6, TODAY_MD, '금', '15:00', '16:50', '오늘'),
+  sess('design-management', 7, '10.12', '월', '10:30', '11:45', '예정'),
+  sess('motion-graphics', 7, '10.13', '화', '14:00', '16:50', '예정'),
+  sess('service-design', 7, '10.16', '금', '10:00', '11:50', '예정'),
+  sess('brand-design', 7, '10.16', '금', '13:00', '14:50', '예정'),
+  sess('ux-research', 7, '10.16', '금', '15:00', '16:50', '예정'),
+  sess('writing', 7, '10.18', '일', '00:00', '23:59', '예정', { opens: '10.12' }),
 ];
 
 /** 학기 총 수업 횟수 (15주 · 주2회 과목은 개강 주 월요일 제외) */
@@ -93,7 +125,7 @@ export type TodayState = { complete: boolean; method: AttendMethod | null; time:
 /** 오늘 서비스디자인 출석 완료 시 기록으로 승격 */
 function todayRecord(t: TodayState): Session | null {
   if (!t.complete) return null;
-  return sess('service-design', 2, '09.11', '금', '10:00', '11:50', '출석', { time: t.time ?? '10:01', method: t.method ?? 'PIN' });
+  return sess('service-design', 6, TODAY_MD, '금', '10:00', '11:50', '출석', { time: t.time ?? '10:01', method: t.method ?? 'PIN' });
 }
 
 /** 모든 출석 기록 (최신순) */
@@ -125,9 +157,9 @@ export function totals(t: TodayState) {
 /** 과목 상세 '회차별 기록' — 지난 회차 + 오늘 + 다음 1회 */
 export function courseSessions(id: CourseId, t: TodayState): Session[] {
   const past = allRecords(t, true).filter((r) => r.courseId === id);
-  const upcoming = TODAY_AND_NEXT.filter((s) => s.courseId === id && !(t.complete && s.courseId === 'service-design' && s.date === '09.11'));
-  const today = upcoming.filter((s) => s.date === '09.11');
-  const next = upcoming.filter((s) => s.date !== '09.11').slice(0, 1);
+  const upcoming = TODAY_AND_NEXT.filter((s) => s.courseId === id && !(t.complete && s.courseId === 'service-design' && s.date === TODAY_MD));
+  const today = upcoming.filter((s) => s.date === TODAY_MD);
+  const next = upcoming.filter((s) => s.date !== TODAY_MD).slice(0, 1);
   return [...past, ...today, ...next].sort((a, b) => (a.key < b.key ? -1 : 1));
 }
 
@@ -148,7 +180,7 @@ export function recordMeta(r: Session, detail = false) {
   return `${r.start} – ${r.end} 예정`;
 }
 
-/** 'MM.DD' → '9.14(월)' */
+/** 'MM.DD' → '10.12(월)' */
 export const shortDay = (r: Pick<Session, 'date' | 'dow'>) => `${Number(r.date.slice(0, 2))}.${Number(r.date.slice(3))}(${r.dow})`;
 /** 출석 인증 마감 = 시작 + 10분 */
 export const closesAt = (start: string) => {

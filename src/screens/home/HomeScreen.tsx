@@ -21,11 +21,11 @@ import { USER } from '@/data/core';
 import { AttendanceSheet } from '@/screens/attendance/AttendanceSheet';
 import { useHasUnread } from '@/app/useUnread';
 import { RadialMenu } from './RadialMenu';
-import { FLOW_FREE_DAY, FLOW_TODAY, HOME_NOTICES, MEALS, WEEK, type FlowItem } from './data';
+import { FLOW_FREE_DAY, FLOW_TODAY, FREE_DAY_D, HOME_NOTICES, MEALS, MONTH_LABEL, TODAY_D, WEEK, type FlowItem } from './data';
 import s from './Home.module.css';
 
 /**
- * 홈 — Figma 308:11640(출석 전) · 308:11881(출석 완료) · 433:9519(공강, 목 9/10)
+ * 홈 — Figma 308:11640(출석 전) · 308:11881(출석 완료) · 433:9519(공강, 목 10/8)
  * 출석 완료 여부는 전역 상태(attendanceComplete)로 자동 분기 → Figma의 CONDITIONAL 대체
  */
 export function HomeScreen({ variant = 'today' }: { variant?: 'today' | 'free-day' }) {
@@ -43,7 +43,7 @@ export function HomeScreen({ variant = 'today' }: { variant?: 'today' | 'free-da
         <div className={s.header}>
           <div className={s.month}>
             <Text variant="title-3" as="h1">
-              2026년 9월
+              {MONTH_LABEL}
             </Text>
             <Text variant="caption-2" color="secondary">
               {school}
@@ -67,7 +67,7 @@ export function HomeScreen({ variant = 'today' }: { variant?: 'today' | 'free-da
         </>
       }
     >
-      <WeekStrip selected={freeDay ? 10 : 11} />
+      <WeekStrip selected={freeDay ? FREE_DAY_D : TODAY_D} />
       {freeDay ? <FreeDayHero /> : <HeroCarousel onAttend={() => setPin(true)} />}
       <QuickCards freeDay={freeDay} />
 
@@ -133,8 +133,8 @@ function WeekStrip({ selected }: { selected: number }) {
             className={s.day}
             onClick={() => {
               if (on) return;
-              if (w.d === 11) nav.fade(P.home);
-              else if (w.d === 10) nav.fade(P.homeFreeDay);
+              if (w.d === TODAY_D) nav.fade(P.home);
+              else if (w.d === FREE_DAY_D) nav.fade(P.homeFreeDay);
               else toast(`${w.d}일(${w.dow}) 일정은 캘린더에서 볼 수 있어요`);
             }}
           >
@@ -352,7 +352,7 @@ function QuickCards({ freeDay }: { freeDay: boolean }) {
           {freeDay ? '10:00 서비스디자인' : '13:00 브랜드디자인'}
         </Text>
         <Text variant="caption-2" color="secondary" as="p">
-          {freeDay ? '금 · 9월 11일' : '도보 4분'}
+          {freeDay ? '금 · 10월 9일' : '도보 4분'}
         </Text>
         <div className={s.quickFoot}>
           <Button variant="onBrand" size="s" trailingIcon="arrow-right" tabIndex={-1}>
@@ -375,7 +375,7 @@ function Timeline({ items }: { items: FlowItem[] }) {
         return (
           <li key={it.time + it.title} className={s.flowRow}>
             <span className={s.node} data-done={done} />
-            {/* 오늘 일은 시각(13:00), 다가오는 일은 날짜(9.14) — 날짜는 한 단계 낮춰 구분 */}
+            {/* 오늘 일은 시각(13:00), 다가오는 일은 날짜(10.12) — 날짜는 한 단계 낮춰 구분 */}
             <Text variant="subhead" tnum className={s.flowTime} color={it.time.includes('.') ? 'secondary' : 'primary'}>
               {it.time}
             </Text>

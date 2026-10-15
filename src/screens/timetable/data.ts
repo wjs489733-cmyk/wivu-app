@@ -4,7 +4,7 @@ import { ASSIGNMENT_LIST } from '@/screens/courses/data';
 
 /* ────────────────────────────────────────────────────────────
  * 시간표 · 캘린더 섹션 데이터 — Figma 392:7472 · 402:7846 · 403:7931 · 392:7540 · 404:7979 · 405:8022
- * 기준 시각: core NOW (2026-09-11 금 9:41). 과목은 core COURSES가 기준, 검색 카탈로그는 가상 과목.
+ * 기준 시각: core NOW (2026-10-09 금 9:41 · 6주차). 과목은 core COURSES가 기준, 검색 카탈로그는 가상 과목.
  * ──────────────────────────────────────────────────────────── */
 
 export const DAYS: Weekday[] = ['월', '화', '수', '목', '금'];
@@ -24,7 +24,7 @@ export const parseIso = (s: string) => {
   const [y, m, d] = s.split('-').map(Number);
   return new Date(y, m - 1, d);
 };
-export const TODAY = iso(NOW); // '2026-09-11'
+export const TODAY = iso(NOW); // '2026-10-09'
 export const addDays = (s: string, n: number) => {
   const d = parseIso(s);
   d.setDate(d.getDate() + n);
@@ -32,12 +32,12 @@ export const addDays = (s: string, n: number) => {
 };
 export const dayDiff = (a: string, b: string) => Math.round((parseIso(b).getTime() - parseIso(a).getTime()) / 86400000);
 export const dowOf = (s: string) => DOW[parseIso(s).getDay()];
-/** '9월 14일 (월)' */
+/** '10월 12일 (월)' */
 export const longDate = (s: string) => {
   const d = parseIso(s);
   return `${d.getMonth() + 1}월 ${d.getDate()}일 (${DOW[d.getDay()]})`;
 };
-/** '9.14' */
+/** '10.12' */
 export const shortDate = (s: string) => {
   const d = parseIso(s);
   return `${d.getMonth() + 1}.${d.getDate()}`;
@@ -74,7 +74,7 @@ const BLOCK: Record<CourseId, { name: string; room: string; note?: string }> = {
   'ux-research': { name: 'UX\n리서치', room: '정보관\n210' },
   'design-management': { name: '디자인\n경영', room: '인문관\n305' },
   'motion-graphics': { name: '모션\n그래픽스', room: '디자인관\nB103' },
-  writing: { name: '글쓰기와\n소통', room: '', note: '시간 무관 · 3주차 강의 9.14 오픈' },
+  writing: { name: '글쓰기와\n소통', room: '', note: '시간 무관 · 7주차 강의 10.12 오픈' },
 };
 
 export const CORE_COURSES: TTCourse[] = COURSES.map((c) => ({
@@ -224,9 +224,9 @@ export const ASSIGNMENT_EVENTS: CalEvent[] = ASSIGNMENT_LIST.map((a) => {
 
 export const SEED_EVENTS: CalEvent[] = [
   { id: 'e5', title: '시각디자인과 개강총회', category: 'academic', date: '2026-09-10', start: '18:00', end: '20:00', place: '디자인관 세미나실', onCampus: true, meta: '18:00 · 디자인관 세미나실', source: '학과 공지 · 09.03 등록', description: '2학기 학과 개강총회예요. 학기 일정 안내와 학생회 소개가 이어져요.', alarm: '1시간 전' },
-  { id: 'e1', title: '2026 하반기 취업박람회', category: 'academic', date: '2026-09-14', start: '14:00', end: '17:00', place: '학생회관 대강당', onCampus: true, meta: '14:00 · 학생회관 대강당', note: '사전 신청 9.13(일)까지', source: '학사 공지 · 09.05 등록', noticeId: 'n3', apply: true, alarm: '하루 전 18:00 · 1시간 전', description: '지역 기업 32개사가 참여하는 하반기 취업박람회입니다. 현장 면접과 직무 상담이 진행되며, 사전 신청자에게는 이력서·포트폴리오 컨설팅이 제공됩니다.\n\n· 대상: 재학생 및 졸업 예정자\n· 준비물: 학생증, 이력서(선택)' },
-  { id: 'e2', title: '수강신청 정정 마감', category: 'academic', date: '2026-09-15', span: ['2026-09-14', '2026-09-15'], end: '18:00', deadline: true, meta: '18:00까지 · 학사 공지', note: '정정 기간 9.14(월) – 9.15(화)', source: '학사 공지 · 09.10 등록', noticeId: 'n1', alarm: '마감 3시간 전', description: '2학기 수강신청 정정 기간이에요. 기간 안에 과목을 추가하거나 취소할 수 있고, 9.15(화) 18:00에 마감돼요.' },
-  { id: 'e7', title: '포트폴리오 스터디', category: 'personal', date: '2026-09-22', start: '19:00', end: '21:00', place: '중앙도서관 그룹스터디룸 3', onCampus: true, meta: '19:00 · 중앙도서관', alarm: '30분 전', repeat: '매주', user: true },
+  { id: 'e1', title: '2026 하반기 취업박람회', category: 'academic', date: '2026-10-12', start: '14:00', end: '17:00', place: '학생회관 대강당', onCampus: true, meta: '14:00 · 학생회관 대강당', note: '사전 신청 10.11(일)까지', source: '학사 공지 · 10.03 등록', noticeId: 'n3', apply: true, alarm: '하루 전 18:00 · 1시간 전', description: '지역 기업 32개사가 참여하는 하반기 취업박람회입니다. 현장 면접과 직무 상담이 진행되며, 사전 신청자에게는 이력서·포트폴리오 컨설팅이 제공됩니다.\n\n· 대상: 재학생 및 졸업 예정자\n· 준비물: 학생증, 이력서(선택)' },
+  { id: 'e2', title: '중간고사 기간', category: 'academic', date: '2026-10-19', span: ['2026-10-19', '2026-10-23'], allDay: true, meta: '10.19 – 10.23 · 학사 공지', note: '시험 시간표는 과목별 공지 확인', source: '학사 공지 · 10.08 등록', noticeId: 'n1', alarm: '하루 전 18:00', description: '2학기 중간고사 기간이에요. 과목별 시험 시간과 장소는 각 과목 공지에서 확인해 주세요. 시험을 대체하는 과제·발표가 있는 과목도 있어요.' },
+  { id: 'e7', title: '포트폴리오 스터디', category: 'personal', date: '2026-10-20', start: '19:00', end: '21:00', place: '중앙도서관 그룹스터디룸 3', onCampus: true, meta: '19:00 · 중앙도서관', alarm: '30분 전', repeat: '매주', user: true },
   { id: 'e8', title: '추석 연휴', category: 'academic', date: '2026-09-24', span: ['2026-09-24', '2026-09-26'], allDay: true, holiday: true, meta: '공휴일 · 9.24 – 9.26', source: '학사 일정', description: '추석 연휴예요. 연휴 중 수업 운영은 각 과목 공지를 확인해 주세요.' },
   ...ASSIGNMENT_EVENTS,
 ];

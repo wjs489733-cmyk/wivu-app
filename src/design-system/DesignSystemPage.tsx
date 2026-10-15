@@ -298,12 +298,12 @@ export default function DesignSystemPage() {
             <div style={{ display: 'grid', gap: 16, alignContent: 'start' }}>
               <Section title="공지사항" more="전체 3" padded={false}>
                 <ListGroup>
-                  <ListRow title="오늘 수업 진행 방식 안내" titleAddon={<NewBadge />} meta="09.11 08:30 · 김OO 교수" onPress={() => toast('공지 상세로 이동')} />
+                  <ListRow title="오늘 수업 진행 방식 안내" titleAddon={<NewBadge />} meta="10.09 08:30 · 김OO 교수" onPress={() => toast('공지 상세로 이동')} />
                   <ListRow title="중간 발표 팀 구성 안내" meta="09.04 · 김OO 교수" onPress={() => {}} />
                 </ListGroup>
               </Section>
               <ListGroup>
-                <ListRow leading={<LeadingIcon icon="file" />} title="서비스 블루프린트.pdf" meta="PDF · 4.2MB · 09.11" trailing={<Icon name="download" size={20} color="primary" />} />
+                <ListRow leading={<LeadingIcon icon="file" />} title="서비스 블루프린트.pdf" meta="PDF · 4.2MB · 10.09" trailing={<Icon name="download" size={20} color="primary" />} />
                 <ListRow leading={<LeadingIcon icon="notice" tone="subtle" />} title="학사·장학 공지" meta="수강정정, 장학, 학사 일정" trailing={<Switch checked label="학사 공지" onChange={() => {}} />} />
               </ListGroup>
             </div>
@@ -393,7 +393,7 @@ const RULES: [string, string][] = [
   ['하단 고정', '탭바 화면: 탭바 + 홈 인디케이터 고정 / 하위 화면: CTA 바 고정 · 콘텐츠 아래 여백 자동'],
   ['전환', '상세 push 0.3s · 입력·모달 아래→위 · 완료·상태 dissolve · 탭 이동 즉시 · 뒤로 = 역방향'],
   ['상태', 'attendanceComplete / assignmentSubmitted / selectedSchool → 전역 상태, 홈 탭이 자동 분기'],
-  ['데이터', '2026-09-11(금) 9:41 · 김유진 · 6과목 17학점 · 가상 데이터만 · 실제 규정처럼 보이는 정보 금지'],
+  ['데이터', '2026-10-09(금) 9:41 · 6주차 · 김유진 · 6과목 17학점 · 가상 데이터만 · 실제 규정처럼 보이는 정보 금지'],
   ['접근성', '터치 영역 44 이상 · 포커스 링 · 모션 감소 설정 존중 · 브랜드 텍스트 대비 3.71:1 → 보강 토큰 결정 대기'],
 ];
 

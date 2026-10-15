@@ -17,7 +17,7 @@ export const P = {
 
   // 홈
   home: '/home', // 308:11640 출석 전 · 308:11881 출석 완료 · 308:11745 레디얼(오버레이)
-  homeFreeDay: '/home/free-day', // 433:9519 공강 홈 (목 9/10)
+  homeFreeDay: '/home/free-day', // 433:9519 공강 홈 (목 10/8)
   notifications: '/notifications', // 428:8938
   meal: '/meal', // 429:8987
   notices: '/notices', // (코드 추가) 학사 공지 목록

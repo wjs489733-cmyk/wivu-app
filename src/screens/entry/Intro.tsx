@@ -122,7 +122,7 @@ function TodayCard() {
   const items: { icon: IconName; label: string; value: string; done?: boolean }[] = [
     { icon: 'attendance', label: '출석', value: '완료', done: true },
     { icon: 'assignment', label: '과제', value: 'D-DAY' },
-    { icon: 'calendar', label: '학교 일정', value: '9.14 월' },
+    { icon: 'calendar', label: '학교 일정', value: '10.12 월' },
   ];
   return (
     <>

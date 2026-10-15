@@ -3,7 +3,7 @@ import { useParams } from 'react-router';
 import { Button, CtaBar, Dialog, Icon, Screen, Text, TextArea, TopNav, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { USER } from '@/data/core';
+import { TODAY_MD, USER } from '@/data/core';
 import { useApp } from '@/store/app';
 import { SAMPLE_SIZE, SUBMIT_TIME, dueShort, getAssignment, remaining, sampleFileName } from './data';
 import { assignmentKey, isGlobalAssignment, useCourses } from './store';
@@ -97,7 +97,7 @@ export function AssignmentSubmit() {
     timers.current.push(
       window.setTimeout(() => {
         const picked = files.map((f) => ({ name: f.name, size: fmtSize(f.bytes) }));
-        saveSubmission(assignmentKey(course.id, a.id), { files: picked, memo: memo.trim(), at: `09.11 ${SUBMIT_TIME}` });
+        saveSubmission(assignmentKey(course.id, a.id), { files: picked, memo: memo.trim(), at: `${TODAY_MD} ${SUBMIT_TIME}` });
         if (isGlobalAssignment(course.id, a.id)) submitGlobal(picked[0].name);
         nav.fade(P.assignmentDone(course.id, a.id));
       }, 1100),

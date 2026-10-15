@@ -64,7 +64,7 @@ src/
   nav/          Figma 전환 규칙(push · modal · dissolve · 탭 즉시)을 옮긴 스택 내비게이션
   app/          라우트 경로(paths.ts) · 화면 레지스트리 · 데스크톱 전시 프레임
   store/        전역 상태 (Figma 프로토타입 변수: attendanceComplete · assignmentSubmitted · selectedSchool)
-  data/         공통 가상 데이터 (기준 시각 2026-09-11 금 9:41)
+  data/         공통 가상 데이터 (기준 시각 2026-10-09 금 9:41 · 6주차)
   screens/      entry · home · attendance · courses · timetable · board · my · info
   design-system/ 디자인 시스템 페이지
 ```

@@ -30,7 +30,7 @@ export function EventNew() {
   const [params] = useSearchParams();
   const editing = useSchedule((st) => st.events.find((e) => e.id === params.get('edit') && e.user));
   const saveEvent = useSchedule((st) => st.saveEvent);
-  const initDate = editing?.span?.[0] ?? editing?.date ?? params.get('date') ?? '2026-09-16';
+  const initDate = editing?.span?.[0] ?? editing?.date ?? params.get('date') ?? '2026-10-14';
 
   const [title, setTitle] = useState(editing?.title ?? '');
   const [category, setCategory] = useState<Category>(editing?.category ?? 'personal');

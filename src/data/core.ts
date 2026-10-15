@@ -1,13 +1,19 @@
 /* ────────────────────────────────────────────────────────────
  * 데이터 기준 (모든 화면 공통) — progress 문서 '데이터 기준'과 동일하게 유지
- * 기준 시각: 2026-09-11(금) 9:41 · 가상 인물·가상 캠퍼스 배치
+ * 기준 시각: 2026-10-09(금) 9:41 = 학기 6주차 · 가상 인물·가상 캠퍼스 배치
+ * (9/1(화) 개강 · 4주차 추석 연휴로 금요일 휴강 · 10/5(월) 대체공휴일 휴강 · 8주차 10/19–10/23 중간고사)
  * 실제 학교 규정·수치처럼 보이는 가상 정보는 피한다.
  * ──────────────────────────────────────────────────────────── */
 
-export const NOW = new Date(2026, 8, 11, 9, 41); // 월은 0부터 → 8 = 9월
-export const TODAY_LABEL = '9월 11일 금요일';
+export const NOW = new Date(2026, 9, 9, 9, 41); // 월은 0부터 → 9 = 10월
+export const TODAY_LABEL = '10월 9일 금요일';
+/** 오늘 'MM.DD' — 출석·과제 등 날짜 문자열 비교용 */
+export const TODAY_MD = '10.09';
 export const SEMESTER = '2026-2학기';
-export const WEEK_LABEL = '9월 2주차';
+/** 학기 주차 (개강 주 = 1주차) */
+export const SEMESTER_WEEK = 6;
+/** 월 기준 주차 (1일이 들어 있는 주 = 1주차) — 시간표 헤더 */
+export const WEEK_LABEL = '10월 2주차';
 
 export const USER = {
   name: '김유진',
@@ -57,12 +63,12 @@ export const TODAY_CLASSES: CourseId[] = ['service-design', 'brand-design', 'ux-
 export const ATTENDANCE_WINDOW = { courseId: 'service-design' as CourseId, opens: '10:00', closes: '10:10', minutesToStart: 19 };
 
 export const ASSIGNMENTS = [
-  { id: 'a1', courseId: 'service-design' as CourseId, title: '서비스 분석 리포트', due: '오늘 23:59', dueFull: '9월 11일(금) 23:59', format: 'PDF', status: '미제출' as '미제출' | '제출 완료', dday: 'D-DAY' },
+  { id: 'a1', courseId: 'service-design' as CourseId, title: '서비스 분석 리포트', due: '오늘 23:59', dueFull: '10월 9일(금) 23:59', format: 'PDF', status: '미제출' as '미제출' | '제출 완료', dday: 'D-DAY' },
 ];
 
 export const ACADEMIC_SCHEDULE = [
-  { id: 's1', title: '수강정정 기간', date: '9.14(월) – 9.15(화) 18:00', tag: '학사' },
-  { id: 's2', title: '2026 하반기 취업박람회', date: '9.14(월) 14:00', tag: '행사' },
+  { id: 's1', title: '중간고사 기간', date: '10.19(월) – 10.23(금)', tag: '학사' },
+  { id: 's2', title: '2026 하반기 취업박람회', date: '10.12(월) 14:00', tag: '행사' },
 ];
 
 export const PIN_DEMO = '1234'; // 데모: 아무 4자리나 통과, 오류 플로우는 ?error=1 또는 '0000'

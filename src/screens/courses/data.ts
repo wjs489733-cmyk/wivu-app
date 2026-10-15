@@ -4,12 +4,14 @@ import { ACADEMIC_NOTICES } from '@/screens/info/data';
 /* ────────────────────────────────────────────────────────────
  * 수강과목 섹션 데이터 — Figma 392:7404 · 398:7666 · 398:7694 · 398:7717 · 398:7759 · 398:7782 문구 그대로.
  * Figma에는 서비스디자인만 그려져 있어 나머지 5과목은 같은 구조로 그럴듯하게 채움(가상 인물 'OOO').
- * 기준 시각 core NOW = 2026-09-11(금) 9:41 · 1주차 9.1–9.4 · 2주차 9.7–9.11
+ * 기준 시각 core NOW = 2026-10-09(금) 9:41 = 6주차 · 1주차 9.1–9.4 · 6주차 10.6–10.9 (10.5 대체공휴일)
+ * 1주차(OT·강의계획서·'1주차 …') 글/자료는 9월 날짜 그대로, '이번 주' 글/자료는 6주차로 둠.
  *
  * 단일 기준(single source of truth)
  *  · 과제: 여기 COURSE_INFO[].assignments → ASSIGNMENT_LIST로 내보내고, 캘린더(timetable/data.ts)는 이 목록에서
- *    과제 일정을 만든다. 날짜는 Figma 캘린더 392:7540의 과제 점(9.4 · 9.11 · 9.17 · 9.18 · 9.29)과
- *    '다가오는 일정'(9.17 브랜드 무드보드 제출 · 23:59)에 맞춤 → 진행 중 4건 = Figma 연동 화면 '과제 4건'과 일치.
+ *    과제 일정을 만든다. 과제 점: 9.4(1주차, 제출 완료) · 10.9 · 10.15 · 10.16 · 10.27
+ *    '다가오는 일정'(10.15 브랜드 무드보드 제출 · 23:59) → 진행 중 4건 = Figma 연동 화면 '과제 4건'과 일치.
+ *    ※ Figma 캘린더 392:7540(이전 기준 9월 · 9.11/9.17/9.18/9.29)은 10월로 갱신 필요.
  *  · 출석: 과목별 숫자는 attendance/data.ts courseStats()가 기준 (여기엔 두지 않음).
  *  · 연동 화면 카운트: SYNC_COUNTS (과제 진행 중 · 이번 주 새 공지)
  * ──────────────────────────────────────────────────────────── */
@@ -29,14 +31,14 @@ export type FileItem = {
 export type Notice = {
   id: string;
   title: string;
-  /** 목록용 '09.11 08:30' 또는 '09.04' */
+  /** 목록용 '10.09 08:30' 또는 '09.04' */
   date: string;
-  /** 상세용 '09.11 (금) 08:30' */
+  /** 상세용 '10.09 (금) 08:30' */
   dateFull: string;
   views: number;
   /** 안 읽은 새 글 (N 배지) — 읽으면 store에서 해제 */
   isNew?: boolean;
-  /** 이번 주(2주차) 공지 — 수강과목 카드의 '공지 N' 집계 */
+  /** 이번 주(6주차) 공지 — 수강과목 카드의 '공지 N' 집계 */
   thisWeek?: boolean;
   body: string;
   attachment?: FileItem;
@@ -74,11 +76,11 @@ const d = (m: number, day: number, h: number, min: number) => new Date(2026, m -
 const SUBMIT_DEFAULT = { points: '20점', format: 'PDF · 10MB 이하', method: '개인 제출 · 마감 전 재제출 가능' };
 
 /* ── 공용 파일 (공지 첨부 = 강의자료 같은 파일) ─────────────── */
-const SD_BLUEPRINT = pdf('sd-blueprint', '서비스 블루프린트.pdf', '4.2MB', '09.11');
-const SD_TEMPLATE = pdf('sd-template', '블루프린트_워크숍_템플릿.pdf', '2.1MB', '09.11');
+const SD_BLUEPRINT = pdf('sd-blueprint', '서비스 블루프린트.pdf', '4.2MB', '10.09');
+const SD_TEMPLATE = pdf('sd-template', '블루프린트_워크숍_템플릿.pdf', '2.1MB', '10.09');
 const SD_OT = pdf('sd-ot', '오리엔테이션.pdf', '1.8MB', '09.04');
 const SD_SYLLABUS = pdf('sd-syllabus', '강의계획서_서비스디자인.pdf', '0.6MB', '09.04');
-const UX_TEMPLATE = pdf('ux-question', '인터뷰_질문지_템플릿.pdf', '0.4MB', '09.10');
+const UX_TEMPLATE = pdf('ux-question', '인터뷰_질문지_템플릿.pdf', '0.4MB', '10.08');
 const BD_FEEDBACK = pdf('bd-feedback', '1주차_브랜드분석_피드백.pdf', '1.6MB', '09.08');
 
 export const COURSE_INFO: Record<CourseId, CourseInfo> = {
@@ -87,13 +89,13 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       {
         id: 'c1',
         title: '오늘 수업 진행 방식 안내',
-        date: '09.11 08:30',
-        dateFull: '09.11 (금) 08:30',
+        date: '10.09 08:30',
+        dateFull: '10.09 (금) 08:30',
         views: 42,
         isNew: true,
         thisWeek: true,
         body:
-          '오늘(9/11) 수업은 2교시 연속으로 진행됩니다. 전반부에는 서비스 분석 리포트 중간 피드백을, 후반부에는 팀별 서비스 블루프린트 워크숍을 진행합니다.\n\n준비물\n· 노트북 (Figma 사용)\n· 지난주 현장 관찰 노트\n\n출석은 10:00–10:10 사이에 앱에서 인증해 주세요. 10분 이후에는 지각으로 처리됩니다.',
+          '오늘(10/9) 수업은 2교시 연속으로 진행됩니다. 전반부에는 서비스 분석 리포트 중간 피드백을, 후반부에는 팀별 서비스 블루프린트 워크숍을 진행합니다.\n\n준비물\n· 노트북 (Figma 사용)\n· 지난주 현장 관찰 노트\n\n출석은 10:00–10:10 사이에 앱에서 인증해 주세요. 10분 이후에는 지각으로 처리됩니다.',
         attachment: SD_TEMPLATE,
       },
       {
@@ -120,7 +122,7 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       {
         id: 'a1',
         title: '서비스 분석 리포트',
-        due: d(9, 11, 23, 59),
+        due: d(10, 9, 23, 59),
         ...SUBMIT_DEFAULT,
         desc: '지난 2주간 진행한 현장 관찰을 바탕으로 하나의 서비스를 선정해 고객 여정을 분석하고, 문제점과 개선 기회를 정리하세요.\n\n· 분석 대상 서비스 1개 선정\n· 고객 여정 지도(Journey Map) 1장 포함\n· 개선 기회 3가지 이상 도출\n· 분량: A4 5매 내외',
         attachments: [pdf('sd-guide', '과제 가이드_서비스분석.pdf', '820KB')],
@@ -138,7 +140,7 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       },
     ],
     materials: [
-      { label: '2주차 · 09.11', today: true, items: [SD_BLUEPRINT, SD_TEMPLATE] },
+      { label: '6주차 · 10.09', today: true, items: [SD_BLUEPRINT, SD_TEMPLATE] },
       { label: '1주차 · 09.04', items: [SD_OT, SD_SYLLABUS] },
     ],
   },
@@ -167,7 +169,7 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       {
         id: 'a1',
         title: '브랜드 무드보드',
-        due: d(9, 17, 23, 59),
+        due: d(10, 15, 23, 59),
         ...SUBMIT_DEFAULT,
         points: '15점',
         desc: '관심 있는 로컬 브랜드 하나를 골라 브랜드의 성격이 드러나는 무드보드를 만드세요.\n\n· 브랜드 키워드 3개 정의\n· 컬러·타이포·이미지 레퍼런스 포함\n· 키워드마다 근거 한 줄씩 작성\n· 분량: A3 1매',
@@ -175,7 +177,7 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       },
     ],
     materials: [
-      { label: '2주차 · 09.11', today: true, items: [pdf('bd-identity', '브랜드 아이덴티티 개론.pdf', '3.1MB', '09.11')] },
+      { label: '6주차 · 10.09', today: true, items: [pdf('bd-identity', '브랜드 아이덴티티 개론.pdf', '3.1MB', '10.09')] },
       { label: '1주차 · 09.04', items: [pdf('bd-ot', '오리엔테이션_브랜드디자인.pdf', '1.2MB', '09.04')] },
     ],
   },
@@ -185,18 +187,18 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       {
         id: 'c1',
         title: '오늘 인터뷰 실습 준비물',
-        date: '09.11 07:50',
-        dateFull: '09.11 (금) 07:50',
+        date: '10.09 07:50',
+        dateFull: '10.09 (금) 07:50',
         views: 31,
         isNew: true,
         thisWeek: true,
-        body: '오늘(9/11) 수업은 2인 1조 인터뷰 실습으로 진행합니다. 녹음할 수 있는 기기(휴대폰 가능)와 질문지 초안을 준비해 주세요.',
+        body: '오늘(10/9) 수업은 2인 1조 인터뷰 실습으로 진행합니다. 녹음할 수 있는 기기(휴대폰 가능)와 질문지 초안을 준비해 주세요.',
       },
       {
         id: 'c2',
         title: '인터뷰 질문지 템플릿 업로드',
-        date: '09.10 18:00',
-        dateFull: '09.10 (목) 18:00',
+        date: '10.08 18:00',
+        dateFull: '10.08 (목) 18:00',
         views: 49,
         isNew: true,
         thisWeek: true,
@@ -227,7 +229,7 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       {
         id: 'a2',
         title: '인터뷰 계획서',
-        due: d(9, 18, 23, 59),
+        due: d(10, 16, 23, 59),
         ...SUBMIT_DEFAULT,
         points: '10점',
         desc: '다음 주 현장 인터뷰를 위해 팀별 인터뷰 대상과 질문지를 정리한 계획서를 제출하세요.\n\n· 인터뷰 대상과 섭외 방법\n· 질문지 (질문 5개 이상)\n· 일정과 역할 분담',
@@ -236,9 +238,9 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
     ],
     materials: [
       {
-        label: '2주차 · 09.10',
+        label: '6주차 · 10.08',
         today: false,
-        items: [UX_TEMPLATE, { id: 'ux-article', name: '인터뷰 질문 잘 만드는 법', kind: 'link', size: '외부 링크', date: '09.10' }],
+        items: [UX_TEMPLATE, { id: 'ux-article', name: '인터뷰 질문 잘 만드는 법', kind: 'link', size: '외부 링크', date: '10.08' }],
       },
       { label: '1주차 · 09.04', items: [pdf('ux-intro', '리서치 개요.pdf', '2.4MB', '09.04')] },
     ],
@@ -248,12 +250,12 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
     notices: [
       {
         id: 'c1',
-        title: '9월 14일 수업 읽기 자료',
-        date: '09.09',
-        dateFull: '09.09 (수) 12:10',
+        title: '10월 12일 수업 읽기 자료',
+        date: '10.07',
+        dateFull: '10.07 (수) 12:10',
         views: 64,
         thisWeek: true,
-        body: '다음 수업(9/14)에서는 디자인을 경영 전략으로 활용한 기업 사례를 다룹니다. 강의자료에 올린 사례 읽기 자료를 미리 읽고 오세요.',
+        body: '다음 수업(10/12)에서는 디자인을 경영 전략으로 활용한 기업 사례를 다룹니다. 강의자료에 올린 사례 읽기 자료를 미리 읽고 오세요.',
       },
       {
         id: 'c2',
@@ -264,11 +266,12 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
         body: '토론 수업 조 편성 결과를 강의실 게시판과 과목 게시판에 올렸습니다. 조별 첫 모임은 2주차 수요일 수업 시간에 진행합니다.',
       },
     ],
-    // 토론 수업 — 이번 학기 등록된 과제 없음 (캘린더 9월 과제 점과 맞춤)
+    // 토론 수업 — 이번 학기 등록된 과제 없음 (캘린더 과제 점과 맞춤)
     assignments: [],
     materials: [
-      { label: '2주차 · 09.09', items: [pdf('dm-case', '디자인 주도 기업 사례 읽기.pdf', '3.4MB', '09.09'), pdf('dm-w2', '2주차 강의 슬라이드.pdf', '5.2MB', '09.09')] },
-      { label: '2주차 · 09.07', items: [pdf('dm-def', '디자인 경영의 정의.pdf', '2.0MB', '09.07')] },
+      { label: '6주차 · 10.07', items: [pdf('dm-case', '디자인 주도 기업 사례 읽기.pdf', '3.4MB', '10.07'), pdf('dm-w2', '6주차 강의 슬라이드.pdf', '5.2MB', '10.07')] },
+      // 10.05(월)은 대체공휴일 휴강 → 직전 수업(5주차 수) 자료로 둠
+      { label: '5주차 · 09.30', items: [pdf('dm-def', '디자인 경영의 정의.pdf', '2.0MB', '09.30')] },
       { label: '1주차 · 09.02', items: [pdf('dm-ot', '오리엔테이션_디자인경영.pdf', '1.0MB', '09.02'), pdf('dm-syllabus', '강의계획서_디자인경영.pdf', '0.5MB', '09.02')] },
     ],
   },
@@ -288,7 +291,7 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       {
         id: 'a1',
         title: '키네틱 타이포그래피 스토리보드',
-        due: d(9, 29, 14, 0),
+        due: d(10, 27, 14, 0),
         ...SUBMIT_DEFAULT,
         points: '10점',
         desc: '짧은 문장 하나를 골라 움직임으로 의미를 전달하는 키네틱 타이포그래피 스토리보드를 그리세요.\n\n· 문장 선정 이유\n· 8컷 이상 스토리보드\n· 컷마다 움직임·속도 메모',
@@ -297,8 +300,8 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
     ],
     materials: [
       {
-        label: '2주차 · 09.08',
-        items: [pdf('mg-easing', '키프레임과 이징.pdf', '6.3MB', '09.08'), { id: 'mg-demo', name: '이징 비교 데모 영상', kind: 'video', size: '4분 12초', date: '09.08' }],
+        label: '6주차 · 10.06',
+        items: [pdf('mg-easing', '키프레임과 이징.pdf', '6.3MB', '10.06'), { id: 'mg-demo', name: '이징 비교 데모 영상', kind: 'video', size: '4분 12초', date: '10.06' }],
       },
       { label: '1주차 · 09.01', items: [pdf('mg-ot', '오리엔테이션_모션그래픽스.pdf', '1.5MB', '09.01')] },
     ],
@@ -309,19 +312,19 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
     notices: [
       {
         id: 'c1',
-        title: '3주차 강의 오픈 안내',
-        date: '09.10',
-        dateFull: '09.10 (목) 09:00',
+        title: '7주차 강의 오픈 안내',
+        date: '10.08',
+        dateFull: '10.08 (목) 09:00',
         views: 210,
-        body: '3주차 강의는 9월 14일(월) 오전 9시에 열립니다. 주차별 학습 기간 안에 수강해야 진도가 인정되니 기간을 꼭 확인해 주세요.',
+        body: '7주차 강의는 10월 12일(월) 오전 9시에 열립니다. 주차별 학습 기간 안에 수강해야 진도가 인정되니 기간을 꼭 확인해 주세요.',
       },
     ],
     // 주차별 강의 수강이 출석·진도 — 이번 학기 등록된 과제 없음
     assignments: [],
     materials: [
       {
-        label: '2주차 · 09.07',
-        items: [{ id: 'wr-w2', name: '2주차 강의 · 글의 구조', kind: 'video', size: '25분', date: '09.07' }, pdf('wr-read2', '2주차 읽기 자료.pdf', '0.8MB', '09.07')],
+        label: '6주차 · 10.05',
+        items: [{ id: 'wr-w2', name: '6주차 강의 · 글의 구조', kind: 'video', size: '25분', date: '10.05' }, pdf('wr-read2', '6주차 읽기 자료.pdf', '0.8MB', '10.05')],
       },
       { label: '1주차 · 09.01', items: [{ id: 'wr-w1', name: '1주차 강의 · 소통으로서의 글쓰기', kind: 'video', size: '22분', date: '09.01' }] },
     ],
@@ -358,7 +361,7 @@ export const ASSIGNMENT_LIST: CourseAssignment[] = COURSES.flatMap((c) => COURSE
 export const openAssignments = () => ASSIGNMENT_LIST.filter((a) => !a.closed && a.due.getTime() >= NOW.getTime());
 
 /** 학교 연동(진입 411:11957 · 마이 426:8952) 카운트 — 데이터에서 계산
- *  과제 = 진행 중 과제 · 공지 = 이번 주(2주차) 과목 공지 + 학사 공지 */
+ *  과제 = 진행 중 과제 · 공지 = 이번 주(6주차) 과목 공지 + 학사 공지 */
 export const SYNC_COUNTS = {
   assignments: openAssignments().length,
   notices: COURSES.reduce((a, c) => a + COURSE_INFO[c.id].notices.filter((n) => n.thisWeek).length, 0) + ACADEMIC_NOTICES.length,
@@ -377,12 +380,12 @@ export function dday(due: Date) {
 }
 export const ddayCount = (due: Date) => Math.round((dayStart(due) - dayStart(NOW)) / 86_400_000);
 
-/** '오늘 23:59' / '9.15(화) 14:00' */
+/** '오늘 23:59' / '10.13(화) 14:00' */
 export function dueShort(due: Date) {
   if (dayStart(due) === dayStart(NOW)) return `오늘 ${hm(due)}`;
   return `${due.getMonth() + 1}.${due.getDate()}(${DOW[due.getDay()]}) ${hm(due)}`;
 }
-/** '9월 11일 (금) 23:59' */
+/** '10월 9일 (금) 23:59' */
 export const dueFull = (due: Date) => `${due.getMonth() + 1}월 ${due.getDate()}일 (${DOW[due.getDay()]}) ${hm(due)}`;
 
 /** '14시간 18분 남음' / '4일 4시간 남음' */
@@ -410,7 +413,7 @@ export function detailMeta(c: Course) {
 }
 
 export const kindLabel: Record<FileKind, string> = { pdf: 'PDF', link: '링크', video: '영상' };
-/** 'PDF · 4.2MB' (+ ' · 09.11') */
+/** 'PDF · 4.2MB' (+ ' · 10.09') */
 export const fileMeta = (f: FileItem, withDate = false) =>
   [f.kind === 'link' ? '외부 링크' : kindLabel[f.kind], f.kind === 'link' ? undefined : f.size, withDate ? f.date : undefined].filter(Boolean).join(' · ');
 

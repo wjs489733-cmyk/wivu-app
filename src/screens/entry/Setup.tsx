@@ -21,7 +21,7 @@ const NOTI_KEYS = new Set<string>(NOTI_TYPES.map((t) => t.id));
 const PREVIEW: Record<string, { title: string; meta: string; time: string }> = {
   attendance: { title: '출석 인증 10분 전이에요', meta: '서비스디자인 · 디자인관 302호 · 10:10까지', time: '09:50' },
   assignment: { title: '과제 마감 3시간 전', meta: '서비스 분석 리포트 · 오늘 23:59', time: '20:59' },
-  notice: { title: '학사 공지가 올라왔어요', meta: '2학기 수강신청 정정 기간 안내', time: '09.10' },
+  notice: { title: '학사 공지가 올라왔어요', meta: '2학기 중간고사 시행 안내', time: '10.08' },
   board: { title: '내 글에 댓글이 달렸어요', meta: '서비스디자인 게시판 · 방금', time: '지금' },
 };
 
