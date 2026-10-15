@@ -4,8 +4,8 @@
  * ──────────────────────────────────────────────────────────── */
 export const P = {
   // ① 진입 · 스플래시 – 소개
-  splash: '/splash', // 334:9435
-  intro: (n: 1 | 2 | 3) => `/intro/${n}`, // 366:9791 · 366:9817 · 410:8227
+  splash: '/splash', // 553:3075 (리디자인 10-15 · 이전 334:9435)
+  intro: (n: 1 | 2 | 3) => `/intro/${n}`, // 553:3086 · 553:3142 · 553:3177 (리디자인 10-15)
   // ② 진입 · 학교 선택 – 로그인
   school: '/school', // 352:1158
   schoolSearch: '/school/search', // 416:8372 (+ 지역 선택 시트 416:12064)
@@ -66,7 +66,7 @@ export const P = {
 
 /** Figma Flow starting points (전시 데스크톱 패널에서 바로가기) */
 export const FLOWS = [
-  { id: 'start', label: '시작부터 홈까지', path: P.splash, figma: '334:9435' },
+  { id: 'start', label: '시작부터 홈까지', path: P.splash, figma: '553:3075' },
   { id: 'attendance', label: '출석', path: P.attendance, figma: '392:7302' },
   { id: 'courses', label: '수강과목 → 과제 제출', path: P.courses, figma: '392:7404' },
   { id: 'timetable', label: '시간표', path: P.timetable, figma: '392:7472' },

@@ -9,10 +9,11 @@ import s from './Screen.module.css';
 export const DeviceCtx = createContext<{ framed: boolean }>({ framed: false });
 export const useDevice = () => useContext(DeviceCtx);
 
-export type ScreenBg = 'surface' | 'subtle' | 'brand' | 'ink' | 'qr-dark';
+export type ScreenBg = 'surface' | 'subtle' | 'soft' | 'brand' | 'ink' | 'qr-dark';
 const BG: Record<ScreenBg, string> = {
   surface: 'var(--wivu-color-bg-surface)',
   subtle: 'var(--wivu-color-bg-subtle)',
+  soft: 'var(--wivu-color-bg-brand-soft)',
   brand: 'var(--wivu-color-bg-brand)',
   ink: 'var(--wivu-color-bg-brand-pressed)',
   'qr-dark': 'var(--wivu-color-bg-qr-dark)',
@@ -48,7 +49,7 @@ export function Screen({ header, footer, bg = 'surface', tone, indicatorTone, sc
   const footerRef = useRef<HTMLDivElement>(null);
   const [footerH, setFooterH] = useState(0);
   const [scrolled, setScrolled] = useState(false);
-  const statusTone = tone ?? (bg === 'surface' || bg === 'subtle' ? 'dark' : 'light');
+  const statusTone = tone ?? (bg === 'surface' || bg === 'subtle' || bg === 'soft' ? 'dark' : 'light');
   const scrollToTop = useCallback(() => {
     const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     ref.current?.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });

@@ -2,61 +2,102 @@ import { motion, type PanInfo } from 'motion/react';
 import { Button, Icon, Logo, Screen, Text, type IconName } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { EntryHeader, FitBox, TextLink } from './parts';
+import { FitBox, TextLink } from './parts';
 import illust1 from '@/assets/onboarding/intro-1.webp';
 import illust2 from '@/assets/onboarding/intro-2.webp';
 import illust3 from '@/assets/onboarding/intro-3.webp';
 import s from './Entry.module.css';
 
 /**
- * 소개 1·2·3 — Figma 366:9791 · 366:9817 · 410:8227
- * 캔버스 메모 반영: '건너뛰기'를 [다음] 버튼 바로 위 가운데로 이동.
+ * 소개 1·2·3 — Figma 리디자인 553:3086 · 553:3142 · 553:3177 (섹션 553:3072, 10-15)
+ * 구조: 위 회색 무대(큰 단계 번호 + 일러스트) → 경계에 걸친 기능 카드 → 아래 흰 시트(문구 + 버튼)
  * 좌우로 밀어서 넘길 수도 있음.
  */
+type Step = 1 | 2 | 3;
+/** 일러스트 위치 — Figma 무대(392 × 342, 내비 아래 기준)의 좌표 그대로 */
+const ART: Record<Step, { src: string; left: number; top: number; width: number; height: number }> = {
+  1: { src: illust1, left: 28, top: 30, width: 336, height: 252 },
+  2: { src: illust2, left: 60, top: 10, width: 272, height: 272 },
+  3: { src: illust3, left: 9.6, top: 2, width: 366.4, height: 315 },
+};
 const COPY = {
-  1: { title: '앱 세 개를 오가던 하루,\n이제 하나면 됩니다', desc: '출석부터 과제 제출, 학교 일정까지 한 화면에서 확인하고 처리합니다.', cta: '다음', img: illust1, figma: '366:9791' },
-  2: { title: '마감 전에\n먼저 알려드릴게요', desc: '과제 마감, 출석 시간, 학사 공지를 놓치지 않도록 꼭 필요한 순간에만 알려드려요.', cta: '다음', img: illust2, figma: '366:9817' },
-  3: { title: '나의 루틴에 맞게\n퀵메뉴를 구성해요', desc: '자주 쓰는 기능을 골라두면 홈 어디서든 위로 밀어 바로 열 수 있어요.', cta: '시작하기', img: illust3, figma: '410:8227' },
+  1: { eyebrow: '하나로 모으다', title: '캠퍼스의 하루를,\n한 화면에서', desc: '출석부터 과제, 학교 일정까지\nWivU에서 한 번에 확인해요.', cta: '다음', figma: '553:3086' },
+  2: { eyebrow: '제때 알려주다', title: '놓치기 전에,\n필요한 알림만', desc: '출석 시간과 과제 마감, 학사 공지까지\n꼭 필요한 순간에 알려드려요.', cta: '다음', figma: '553:3142' },
+  3: { eyebrow: '나에게 맞추다', title: '자주 쓰는 기능을,\n내 손에 가깝게', desc: '나에게 필요한 기능을 골라두고\n홈에서 위로 밀어 바로 열어요.', cta: '시작하기', figma: '553:3177' },
 } as const;
 
-export function Intro({ step }: { step: 1 | 2 | 3 }) {
+export function Intro({ step }: { step: Step }) {
   const nav = useNav();
   const c = COPY[step];
+  const art = ART[step];
   const next = () => (step < 3 ? nav.push(P.intro((step + 1) as 2 | 3)) : nav.push(P.school));
   const skip = () => nav.push(P.school);
+  const back = () => (step > 1 ? nav.back(P.intro((step - 1) as 1 | 2)) : nav.back(P.splash));
   const onPanEnd = (_: unknown, info: PanInfo) => {
     if (info.offset.x < -60 && Math.abs(info.offset.y) < 60) next();
-    else if (info.offset.x > 60 && step > 1) nav.back(P.intro((step - 1) as 1 | 2));
+    else if (info.offset.x > 60 && step > 1) back();
   };
 
   return (
     <Screen
       figma={c.figma}
+      bg="soft"
       scroll={false}
-      header={<EntryHeader back={step > 1} progress={{ step, total: 3 }} fallback={step > 1 ? P.intro((step - 1) as 1 | 2) : P.splash} />}
+      hairline={false}
+      indicatorTone="dark"
+      header={
+        <div className={s.introNav}>
+          <span>
+            {step > 1 && (
+              <button type="button" className={s.introBack} aria-label="뒤로" onClick={back}>
+                <Icon name="back" size={24} />
+              </button>
+            )}
+          </span>
+          <Pills step={step} total={3} />
+          <span className={s.introSkip}>
+            <TextLink onPress={skip}>건너뛰기</TextLink>
+          </span>
+        </div>
+      }
     >
       <motion.div className={s.intro} onPanEnd={onPanEnd} style={{ touchAction: 'pan-y' }}>
-        <div className={s.hero}>
-          <Text variant="display" as="h2" className={s.heroTitle}>
-            {c.title}
-          </Text>
-          <Text variant="body" color="secondary" as="p">
-            {c.desc}
-          </Text>
-        </div>
-
-        <div className={s.introVisual}>
-          <FitBox width={352} height={404}>
-            <img src={c.img} alt="" className={s.illust} draggable={false} />
-            {step === 1 && <Visual1 />}
-            {step === 2 && <Visual2 />}
-            {step === 3 && <Visual3 />}
+        <div className={s.stage}>
+          <FitBox width={392} height={342}>
+            <span className={s.numeral} aria-hidden>
+              0{step}
+            </span>
+            <motion.img
+              key={step}
+              src={art.src}
+              alt=""
+              draggable={false}
+              className={s.stageArt}
+              style={{ left: art.left, top: art.top, width: art.width, height: art.height }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            />
           </FitBox>
         </div>
 
-        <div className={s.introFoot}>
-          {step < 3 && <TextLink onPress={skip}>건너뛰기</TextLink>}
-          <Button block onClick={next}>
+        <div className={s.sheet}>
+          <motion.div className={s.bridge} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}>
+            {step === 1 && <TodayCard />}
+            {step === 2 && <NotiCard />}
+            {step === 3 && <QuickCard />}
+          </motion.div>
+          <p className={`${s.eyebrow} t-caption-1-strong`}>
+            <span>0{step}</span>
+            {c.eyebrow}
+          </p>
+          <Text variant="display" as="h2" className={s.heroTitle}>
+            {c.title}
+          </Text>
+          <Text variant="body" color="secondary" as="p" className={s.heroTitle}>
+            {c.desc}
+          </Text>
+          <Button block onClick={next} className={s.sheetCta}>
             {c.cta}
           </Button>
         </div>
@@ -65,78 +106,77 @@ export function Intro({ step }: { step: 1 | 2 | 3 }) {
   );
 }
 
-const pop = (i: number) => ({
-  initial: { opacity: 0, y: 14, scale: 0.96 },
-  animate: { opacity: 1, y: 0, scale: 1 },
-  transition: { delay: 0.25 + i * 0.12, duration: 0.45, ease: [0.16, 1, 0.3, 1] as const },
-});
-
-function FloatCard({ x, y, icon, iconBg, title, titleColor, meta, i }: { x: number; y: number; icon: IconName; iconBg: string; title: string; titleColor?: 'error'; meta: string; i: number }) {
+/** 진행 표시 — 현재 단계만 길게(24) */
+function Pills({ step, total }: { step: number; total: number }) {
   return (
-    <motion.div className={s.floatCard} style={{ left: x, top: y }} {...pop(i)}>
-      <span className={s.floatIcon} style={{ background: iconBg }}>
-        <Icon name={icon} size={20} color="primary" />
-      </span>
-      <span>
-        <Text variant="label" as="p" color={titleColor ?? 'primary'}>
-          {title}
-        </Text>
-        <Text variant="caption-2" color="secondary" as="p">
-          {meta}
-        </Text>
-      </span>
-    </motion.div>
+    <div className={s.pills} role="progressbar" aria-valuenow={step} aria-valuemin={1} aria-valuemax={total} aria-label={`${total}단계 중 ${step}단계`}>
+      {Array.from({ length: total }, (_, i) => (
+        <span key={i} data-on={i + 1 === step} />
+      ))}
+    </div>
   );
 }
 
-function Visual1() {
+/* ── 경계 카드 3종 (흰 면 · 반경 20 · Elevation/Card) ─────────── */
+function TodayCard() {
+  const items: { icon: IconName; label: string; value: string; done?: boolean }[] = [
+    { icon: 'attendance', label: '출석', value: '완료', done: true },
+    { icon: 'assignment', label: '과제', value: 'D-DAY' },
+    { icon: 'calendar', label: '학교 일정', value: '9.14 월' },
+  ];
   return (
     <>
-      <motion.span className={`${s.pill} t-caption-2-strong`} {...pop(0)}>
-        앱 3개 → WivU 1개
-      </motion.span>
-      <FloatCard i={1} x={0} y={236} icon="attendance" iconBg="var(--wivu-color-bg-brand-soft)" title="출석 인증 완료" meta="서비스디자인 · 10:01" />
-      <FloatCard i={2} x={120} y={296} icon="assignment" iconBg="var(--wivu-color-bg-subtle)" title="과제 마감 D-DAY" titleColor="error" meta="서비스 분석 리포트 · 23:59" />
-      <FloatCard i={3} x={24} y={356} icon="calendar" iconBg="var(--wivu-color-bg-pulse-soft)" title="취업박람회 9.14" meta="학생회관 대강당 · 14:00" />
+      <div className={s.bridgeHead}>
+        <Text variant="headline">오늘의 캠퍼스</Text>
+        <Logo name="logo-wu-blue" height={15} />
+      </div>
+      <div className={s.today}>
+        {items.map((it) => (
+          <span key={it.label} className={s.todayItem}>
+            <span className={s.todayIcon} data-done={it.done}>
+              <Icon name={it.icon} size={20} />
+            </span>
+            <span>
+              <Text variant="caption-2" color="tertiary" as="span" style={{ display: 'block' }}>
+                {it.label}
+              </Text>
+              <Text variant="caption-1-strong" color={it.done ? 'brand' : 'primary'} as="span" style={{ display: 'block' }}>
+                {it.value}
+              </Text>
+            </span>
+          </span>
+        ))}
+      </div>
     </>
   );
 }
 
-function Banner({ x, y, w, title, time, meta, i }: { x: number; y: number; w: number; title: string; time: string; meta: string; i: number }) {
+function NotiCard() {
   return (
-    <motion.div className={s.banner} style={{ left: x, top: y, width: w }} {...pop(i)}>
-      <span className={s.appIcon}>
-        <WuMark />
-      </span>
-      <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
-          <Text variant="label" className="truncate">
-            {title}
-          </Text>
-          <Text variant="caption-2" color="tertiary" tnum>
-            {time}
+    <>
+      <div className={s.bridgeHead}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Logo name="logo-wu-blue" height={13} />
+          <Text variant="caption-2" color="secondary">
+            WivU
           </Text>
         </span>
-        <Text variant="caption-2" color="secondary" as="p" className="truncate">
-          {meta}
+        <Text variant="caption-2" color="tertiary">
+          지금
         </Text>
-      </span>
-    </motion.div>
-  );
-}
-
-function Visual2() {
-  return (
-    <>
-      <Banner i={0} x={0} y={212} w={320} title="출석 인증 10분 전이에요" time="지금" meta="서비스디자인 · 디자인관 302호" />
-      <Banner i={1} x={16} y={284} w={312} title="과제 마감 3시간 전" time="20:59" meta="서비스 분석 리포트 · 오늘 23:59" />
-      <Banner i={2} x={32} y={356} w={304} title="학사 공지가 올라왔어요" time="09.10" meta="2학기 수강신청 정정 기간 안내" />
+      </div>
+      <Text variant="subhead" as="p" style={{ marginTop: 10 }}>
+        출석 인증 10분 전이에요
+      </Text>
+      <Text variant="caption-2" color="tertiary" as="p" style={{ marginTop: 4 }}>
+        서비스디자인 · 디자인관 302호
+      </Text>
     </>
   );
 }
 
-function Visual3() {
-  const slots: { icon: IconName; label: string }[] = [
+function QuickCard() {
+  const items: { icon: IconName; label: string }[] = [
     { icon: 'attendance', label: '출석' },
     { icon: 'student', label: '학생증' },
     { icon: 'meal', label: '학식' },
@@ -144,36 +184,17 @@ function Visual3() {
   ];
   return (
     <>
-      <motion.span className={`${s.pill} t-caption-2-strong`} {...pop(0)}>
-        <Icon name="chevron-up" size={16} />
-        홈에서 위로 밀면 열려요
-      </motion.span>
-      <motion.div className={s.quickPreview} {...pop(1)}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Text variant="label">내 퀵메뉴</Text>
-          <span className="t-micro" style={{ padding: '2px 8px', borderRadius: 999, background: 'var(--wivu-color-bg-brand-soft)', color: 'var(--wivu-color-text-brand)' }}>
-            4 / 8
-          </span>
-        </div>
-        <div className={s.slots}>
-          {slots.map((sl) => (
-            <span key={sl.label} className={s.slot}>
-              <span className={s.slotCircle}>
-                <Icon name={sl.icon} size={20} />
-              </span>
-              <Text variant="caption-2-strong">{sl.label}</Text>
-            </span>
-          ))}
-          <span className={s.slot}>
-            <span className={`${s.slotCircle} ${s.slotAdd}`}>
-              <Icon name="plus" size={20} />
-            </span>
-            <Text variant="caption-2-strong" color="tertiary">
-              추가
+      <Text variant="caption-1-strong">내 퀵메뉴</Text>
+      <div className={s.quick}>
+        {items.map((it) => (
+          <span key={it.label} className={s.quickItem}>
+            <Icon name={it.icon} size={24} />
+            <Text variant="caption-2" color="secondary">
+              {it.label}
             </Text>
           </span>
-        </div>
-      </motion.div>
+        ))}
+      </div>
     </>
   );
 }
@@ -182,4 +203,3 @@ function Visual3() {
 export function WuMark({ height = 15 }: { height?: number }) {
   return <Logo name="logo-wu-blue" height={height} style={{ filter: 'brightness(0) invert(1)' }} />;
 }
-
