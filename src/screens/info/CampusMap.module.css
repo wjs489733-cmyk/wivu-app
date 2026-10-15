@@ -5,8 +5,8 @@
   z-index: 5; /* Screen 상단(z3)·하단(z4) 위, 홈 인디케이터(z10) 아래 — 지도가 상태바 밑까지 깔림 */
   overflow: hidden;
   /* 지도 전용 색 — 모두 semantic 토큰에서 파생 */
-  --map-ground: color-mix(in srgb, var(--wivu-color-bg-brand) 8%, var(--wivu-color-bg-subtle));
-  --map-green: color-mix(in srgb, var(--wivu-color-bg-pulse-pressed) 20%, var(--wivu-color-bg-surface));
+  --map-ground: var(--wivu-color-bg-canvas);
+  --map-green: #E2E8DC; /* 지도 녹지(콘텐츠 색) — UI 강조색과 분리된 탁한 세이지 */
   --map-road: var(--wivu-color-bg-surface);
   --map-building: color-mix(in srgb, var(--wivu-color-border-strong) 72%, var(--wivu-color-bg-surface));
   background: var(--map-ground);

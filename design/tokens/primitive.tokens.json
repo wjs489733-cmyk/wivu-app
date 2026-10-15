@@ -46,16 +46,20 @@
           "$value": {
             "colorSpace": "srgb",
             "components": [
-              0.0627,
-              0.0941,
-              0.1569
+              0.0745,
+              0.0745,
+              0.0745
             ],
             "alpha": 1,
-            "hex": "#101828"
+            "hex": "#131313"
           },
           "$extensions": {
             "com.figma": {
               "source": "figma"
+            },
+            "com.wivu": {
+              "previous": "#101828",
+              "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
             }
           }
         },
@@ -63,16 +67,20 @@
           "$value": {
             "colorSpace": "srgb",
             "components": [
-              0.051,
-              0.1059,
-              0.2588
+              0.2118,
+              0.2275,
+              0.2392
             ],
             "alpha": 1,
-            "hex": "#0D1B42"
+            "hex": "#363A3D"
           },
           "$extensions": {
             "com.figma": {
               "source": "figma"
+            },
+            "com.wivu": {
+              "previous": "#0D1B42",
+              "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
             }
           }
         }
@@ -82,16 +90,20 @@
           "$value": {
             "colorSpace": "srgb",
             "components": [
-              0.9686,
               0.9804,
-              1
+              0.9804,
+              0.9804
             ],
             "alpha": 1,
-            "hex": "#F7FAFF"
+            "hex": "#FAFAFA"
           },
           "$extensions": {
             "com.figma": {
               "source": "figma"
+            },
+            "com.wivu": {
+              "previous": "#F7FAFF",
+              "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
             }
           }
         },
@@ -112,20 +124,41 @@
             }
           }
         },
+        "150": {
+          "$value": {
+            "colorSpace": "srgb",
+            "components": [
+              0.949,
+              0.949,
+              0.949
+            ],
+            "alpha": 1,
+            "hex": "#F2F2F2"
+          },
+          "$extensions": {
+            "com.wivu": {
+              "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색) — 보조 버튼·칩·선택 면(구 brand-soft 자리)"
+            }
+          }
+        },
         "200": {
           "$value": {
             "colorSpace": "srgb",
             "components": [
-              0.9294,
-              0.9294,
-              0.9412
+              0.9333,
+              0.9333,
+              0.9333
             ],
             "alpha": 1,
-            "hex": "#EDEDF0"
+            "hex": "#EEEEEE"
           },
           "$extensions": {
             "com.figma": {
               "source": "figma"
+            },
+            "com.wivu": {
+              "previous": "#EDEDF0",
+              "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
             }
           }
         },
@@ -133,16 +166,20 @@
           "$value": {
             "colorSpace": "srgb",
             "components": [
-              0.898,
-              0.9098,
-              0.9373
+              0.902,
+              0.902,
+              0.902
             ],
             "alpha": 1,
-            "hex": "#E5E8EF"
+            "hex": "#E6E6E6"
           },
           "$extensions": {
             "com.figma": {
               "source": "figma"
+            },
+            "com.wivu": {
+              "previous": "#E5E8EF",
+              "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
             }
           }
         },
@@ -167,16 +204,20 @@
           "$value": {
             "colorSpace": "srgb",
             "components": [
-              0.7843,
-              0.8078,
-              0.8471
+              0.8,
+              0.8,
+              0.8
             ],
             "alpha": 1,
-            "hex": "#C8CED8"
+            "hex": "#CCCCCC"
           },
           "$extensions": {
             "com.figma": {
               "source": "figma"
+            },
+            "com.wivu": {
+              "previous": "#C8CED8",
+              "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
             }
           }
         },
@@ -184,16 +225,20 @@
           "$value": {
             "colorSpace": "srgb",
             "components": [
-              0.6353,
-              0.6549,
-              0.6863
+              0.651,
+              0.651,
+              0.651
             ],
             "alpha": 1,
-            "hex": "#A2A7AF"
+            "hex": "#A6A6A6"
           },
           "$extensions": {
             "com.figma": {
               "source": "figma"
+            },
+            "com.wivu": {
+              "previous": "#A2A7AF",
+              "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
             }
           }
         },
@@ -201,16 +246,20 @@
           "$value": {
             "colorSpace": "srgb",
             "components": [
-              0.6039,
-              0.6392,
-              0.698
+              0.4627,
+              0.4627,
+              0.4627
             ],
             "alpha": 1,
-            "hex": "#9AA3B2"
+            "hex": "#767676"
           },
           "$extensions": {
             "com.figma": {
               "source": "figma"
+            },
+            "com.wivu": {
+              "previous": "#9AA3B2",
+              "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
             }
           }
         },
@@ -218,16 +267,20 @@
           "$value": {
             "colorSpace": "srgb",
             "components": [
-              0.3725,
-              0.4,
-              0.451
+              0.2784,
+              0.2784,
+              0.2784
             ],
             "alpha": 1,
-            "hex": "#5F6673"
+            "hex": "#474747"
           },
           "$extensions": {
             "com.figma": {
               "source": "figma"
+            },
+            "com.wivu": {
+              "previous": "#5F6673",
+              "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
             }
           }
         }
@@ -283,23 +336,28 @@
               "source": "figma"
             }
           }
-        }
+        },
+        "$description": "brand-500 = 로고 색(확정). 100·200 틴트는 2026-10-15부터 화면에서 쓰지 않음(보관)"
       },
       "error": {
         "500": {
           "$value": {
             "colorSpace": "srgb",
             "components": [
-              0.9412,
-              0.298,
-              0.3922
+              0.898,
+              0.2824,
+              0.302
             ],
             "alpha": 1,
-            "hex": "#F04C64"
+            "hex": "#E5484D"
           },
           "$extensions": {
             "com.figma": {
               "source": "figma"
+            },
+            "com.wivu": {
+              "previous": "#F04C64",
+              "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
             }
           }
         }
@@ -309,16 +367,20 @@
           "$value": {
             "colorSpace": "srgb",
             "components": [
-              0.851,
-              0.549,
-              0.149
+              0.8784,
+              0.5843,
+              0.1686
             ],
             "alpha": 1,
-            "hex": "#D98C26"
+            "hex": "#E0952B"
           },
           "$extensions": {
             "com.figma": {
               "source": "figma"
+            },
+            "com.wivu": {
+              "previous": "#D98C26",
+              "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
             }
           }
         }
@@ -376,7 +438,8 @@
               }
             }
           }
-        }
+        },
+        "$description": "라임 — 2026-10-15부터 화면에서 쓰지 않음(보관). pulse 역할은 차콜·파랑으로"
       }
     }
   }

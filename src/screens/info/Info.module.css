@@ -66,7 +66,7 @@
   height: 38px;
   border-radius: 50%;
   color: var(--wivu-color-icon-primary);
-  background: color-mix(in srgb, var(--tone) 12%, transparent);
+  background: var(--wivu-color-bg-brand-soft); /* 무채색 보조 면 (구: 카테고리 색 12% 틴트) */
 }
 .notiMain {
   display: flex;

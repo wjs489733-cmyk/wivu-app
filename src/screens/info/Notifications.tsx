@@ -6,10 +6,11 @@ import { useApp } from '@/store/app';
 import { NOTI_FILTERS, NOTI_GROUPS, NOTIFICATIONS, type Noti, type NotiFilter, type NotiTarget, type NotiTone } from './data';
 import s from './Info.module.css';
 
+// 2026-10-15 이사벨식 배색: 카테고리는 글자·아이콘 원 모두 무채색으로 통일 — 색은 '안 읽음' 점(파랑)에만
 const TONE: Record<NotiTone, { color: string; text: 'brand' | 'error' | 'pulse' | 'secondary' }> = {
-  brand: { color: 'var(--wivu-color-icon-brand)', text: 'brand' },
-  error: { color: 'var(--wivu-color-status-error)', text: 'error' },
-  pulse: { color: 'var(--wivu-color-icon-pulse)', text: 'pulse' },
+  brand: { color: 'var(--wivu-color-text-secondary)', text: 'secondary' },
+  error: { color: 'var(--wivu-color-text-secondary)', text: 'secondary' },
+  pulse: { color: 'var(--wivu-color-text-secondary)', text: 'secondary' },
   neutral: { color: 'var(--wivu-color-text-secondary)', text: 'secondary' },
 };
 

@@ -78,7 +78,7 @@
 }
 .viewfinder[data-phase='recognized'] .corner,
 .viewfinder[data-phase='already'] .corner {
-  border-color: var(--wivu-color-border-pulse);
+  border-color: var(--wivu-color-border-brand); /* 어두운 카메라 화면 위 인식 표시 = 브랜드 파랑 */
 }
 
 /* 카메라 속 강의실 출석 QR 포스터 */
@@ -130,9 +130,9 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: var(--wivu-color-bg-pulse);
-  color: var(--wivu-color-text-on-pulse);
-  box-shadow: 0 0 0 10px rgba(183, 243, 77, 0.2);
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+  box-shadow: 0 0 0 10px color-mix(in srgb, var(--wivu-color-bg-brand) 24%, transparent);
 }
 
 /* NFC 모드 */

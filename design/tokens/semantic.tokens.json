@@ -39,10 +39,14 @@
       },
       "brand-soft": {
         "$type": "color",
-        "$value": "{color.primitive.brand.100}",
+        "$value": "{color.primitive.gray.150}",
         "$extensions": {
           "com.figma": {
             "source": "figma"
+          },
+          "com.wivu": {
+            "previous": "{color.primitive.brand.100}",
+            "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
           }
         }
       },
@@ -57,10 +61,14 @@
       },
       "brand-soft-pressed": {
         "$type": "color",
-        "$value": "{color.primitive.brand.200}",
+        "$value": "{color.primitive.gray.300}",
         "$extensions": {
           "com.figma": {
             "source": "figma"
+          },
+          "com.wivu": {
+            "previous": "{color.primitive.brand.200}",
+            "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
           }
         }
       },
@@ -75,28 +83,40 @@
       },
       "pulse": {
         "$type": "color",
-        "$value": "{color.primitive.accent.lime.500}",
+        "$value": "{color.primitive.ink.950}",
         "$extensions": {
           "com.figma": {
             "source": "figma"
+          },
+          "com.wivu": {
+            "previous": "{color.primitive.accent.lime.500}",
+            "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
           }
         }
       },
       "pulse-soft": {
         "$type": "color",
-        "$value": "{color.primitive.accent.lime.100}",
+        "$value": "{color.primitive.gray.100}",
         "$extensions": {
           "com.figma": {
             "source": "figma"
+          },
+          "com.wivu": {
+            "previous": "{color.primitive.accent.lime.100}",
+            "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
           }
         }
       },
       "pulse-pressed": {
         "$type": "color",
-        "$value": "{color.primitive.accent.lime.700}",
+        "$value": "{color.primitive.ink.900}",
         "$extensions": {
           "com.figma": {
             "source": "figma"
+          },
+          "com.wivu": {
+            "previous": "{color.primitive.accent.lime.700}",
+            "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
           }
         }
       },
@@ -124,12 +144,12 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.0627,
-            0.0941,
-            0.1569
+            0.0745,
+            0.0745,
+            0.0745
           ],
           "alpha": 0.4,
-          "hex": "#101828"
+          "hex": "#131313"
         },
         "$extensions": {
           "com.wivu": {
@@ -243,10 +263,14 @@
       },
       "on-pulse": {
         "$type": "color",
-        "$value": "{color.primitive.ink.900}",
+        "$value": "{color.primitive.white.1000}",
         "$extensions": {
           "com.figma": {
             "source": "figma"
+          },
+          "com.wivu": {
+            "previous": "{color.primitive.ink.900}",
+            "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
           }
         }
       },
@@ -300,10 +324,14 @@
       },
       "pulse": {
         "$type": "color",
-        "$value": "{color.primitive.accent.lime.700}",
+        "$value": "{color.primitive.brand.500}",
         "$extensions": {
           "com.figma": {
             "source": "figma"
+          },
+          "com.wivu": {
+            "previous": "{color.primitive.accent.lime.700}",
+            "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
           }
         }
       }
@@ -338,10 +366,14 @@
       },
       "pulse": {
         "$type": "color",
-        "$value": "{color.primitive.accent.lime.500}",
+        "$value": "{color.primitive.ink.950}",
         "$extensions": {
           "com.figma": {
             "source": "figma"
+          },
+          "com.wivu": {
+            "previous": "{color.primitive.accent.lime.500}",
+            "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
           }
         }
       }
