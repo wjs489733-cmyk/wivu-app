@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react';
-import { Icon, Text, type IconName } from '@/ui';
+import { Icon, Text, type TextColor, type TypeVariant } from '@/ui';
 import { useDownload, type DlState } from './useDownload';
 import { fileMeta, type FileItem } from './data';
 import s from './Courses.module.css';
 
 /* ────────────────────────────────────────────────────────────
- * 수강과목 섹션 로컬 부품 (공통화 후보: FileRow · DownloadAction · LinkIcon/PlayIcon · CountChip)
+ * 수강과목 섹션 로컬 부품 — Figma v5 기준
+ * (공통화 후보: ItemRow · FileRow · InfoTable · StatStrip · LinkIcon/PlayIcon)
  * ──────────────────────────────────────────────────────────── */
 
 /* ── 세트에 없는 아이콘 (WivU Icons v2 규격: 24 · 선 1.7 · round · currentColor) ── */
@@ -33,7 +34,7 @@ function KindIcon({ kind, size = 20 }: { kind: FileItem['kind']; size?: 16 | 20 
 
 /** 오른쪽 20 아이콘: 다운로드 ↓ / 진행 링 / 완료 ✓ / 링크 · 영상 */
 export function DownloadGlyph({ file, status, progress }: { file: FileItem; status: DlState['status']; progress: number }) {
-  if (file.kind === 'link') return <Icon name="external-link" size={20} color="secondary" />;
+  if (file.kind === 'link') return <Icon name="external-link" size={20} color="primary" />;
   if (file.kind === 'video') return <PlayIcon size={20} />;
   if (status === 'loading') {
     return (
@@ -47,75 +48,112 @@ export function DownloadGlyph({ file, status, progress }: { file: FileItem; stat
   return <Icon name="download" size={20} color="primary" />;
 }
 
+/* ── v5 리스트 행 (구분선 없이 간격으로: 위아래 12 · 제목 + 배지 6 · 메타 Caption 1) ── */
+type ItemRowProps = {
+  title: ReactNode;
+  titleVariant?: TypeVariant;
+  /** 제목 오른쪽 배지 (v5 Badge = Chip s) */
+  badge?: ReactNode;
+  meta?: ReactNode;
+  metaColor?: TextColor;
+  trailing?: ReactNode;
+  chevron?: boolean;
+  onPress?: () => void;
+  ariaLabel?: string;
+};
+export function ItemRow({ title, titleVariant = 'body-1', badge, meta, metaColor = 'tertiary', trailing, chevron, onPress, ariaLabel }: ItemRowProps) {
+  const body = (
+    <>
+      <span className={s.itemMain}>
+        <span className={s.itemTitle}>
+          <Text variant={titleVariant} className="truncate">
+            {title}
+          </Text>
+          {badge}
+        </span>
+        {meta != null && (
+          <Text variant="caption-1" color={metaColor} className="truncate tnum" as="span" style={{ display: 'block' }}>
+            {meta}
+          </Text>
+        )}
+      </span>
+      {trailing && (
+        <span className={s.itemTrailing} aria-hidden>
+          {trailing}
+        </span>
+      )}
+      {chevron && <Icon name="chevron-right" size={20} color="secondary" />}
+    </>
+  );
+  if (!onPress) return <div className={s.itemRow}>{body}</div>;
+  return (
+    <button type="button" className={`${s.itemRow} ${s.itemPressable}`} onClick={onPress} aria-label={ariaLabel}>
+      {body}
+    </button>
+  );
+}
+
 /* ── 파일 행 ────────────────────────────────────────────────
- * list : 흰 카드 리스트 안의 행 (과목 상세·강의자료)
- * boxed: 단독 아웃라인 박스 r14 (과제 첨부·공지 첨부) */
+ * list : v5 자료 행 (과목 상세·강의자료) — Body 2 제목 · Caption 1 '4.2MB · 10.09' · 오른쪽 ↓
+ * boxed: v5 첨부 상자 (과제 상세·공지 상세) — 회색 면 r12 · 파일 아이콘 · Body 3 Strong · Caption 2 */
 type FileRowProps = {
   file: FileItem;
   variant?: 'list' | 'boxed';
-  /** 메타에 날짜까지 ('PDF · 4.2MB · 10.09') */
+  /** 메타에 날짜까지 ('4.2MB · 10.09') */
   withDate?: boolean;
-  /** 아이콘 박스 색 — 지난 주차 자료는 subtle */
-  tone?: 'brand' | 'subtle';
-  titleVariant?: 'subhead' | 'label';
 };
-export function FileRow({ file, variant = 'list', withDate, tone = 'brand', titleVariant = 'label' }: FileRowProps) {
+export function FileRow({ file, variant = 'list', withDate }: FileRowProps) {
   const dl = useDownload(file);
   const action = file.kind === 'pdf' ? '다운로드' : file.kind === 'link' ? '열기' : '재생';
-  const meta = dl.status === 'loading' ? `다운로드 중 · ${Math.round(dl.progress)}%` : dl.status === 'done' ? `${fileMeta(file, withDate)} · 받음` : fileMeta(file, withDate);
+  const base = fileMeta(file, withDate);
+  const meta = dl.status === 'loading' ? `다운로드 중 · ${Math.round(dl.progress)}%` : dl.status === 'done' ? `${base} · 받음` : base;
+  const metaColor: TextColor = dl.status === 'loading' ? 'brand' : 'tertiary';
+  const glyph = <DownloadGlyph file={file} status={dl.status} progress={dl.progress} />;
+
+  if (variant === 'list') {
+    return <ItemRow title={file.name} titleVariant="body-2" meta={meta} metaColor={metaColor} trailing={glyph} onPress={dl.start} ariaLabel={`${file.name} ${action}`} />;
+  }
   return (
-    <button type="button" className={variant === 'boxed' ? s.fileBoxed : s.fileRow} onClick={dl.start} aria-label={`${file.name} ${action}`}>
-      <span className={s.fileIcon} data-tone={tone}>
-        <KindIcon kind={file.kind} />
-      </span>
+    <button type="button" className={s.fileBox} onClick={dl.start} aria-label={`${file.name} ${action}`}>
+      <KindIcon kind={file.kind} />
       <span className={s.fileInfo}>
-        <Text variant={titleVariant} className="truncate" as="span" style={{ display: 'block' }}>
+        <Text variant="body-3-strong" className="truncate" as="span" style={{ display: 'block' }}>
           {file.name}
         </Text>
-        <Text variant="caption-2" color={dl.status === 'loading' ? 'brand' : 'secondary'} className="truncate tnum" as="span" style={{ display: 'block' }}>
+        <Text variant="caption-2" color={metaColor} className="truncate tnum" as="span" style={{ display: 'block' }}>
           {meta}
         </Text>
       </span>
       <span className={s.fileAction} aria-hidden>
-        <DownloadGlyph file={file} status={dl.status} progress={dl.progress} />
+        {glyph}
       </span>
     </button>
   );
 }
 
-/* ── 수강과목 카드의 '공지 1 · 과제 1 · 자료 4' 칩 ─────────── */
-export function CountChip({ icon, label, count, dot }: { icon: IconName; label: string; count: number; dot?: boolean }) {
-  const zero = count === 0;
+/* ── v5 정보 상자 (회색 면 r16 · 라벨 Body 3 tertiary 64 · 값 Body 3 Strong) ──
+ * 과제 상세 '마감 | 제출 형식 | 제출 상태' · 제출 완료 '과제 | 파일 | 제출 시각' */
+export function InfoTable({ rows }: { rows: { label: string; value: ReactNode; color?: TextColor }[] }) {
   return (
-    <span className={s.countChip}>
-      <Icon name={icon} size={16} color={zero ? 'tertiary' : 'primary'} />
-      <Text variant="caption-2-strong" color={zero ? 'tertiary' : 'primary'} tnum>
-        {label} {count}
-      </Text>
-      {dot && <span className={s.newDot} aria-label="새 공지" />}
-    </span>
+    <dl className={s.infoTable}>
+      {rows.map((r) => (
+        <div key={r.label} className={s.infoLine}>
+          <Text variant="body-3" color="tertiary" as="dt" className={s.infoLabel}>
+            {r.label}
+          </Text>
+          <Text variant="body-3-strong" color={r.color ?? 'primary'} as="dd" className={`${s.infoValue} tnum`}>
+            {r.value}
+          </Text>
+        </div>
+      ))}
+    </dl>
   );
 }
 
-/* ── 정보 표 한 줄 (과제 상세: '마감 | 10월 9일 (금) 23:59 | D-DAY') ── */
-export function InfoLine({ label, children, aside }: { label: string; children: ReactNode; aside?: ReactNode }) {
-  return (
-    <div className={s.infoLine}>
-      <Text variant="caption-1" color="secondary" className={s.infoLabel}>
-        {label}
-      </Text>
-      <Text variant="label" className={s.infoValue}>
-        {children}
-      </Text>
-      {aside}
-    </div>
-  );
-}
-
-/* ── 본문 텍스트 (줄바꿈 유지) ─────────────────────────────── */
+/* ── 본문 텍스트 (Body 2 secondary · 줄바꿈 유지) ─────────── */
 export function BodyText({ children }: { children: string }) {
   return (
-    <Text variant="body" as="p" className={s.bodyText}>
+    <Text variant="body-2" color="secondary" as="p" className={s.bodyText}>
       {children}
     </Text>
   );

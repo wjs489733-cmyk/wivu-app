@@ -1,89 +1,179 @@
-/* 홈 › 알림·정보 공통 */
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--wivu-space-16);
-  padding: 8px var(--wivu-layout-gutter) 0;
-}
+/* 홈 › 알림·정보 (v5) — 학식 681:5684 · 알림함 681:5798 · 학사 공지 688:6810 / 688:6925 */
 
-/* ── 알림함 (428:8938) ── */
+/* ── 공통: 필터 줄(Button S) · 밑줄 탭 ── */
 .filters {
   display: flex;
   gap: var(--wivu-space-8);
   overflow-x: auto;
-  margin-inline: calc(-1 * var(--wivu-layout-gutter));
-  padding: 0 var(--wivu-layout-gutter);
+  margin-inline: calc(-1 * var(--wivu-layout-inset));
+  padding: 0 var(--wivu-layout-inset);
   scrollbar-width: none;
 }
 .filters::-webkit-scrollbar {
   display: none;
 }
 .filter {
-  /* DS Chip(size m) — 터치 영역 44: 위아래로 투명 히트 영역 확장 */
+  /* 36 → 터치 영역 44: 위아래 투명 히트 영역 */
   position: relative;
 }
 .filter::after {
   content: '';
   position: absolute;
-  inset: -8px 0;
+  inset: -4px 0;
 }
-.filterCount {
-  color: var(--wivu-color-text-brand);
+.lineTabs {
+  display: flex;
+  gap: var(--wivu-space-20);
+  box-shadow: inset 0 -1px 0 var(--wivu-color-border-default);
 }
-.filter[aria-pressed='true'] .filterCount {
-  color: var(--wivu-color-text-on-brand-muted);
+.lineTab {
+  height: 45px;
+  padding-block: 10px;
+  color: var(--wivu-color-text-tertiary);
+  transition: color 0.15s ease, box-shadow 0.15s ease;
+}
+.lineTab[aria-selected='true'] {
+  color: var(--wivu-color-text-primary);
+  box-shadow: inset 0 -2px 0 var(--wivu-color-text-primary);
+}
+
+/* ── 학식 (681:5684) ── */
+.mealPage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-16);
+  padding: 8px var(--wivu-layout-inset) 0;
+}
+.days {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+}
+.day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--wivu-space-4);
+  height: 56px;
+}
+.date {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--wivu-radius-full);
+  transition: background-color 0.2s ease;
+}
+.day[aria-selected='true'] .date {
+  background: var(--wivu-color-bg-brand);
+}
+.day:not([aria-selected='true']):active .date {
+  background: var(--wivu-color-bg-subtle);
+}
+.meals {
+  display: flex;
+  flex-direction: column;
+  gap: 28px; /* Figma 'gap 28' — 끼니 묶음 사이 */
+  padding-top: 12px; /* 탭 아래 28 = 묶음 gap 16 + 12 */
+}
+.meal {
+  display: flex;
+  flex-direction: column;
+}
+.menu {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-12);
+  margin-top: 6px;
+}
+.menuText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-4);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.thumb {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--wivu-radius-12);
+  background: var(--wivu-color-bg-subtle);
+  color: var(--wivu-color-icon-secondary);
+}
+.crowd {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-8);
+  margin-top: var(--wivu-space-16);
+}
+.crowdHead {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--wivu-space-8);
+}
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 64px;
+}
+.bar {
+  flex: 1 1 0;
+  border-radius: var(--wivu-radius-4) var(--wivu-radius-4) 0 0;
+  background: color-mix(in srgb, var(--wivu-color-bg-brand) 18%, transparent);
+  transform-origin: bottom;
+}
+.bar[data-peak='true'] {
+  background: var(--wivu-color-status-error);
+}
+.axis {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ── 알림함 (681:5798 · 701:8991) ── */
+.notiPage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-24);
+  padding: 8px var(--wivu-layout-inset) 0;
 }
 .group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
 .groupTitle {
-  padding: 0 4px 4px;
+  padding-bottom: var(--wivu-space-4);
 }
 .noti {
   display: flex;
   align-items: flex-start;
-  gap: var(--wivu-space-12);
+  gap: 10px;
   width: 100%;
-  padding: 14px 12px;
-  border-radius: var(--wivu-radius-16);
+  min-height: 84px;
+  padding-block: var(--wivu-space-12);
   text-align: left;
-  transition: background-color 0.25s ease, transform var(--wivu-duration-press) ease;
-}
-.noti[data-unread='true'] {
-  background: var(--wivu-color-bg-subtle);
+  transition: opacity var(--wivu-duration-press) ease;
 }
 .noti:active {
-  transform: scale(0.985);
-  background: var(--wivu-color-bg-subtle);
-}
-.notiIcon {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  color: var(--wivu-color-icon-primary);
-  background: var(--wivu-color-bg-brand-soft); /* 무채색 보조 면 (구: 카테고리 색 12% 틴트) */
+  opacity: 0.6;
 }
 .notiMain {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--wivu-space-2);
   flex: 1 1 auto;
   min-width: 0;
 }
-.notiHead {
+.notiMeta {
   display: flex;
   align-items: center;
   gap: 6px;
 }
-.notiHead > :first-child {
-  flex: 1 1 auto;
-}
 .unreadDot {
+  flex-shrink: 0;
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -93,196 +183,77 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--wivu-space-8);
   padding: 56px 0;
   text-align: center;
 }
 
-/* ── 학식 (429:8987) ── */
-.days {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
-}
-.day {
+/* ── 학사 공지 목록 (688:6810) ── */
+.noticePage {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  height: 56px;
-  border-radius: var(--wivu-radius-14);
-  transition: background-color 0.2s ease;
-}
-.day[aria-selected='true'] {
-  background: var(--wivu-color-bg-brand);
-}
-.day:not([aria-selected='true']):active {
-  background: var(--wivu-color-bg-subtle);
-}
-.tip {
-  display: flex;
-  align-items: center;
-  gap: var(--wivu-space-12);
-  padding: 14px 16px 14px 14px;
-  border-radius: var(--wivu-radius-16);
-  background: var(--wivu-color-bg-brand-soft);
-}
-.tipIcon {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--wivu-color-bg-surface);
-  color: var(--wivu-color-icon-primary);
-}
-.fullDivider {
-  height: 1px;
-  margin-inline: calc(-1 * var(--wivu-layout-gutter));
-  background: var(--wivu-color-border-default);
-}
-.mealCard {
-  display: flex;
-  flex-direction: column;
-  gap: var(--wivu-space-12);
-  width: 100%;
-  padding: var(--wivu-space-16);
-  border-radius: var(--wivu-radius-16);
-  background: var(--wivu-color-bg-surface);
-  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
-  text-align: left;
-  transition: box-shadow 0.2s ease;
-}
-.mealCard[aria-expanded='true'] {
-  box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-brand);
-}
-.mealHead {
-  display: flex;
-  align-items: center;
   gap: var(--wivu-space-8);
+  padding: 4px var(--wivu-layout-inset) 0;
 }
-.mealHead .chipActive {
-  background: var(--wivu-color-bg-brand);
-  color: var(--wivu-color-text-on-brand);
+.noticeList {
+  display: flex;
+  flex-direction: column;
 }
-.mealHead > :nth-child(2) {
-  flex: 1 1 auto;
+.noticeRow {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--wivu-space-4);
+  width: 100%;
+  padding: 14px 0 15px; /* 아래 1px = 선 (Figma 행 75) */
+  text-align: left;
+  box-shadow: inset 0 -1px 0 var(--wivu-color-border-default);
+}
+.noticeRow:active {
+  opacity: 0.6;
+}
+.noticeTitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   min-width: 0;
 }
-.crowd {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  overflow: hidden;
-}
-.crowdHead {
-  display: flex;
-  justify-content: space-between;
-  gap: 6px;
-}
-.bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  height: 36px;
-}
-.bar {
-  flex: 1 1 0;
-  border-radius: 3px;
-  background: var(--wivu-color-bg-brand-soft);
-  transform-origin: bottom;
-}
-.bar[data-level='best'] {
-  background: var(--wivu-color-bg-brand);
-}
-.bar[data-level='busy'] {
-  background: color-mix(in srgb, var(--wivu-color-status-warning) 60%, transparent);
-}
-.axis {
-  display: flex;
-  justify-content: space-between;
-}
 
-/* ── 학사 공지 (430:9007) ── */
+/* ── 학사 공지 상세 (688:6925) ── */
 .article {
   display: flex;
   flex-direction: column;
   gap: var(--wivu-space-20);
   padding: 8px var(--wivu-layout-inset) 0;
 }
-.chips {
+.badges {
   display: flex;
   gap: 6px;
+  margin-bottom: -12px; /* 배지 → 제목 8 (묶음 안) */
 }
-.author {
+.articleHead {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-bottom: var(--wivu-space-16);
-  border-bottom: 1px solid var(--wivu-color-border-default);
-}
-.authorIcon {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--wivu-color-bg-brand-soft);
-  color: var(--wivu-color-icon-primary);
+  flex-direction: column;
+  gap: 6px;
 }
 .keyDates {
   display: flex;
   flex-direction: column;
-  gap: var(--wivu-space-12);
+  gap: 10px;
+  margin: 0;
   padding: var(--wivu-space-16);
   border-radius: var(--wivu-radius-16);
   background: var(--wivu-color-bg-subtle);
 }
 .keyRow {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr);
+  grid-template-columns: 36px minmax(0, 1fr);
   align-items: baseline;
   gap: var(--wivu-space-12);
 }
+.keyRow dd {
+  margin: 0;
+}
 .body {
   white-space: pre-line;
-}
-.context {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px;
-  border-radius: var(--wivu-radius-14);
-  background: var(--wivu-color-bg-brand-soft);
-  color: var(--wivu-color-icon-primary);
-}
-
-/* ── 학사 공지 목록 (코드 추가 · 홈 학사 공지 행과 같은 모양) ── */
-.listMeta {
-  padding-inline: 4px;
-}
-.noticeRow {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  min-height: 55px;
-  padding-block: 16px;
-  text-align: left;
-}
-.noticeRow + .noticeRow::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--wivu-color-border-default);
-}
-.noticeRow:active {
-  opacity: 0.7;
 }

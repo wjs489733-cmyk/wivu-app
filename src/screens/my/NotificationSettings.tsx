@@ -1,110 +1,60 @@
-import { useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
-import { Icon, ListGroup, ListRow, Logo, Screen, Switch, Text, TopNav, toast } from '@/ui';
+import { Fragment } from 'react';
+import { Screen, Switch, Text, TopNav, toast } from '@/ui';
 import { P } from '@/app/paths';
-import { josa, NOTI_PREVIEW, NOTI_TYPES, QUIET_OPTIONS, type NotiKey, type QuietKey } from './data';
-import { useMy } from './store';
+import { NOTI_GROUPS, type NotiKey, type QuietKey } from './data';
+import { useMy, useNotiOnCount } from './store';
 import s from './My.module.css';
 
 /**
- * 알림 설정 — Figma 426:8846
- * 토글 6개가 실제로 동작(섹션 스토어에 저장 → 마이 화면 'N개 켜짐'에 반영).
- * 미리보기 배너는 방금 켠 알림(없으면 켜진 첫 알림)으로 바뀐다.
+ * 알림 설정 — Figma v5 701:8603
+ * 수업 · 게시판 · 학교 · 방해 금지 그룹의 토글이 실제로 동작(섹션 스토어 → 마이 'N개 켜짐'에도 반영).
+ * 맨 위 '지금 N개 켜짐'은 켜진 알림 수(방해 금지 제외)로 바로 바뀐다.
  */
 export function NotificationSettings() {
   const toggles = useMy((st) => st.toggles);
   const setToggle = useMy((st) => st.setToggle);
-  const [focus, setFocus] = useState<NotiKey | null>(null);
+  const onCount = useNotiOnCount();
 
-  const previewKey = focus && toggles[focus] ? focus : NOTI_TYPES.find((o) => toggles[o.id])?.id;
-  const preview = previewKey ? NOTI_PREVIEW[previewKey] : null;
-
-  const toggleNoti = (id: NotiKey, on: boolean) => {
+  const change = (id: NotiKey | QuietKey, on: boolean) => {
     setToggle(id, on);
-    if (on) setFocus(id);
-  };
-  const toggleQuiet = (id: QuietKey, on: boolean) => {
-    setToggle(id, on);
-    const opt = QUIET_OPTIONS.find((o) => o.id === id)!;
-    toast(`${josa(opt.title, '을/를')} ${on ? '켰어요' : '껐어요'}`, on ? 'check' : undefined);
+    // 방해 금지는 '알림 종류'가 아니라 모드라 바뀐 걸 따로 알려 준다
+    if (id === 'quiet') toast(on ? '방해 금지 시간을 켰어요 · 출석 알림은 그대로 와요' : '방해 금지 시간을 껐어요', on ? 'check' : undefined);
   };
 
   return (
-    <Screen figma="426:8846" header={<TopNav title="알림 설정" fallback={P.my} />}>
+    <Screen figma="701:8603" header={<TopNav title="알림 설정" fallback={P.my} />}>
       <div className={s.page}>
-        <div className={s.notiPreview} aria-live="polite">
-          <AnimatePresence mode="wait" initial={false}>
-            {preview ? (
-              <motion.div
-                key={preview.title}
-                className={s.notiBanner}
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 8 }}
-                transition={{ duration: 0.2 }}
-              >
-                <span className={s.appIcon}>
-                  <Logo name="logo-wu-blue" height={15} style={{ filter: 'brightness(0) invert(1)' }} />
-                </span>
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  <span className={s.bannerHead}>
-                    <Text variant="label" className="truncate">
-                      {preview.title}
-                    </Text>
-                    <Text variant="caption-2" color="tertiary" tnum>
-                      {preview.time}
-                    </Text>
-                  </span>
-                  <Text variant="caption-2" color="secondary" as="p" className="truncate">
-                    {preview.meta}
-                  </Text>
-                </span>
-              </motion.div>
-            ) : (
-              <motion.div key="none" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Icon name="bell" size={20} color="tertiary" />
-                <Text variant="callout" color="secondary">
-                  모든 알림이 꺼져 있어요
-                </Text>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        <Text variant="body-3" color="secondary" as="p" aria-live="polite" className="tnum">
+          켜 둔 알림만 보내요. {onCount > 0 ? `지금 ${onCount}개 켜짐` : '지금은 모두 꺼져 있어요'}
+        </Text>
 
-        <ListGroup>
-          {NOTI_TYPES.map((o) => (
-            <ListRow
-              key={o.id}
-              leading={
-                <span className={s.notiIcon} data-on={toggles[o.id]}>
-                  <Icon name={o.icon} size={20} />
-                </span>
-              }
-              title={o.title}
-              meta={
-                <Text variant="caption-2" color="secondary" className="truncate">
-                  {o.meta}
-                </Text>
-              }
-              trailing={<Switch checked={toggles[o.id]} label={o.title} onChange={(v) => toggleNoti(o.id, v)} />}
-            />
-          ))}
-        </ListGroup>
-
-        <ListGroup>
-          {QUIET_OPTIONS.map((o) => (
-            <ListRow
-              key={o.id}
-              title={o.title}
-              meta={
-                <Text variant="caption-2" color="secondary" className="truncate tnum">
-                  {o.meta}
-                </Text>
-              }
-              trailing={<Switch checked={toggles[o.id]} label={o.title} onChange={(v) => toggleQuiet(o.id, v)} />}
-            />
-          ))}
-        </ListGroup>
+        {NOTI_GROUPS.map((g) => (
+          <Fragment key={g.title}>
+            <div className={s.gap20} />
+            <section className={s.group}>
+              <Text variant="caption-1-strong" color="tertiary" as="h2">
+                {g.title}
+              </Text>
+              <div>
+                {g.items.map((o) => (
+                  <div key={o.id} className={s.toggleRow}>
+                    <span className={s.toggleText}>
+                      <Text variant="body-2-strong" className="truncate">
+                        {o.title}
+                      </Text>
+                      {o.meta && (
+                        <Text variant="caption-1" color="tertiary" className="truncate tnum">
+                          {o.meta}
+                        </Text>
+                      )}
+                    </span>
+                    <Switch checked={toggles[o.id]} label={o.title} onChange={(v) => change(o.id, v)} />
+                  </div>
+                ))}
+              </div>
+            </section>
+          </Fragment>
+        ))}
       </div>
     </Screen>
   );

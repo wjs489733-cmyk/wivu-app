@@ -1,51 +1,40 @@
-import { motion } from 'motion/react';
-import { Button, Icon, Screen, Text } from '@/ui';
-import { useNav } from '@/nav/nav';
+import { useEffect, useRef, useState } from 'react';
+import { BottomSheet } from '@/ui';
+import { useNav, useNavState } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { useApp } from '@/store/app';
-import s from './AttendanceDone.module.css';
+import { HomeScreen } from '@/screens/home/HomeScreen';
+import { AttendanceRoot } from './AttendanceRoot';
+import type { AttendOrigin } from './AttendanceSheet';
+import { AttendDoneBody } from './parts';
 
-/** 출석 인증 완료 — Figma 372:7221 (브랜드 배경, DISSOLVE로 진입) */
+/** 시트 닫힘 애니메이션(0.32s)이 끝난 뒤 이동 */
+const SHEET_EXIT_MS = 320;
+
+/**
+ * /attendance/done — 출석 인증 완료 (Figma v5 679:5848: 시작한 화면 위 완료 시트)
+ * v5에는 전체 화면 완료 프레임이 없다 → PIN 시트와 같은 '완료' 시트를 시작한 곳(홈·출석 탭) 위에 띄운다.
+ * QR 인식 뒤 여기로 온다(DISSOLVE). [확인]·닫기 → 시작한 곳으로 (Figma: 홈 · 출석 완료 675:4839).
+ */
 export function AttendanceDone() {
   const nav = useNav();
-  const time = useApp((st) => st.attendanceTime) ?? '10:01';
-  const method = useApp((st) => st.attendanceMethod) ?? 'PIN';
+  const { from } = useNavState<{ from: AttendOrigin }>();
+  const origin: AttendOrigin = from === 'attendance' ? 'attendance' : 'home';
+  const [open, setOpen] = useState(true);
+  const timer = useRef(0);
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  const close = () => {
+    if (!open) return;
+    setOpen(false);
+    timer.current = window.setTimeout(() => nav.fade(origin === 'attendance' ? P.attendance : P.home, { replace: true }), SHEET_EXIT_MS);
+  };
+
   return (
-    <Screen bg="brand" figma="372:7221" scroll={false}>
-      <div className={s.wrap}>
-        <div className={s.center}>
-          <motion.div className={s.badge} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 18, delay: 0.1 }}>
-            <span className={s.halo} />
-            <span className={s.circle}>
-              <motion.svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--wivu-color-bg-brand)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <motion.path d="M5 12.5l4.5 4.5L19 7.5" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.45, delay: 0.35 }} />
-              </motion.svg>
-            </span>
-          </motion.div>
-          <Text variant="display" color="on-brand" as="h1" align="center" style={{ marginTop: 40 }}>
-            출석 완료
-          </Text>
-          <Text variant="body" color="on-brand-muted" as="p" align="center" style={{ marginTop: 4 }}>
-            서비스디자인 · {time} 인증
-          </Text>
-          <div className={s.info}>
-            <Text variant="label" color="on-brand" as="p">
-              디자인관 302호 · 10:00 – 11:50
-            </Text>
-            <Text variant="caption-1" color="on-brand-muted" as="p" style={{ marginTop: 4 }}>
-              정상 출석으로 기록되었습니다 · {method} 인증
-            </Text>
-          </div>
-        </div>
-        <div className={s.actions}>
-          <Button variant="onBrand" block onClick={() => nav.reset(P.home)}>
-            홈으로
-          </Button>
-          <button type="button" className={`${s.link} t-label`} onClick={() => nav.reset(P.attendance)}>
-            오늘 출석 현황 보기 <Icon name="chevron-right" size={16} />
-          </button>
-        </div>
-      </div>
-    </Screen>
+    <>
+      {origin === 'attendance' ? <AttendanceRoot /> : <HomeScreen />}
+      <BottomSheet open={open} onClose={close} label="출석 완료">
+        <AttendDoneBody onConfirm={close} />
+      </BottomSheet>
+    </>
   );
 }

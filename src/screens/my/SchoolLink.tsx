@@ -1,55 +1,56 @@
 import { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
-import { Button, Dialog, Icon, ListGroup, ListRow, ProgressBar, Screen, Spinner, Text, TopNav, toast } from '@/ui';
+import { Button, Chip, Dialog, Icon, Screen, Text, TopNav, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
 import { USER } from '@/data/core';
-import { josa, SYNC_ITEMS } from './data';
+import { SYNC_ITEMS } from './data';
 import { useMy } from './store';
 import s from './My.module.css';
 
-const STEP_MS = 520;
+/** 기준 시각(core.ts 2026-10-09 9:41) — '지금 동기화'를 누르면 이 시각으로 갱신 */
+const NOW = '09:41';
+const SYNC_MS = 1200;
 
 /**
- * 학교 연동 관리 — Figma 426:8952
- * '지금 다시 동기화' → 항목별로 차례로 확인하는 가짜 진행 → 마지막 동기화 시각 갱신.
- * '연동 해제' → 확인창 → 학교 선택(352:1158)으로 이동해 다른 학교로 다시 연동.
+ * 학교 연동 관리 — Figma v5 701:8324 (+ 연동 해제 확인 701:8517)
+ * [지금 동기화] → 잠깐 동기화 중 → 가져오는 정보 시각 갱신 + 토스트.
+ * '연동 해제하고 학교 변경' → 확인창 → 연동 해제(로그아웃과 같은 초기화) → 로그인 · 대학교 검색(667:4592 = 로그인 + 학교 검색 시트).
  */
 export function SchoolLink() {
   const nav = useNav();
   const school = useApp((st) => st.selectedSchool);
   const lastSync = useMy((st) => st.lastSync);
-  const setLastSync = useMy((st) => st.setLastSync);
-  /** null = 대기, 0..N = 동기화 중인 항목 순번 */
-  const [step, setStep] = useState<number | null>(null);
+  const [syncing, setSyncing] = useState(false);
   const [confirm, setConfirm] = useState(false);
   const timer = useRef<number | undefined>(undefined);
-  const syncing = step !== null;
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
 
   const sync = () => {
     if (syncing) return;
-    const tick = (i: number) => {
-      setStep(i);
-      if (i >= SYNC_ITEMS.length) {
-        timer.current = window.setTimeout(() => {
-          setStep(null);
-          const changed = lastSync !== '09:41';
-          setLastSync('09:41');
-          toast(changed ? '동기화를 마쳤어요' : '동기화를 마쳤어요 · 바뀐 내용이 없어요', 'check');
-        }, 360);
-        return;
-      }
-      timer.current = window.setTimeout(() => tick(i + 1), STEP_MS);
-    };
-    tick(0);
+    setSyncing(true);
+    timer.current = window.setTimeout(() => {
+      setSyncing(false);
+      const changed = useMy.getState().lastSync !== NOW;
+      useMy.getState().setLastSync(NOW);
+      toast(changed ? '학교 정보를 새로 가져왔어요' : '이미 최신 정보예요', 'check');
+    }, SYNC_MS);
+  };
+
+  const unlink = () => {
+    setConfirm(false);
+    window.clearTimeout(timer.current);
+    // 연동 해제 = 이 학교 계정에서 나가기 → 로그아웃과 같은 초기화·잠금 후 학교 검색이 열린 로그인으로
+    useApp.getState().logout();
+    useMy.getState().resetMy();
+    toast('학교 연동을 해제했어요');
+    nav.reset(`${P.login}?school=1`, 'fade');
   };
 
   return (
     <Screen
-      figma="426:8952"
+      figma={confirm ? '701:8517' : '701:8324'}
       header={<TopNav title="학교 연동" fallback={P.my} />}
       overlay={
         <Dialog
@@ -58,72 +59,59 @@ export function SchoolLink() {
           message="다른 학교로 바꾸려면 학교를 다시 고르고 학교 계정으로 로그인해야 해요."
           confirmLabel="해제하고 학교 변경"
           destructive
-          onConfirm={() => {
-            setConfirm(false);
-            setTimeout(() => nav.push(P.school), 120);
-          }}
+          onConfirm={unlink}
           onCancel={() => setConfirm(false)}
         />
       }
     >
       <div className={s.page}>
-        <div className={s.status} data-syncing={syncing}>
-          <span className={s.statusMark} data-syncing={syncing}>
-            {syncing ? <Spinner size={24} /> : <Icon name="check" size={24} />}
+        <div className={s.schoolCard}>
+          <span className={s.emblem}>
+            <Icon name="student" size={24} />
           </span>
-          <div className={s.statusText} aria-live="polite">
-            <Text variant="title-2" as="h2">
-              {syncing ? '학교 정보를 다시 불러오고 있어요' : `${josa(school, '와/과')} 연동돼 있어요`}
+          <span className={s.profileText}>
+            <Text variant="title-3" className="truncate">
+              {school}
             </Text>
-            <Text variant="caption-1" color="secondary" as="p" className="tnum">
-              {syncing
-                ? `${SYNC_ITEMS[Math.min(step!, SYNC_ITEMS.length - 1)].title} 확인 중 · ${Math.min(step! + 1, SYNC_ITEMS.length)}/${SYNC_ITEMS.length}`
-                : `학번 ${USER.studentId} · 마지막 동기화 오늘 ${lastSync}`}
+            <Text variant="caption-1" color="secondary" className="truncate tnum">
+              {USER.department} {USER.year}학년 · {USER.studentId}
             </Text>
-          </div>
-          <AnimatePresence initial={false}>
-            {syncing && (
-              <motion.div className={s.progressWrap} initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-                <ProgressBar value={(step! / SYNC_ITEMS.length) * 100} />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          </span>
+          <Chip tone="brand">연동됨</Chip>
         </div>
 
-        <ListGroup>
-          {SYNC_ITEMS.map((it, i) => {
-            const state = !syncing || i < step! ? 'done' : i === step ? 'active' : 'pending';
-            return (
-              <ListRow
-                key={it.id}
-                leading={<Icon name={it.icon} size={20} color="primary" />}
-                title={it.title}
-                trailing={
-                  <>
-                    <Text variant="caption-1" color="secondary" tnum>
-                      {it.value}
-                    </Text>
-                    <span className={s.syncCheck} aria-label={state === 'done' ? '동기화됨' : state === 'active' ? '확인 중' : '대기'}>
-                      {state === 'active' ? <Spinner size={16} /> : <Icon name="check" size={16} color={state === 'done' ? 'pulse' : 'tertiary'} style={state === 'pending' ? { opacity: 0.4 } : undefined} />}
-                    </span>
-                  </>
-                }
-              />
-            );
-          })}
-        </ListGroup>
-
-        <Button variant="soft" block onClick={sync} disabled={syncing}>
-          {syncing ? '동기화 중…' : '지금 다시 동기화'}
-        </Button>
-
-        <Text variant="caption-2" color="tertiary" as="p" className={s.note}>
-          학번·비밀번호는 앱에 저장하지 않고, 학교 인증 서버 토큰으로만 동기화해요.
+        <div className={s.gap24} />
+        <Text variant="body-3-strong" color="secondary" as="h2" className={s.dataHead}>
+          가져오는 정보
         </Text>
+        <ul aria-live="polite">
+          {SYNC_ITEMS.map((label) => (
+            <li key={label} className={s.dataRow}>
+              <Icon name={syncing ? 'refresh' : 'check'} size={20} color={syncing ? 'tertiary' : 'brand'} className={syncing ? s.syncSpin : undefined} />
+              <Text variant="body-2" className="truncate">
+                {label}
+              </Text>
+              <Text variant="caption-1" color="tertiary" tnum>
+                {syncing ? '가져오는 중' : `오늘 ${lastSync}`}
+              </Text>
+            </li>
+          ))}
+        </ul>
 
+        <div className={s.note}>
+          <Icon name="lock" size={16} color="secondary" />
+          <Text variant="caption-1" color="secondary" as="p">
+            학교 계정 비밀번호는 WivU에 저장하지 않아요. 학교 통합 로그인으로만 연동돼요.
+          </Text>
+        </div>
+
+        <div className={s.gap24} />
+        <Button variant="secondary" block leadingIcon="refresh" loading={syncing} onClick={sync}>
+          지금 동기화
+        </Button>
         <button type="button" className={s.textBtn} onClick={() => setConfirm(true)} disabled={syncing}>
-          <Text variant="label" color="error">
-            연동 해제
+          <Text variant="body-3-strong" color="error">
+            연동 해제하고 학교 변경
           </Text>
         </button>
       </div>

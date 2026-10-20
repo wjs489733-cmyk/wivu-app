@@ -1,111 +1,79 @@
-/* 퀵메뉴 편집 — Figma 425:8741 */
-
-/* ── 레디얼 미리보기 (bg/subtle r24 · 링 292 · 허브 96 · 슬롯 44 · 반경 118 = 홈 레디얼과 동일) ── */
-.preview {
-  position: relative;
-  height: 300px;
-  margin: 2px var(--wivu-layout-gutter) 0;
-  border-radius: var(--wivu-radius-24);
-  background: var(--wivu-color-bg-subtle);
-  overflow: hidden;
-}
-.ring {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 292px;
-  height: 292px;
-  margin: -146px 0 0 -146px;
-  border-radius: 50%;
-  background: var(--wivu-color-bg-surface);
-}
-.hub {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  display: grid;
-  place-items: center;
-  width: 96px;
-  height: 96px;
-  margin: -48px 0 0 -48px;
-  border-radius: 50%;
-  background: var(--wivu-color-bg-brand-soft);
-}
-.slot {
-  position: absolute;
-  width: 44px;
-  height: 44px;
-  margin: -22px 0 0 -22px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: var(--wivu-color-bg-brand-soft);
-  color: var(--wivu-color-icon-primary);
-  transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
-}
-.slot[data-active='true'] {
-  background: var(--wivu-color-bg-brand);
-  color: var(--wivu-color-text-on-brand);
-  box-shadow: var(--wivu-elevation-fab);
-}
-.slot[data-target='true'] {
-  box-shadow: 0 0 0 2px var(--wivu-color-bg-surface), 0 0 0 4px var(--wivu-color-border-brand);
-}
-.order {
-  position: absolute;
-  top: -2px;
-  right: -4px;
-  display: grid;
-  place-items: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--wivu-color-text-primary);
-  color: var(--wivu-color-text-on-brand);
-}
-.hint {
-  position: absolute;
-  left: 12px;
-  top: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  max-width: calc(50% - 36px);
-  padding: 4px 12px 4px 10px;
-  border-radius: var(--wivu-radius-full);
-  background: var(--wivu-color-bg-surface);
-  white-space: nowrap;
-}
-.hint[data-idle='true'] {
-  background: transparent;
-  padding-left: 4px;
-}
-
-/* ── 현재 퀵메뉴 리스트 ── */
-.content {
+/* ── 메뉴 편집 (v5 676:5007 · 676:5106 · 701:8791 · 701:8889) ─────────────── */
+.page {
   display: flex;
   flex-direction: column;
-  gap: var(--wivu-space-12);
-  padding: var(--wivu-space-24) var(--wivu-layout-gutter) 0;
+  padding: 12px var(--wivu-layout-inset) 0;
 }
-.listHead {
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-8);
+  min-height: 24px;
+}
+.helper {
+  margin-top: var(--wivu-space-4);
+}
+
+/* 탭 · 선택|순서 — v5: 회색 면 r12 · 안쪽 4 · 칸 36 r9 · 선택 = 흰 칸 + Body 3 Strong */
+.tabs {
+  display: flex;
+  gap: var(--wivu-space-4);
+  margin-top: var(--wivu-space-16);
+  padding: var(--wivu-space-4);
+  border-radius: var(--wivu-radius-12);
+  /* Figma bg/subtle(#FAFAFA)는 흰 바탕에서 안 보여 Secondary 버튼과 같은 한 단계 진한 회색 사용 */
+  background: var(--wivu-color-bg-brand-soft);
+}
+.tab {
+  flex: 1 1 0;
+  display: grid;
+  place-items: center;
+  height: 36px;
+  border-radius: 9px;
+  color: var(--wivu-color-text-secondary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.tab[aria-selected='true'] {
+  background: var(--wivu-color-bg-surface);
+  color: var(--wivu-color-text-primary);
+  box-shadow: var(--wivu-elevation-card);
+}
+
+/* 메뉴 선택 — 2열 텍스트 버튼 (선택 = 연파랑 면 + 파란 테두리 + 체크) */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--wivu-space-8);
+  margin-top: var(--wivu-space-16);
+}
+.tile {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-inline: 4px;
-}
-.helper {
-  padding-inline: 4px;
-  margin-top: -4px;
-}
-.list {
-  position: relative;
-  margin: 0;
-  padding: 4px 12px;
-  list-style: none;
-  border-radius: var(--wivu-radius-16);
+  gap: var(--wivu-space-8);
+  min-width: 0;
+  height: 48px;
+  padding: 0 14px 0 16px;
+  border-radius: var(--wivu-radius-12);
   background: var(--wivu-color-bg-surface);
   box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+  color: var(--wivu-color-text-primary);
+  text-align: left;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+}
+.tile[aria-pressed='true'] {
+  background: var(--wivu-color-bg-brand-tint);
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-brand);
+  color: var(--wivu-color-text-brand);
+}
+.tile:active {
+  transform: scale(0.98);
+}
+
+/* 순서 변경 — 행 52 + 아래 1px 선(마지막 제외) · 오른쪽 손잡이 */
+.list {
+  margin-top: var(--wivu-space-8);
+  list-style: none;
 }
 .item {
   position: relative;
@@ -113,67 +81,23 @@
   align-items: center;
   gap: var(--wivu-space-12);
   min-height: 53px;
-  padding-block: 4px;
+  padding-block: 14px;
   background: var(--wivu-color-bg-surface);
-  border-radius: var(--wivu-radius-12);
+  box-shadow: inset 0 -1px 0 var(--wivu-color-border-default);
+  touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
-  -webkit-touch-callout: none;
 }
-.item + .item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--wivu-color-border-default);
+.item:last-child {
+  box-shadow: none;
+  min-height: 52px;
 }
-.item[data-moving='true'] {
+.item[data-dragging='true'] {
   z-index: 2;
-  margin-inline: -4px;
-  padding-inline: 4px;
-  box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-brand), var(--wivu-elevation-overlay);
-}
-.item[data-moving='true']::before,
-.item[data-moving='true'] + .item::before {
-  display: none;
-}
-.remove {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 32px;
-  height: 44px;
-  margin-right: -10px;
-}
-.removeDot {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--wivu-color-status-error);
-}
-.removeDot::after {
-  content: '';
-  width: 10px;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--wivu-color-text-on-brand);
-}
-.remove:active .removeDot {
-  transform: scale(0.9);
-}
-.itemIcon {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: var(--wivu-color-bg-brand-soft);
-  color: var(--wivu-color-icon-primary);
+  border-radius: var(--wivu-radius-12);
+  box-shadow: var(--wivu-elevation-overlay);
+  margin-inline: -12px;
+  padding-inline: 12px;
 }
 .itemLabel {
   flex: 1 1 auto;
@@ -182,91 +106,18 @@
 .handle {
   display: grid;
   place-items: center;
-  flex-shrink: 0;
-  width: 40px;
+  width: 44px;
   height: 44px;
-  margin-right: -11px;
-  touch-action: none;
-  cursor: grab;
-  color: var(--wivu-color-border-strong);
-}
-.handle:active,
-.item[data-moving='true'] .handle {
-  cursor: grabbing;
-  color: var(--wivu-color-icon-brand);
-}
-.handle:focus-visible {
-  outline: 2px solid var(--wivu-color-border-brand);
-  outline-offset: -4px;
-  border-radius: 8px;
-}
-
-/* ── 추가할 수 있는 기능 ── */
-.addHead {
-  padding: 8px 4px 0;
-}
-.fullNote {
-  display: flex;
-  align-items: center;
-  gap: var(--wivu-space-8);
-  padding: 12px 14px;
+  margin: -12px -12px -12px 0;
   border-radius: var(--wivu-radius-12);
-  background: var(--wivu-color-bg-subtle);
+  color: var(--wivu-color-icon-secondary);
+  cursor: grab;
+  touch-action: none;
 }
-.extras {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--wivu-space-8);
+.handle:active {
+  cursor: grabbing;
 }
-.extra {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 68px;
-  border-radius: var(--wivu-radius-14);
-  background: var(--wivu-color-bg-surface);
-  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
-  color: var(--wivu-color-icon-primary);
-  transition: transform var(--wivu-duration-press) ease, opacity 0.2s ease;
-}
-.extra:active {
-  transform: scale(0.96);
-}
-.extra[data-full='true'] {
-  box-shadow: none;
-  outline: 1px dashed var(--wivu-color-border-strong);
-  outline-offset: -1px;
-  color: var(--wivu-color-text-tertiary);
-}
-.plus {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  display: grid;
-  place-items: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--wivu-color-bg-brand);
-  color: var(--wivu-color-text-on-brand);
-}
-.emptyExtras {
-  grid-column: 1 / -1;
-  padding: 16px 0;
+.empty {
+  padding-block: var(--wivu-space-24);
   text-align: center;
-}
-.reset {
-  display: block;
-  width: 100%;
-  min-height: 44px;
-  text-align: center;
-}
-.reset:disabled {
-  opacity: 0.5;
-}
-.reset:not(:disabled):active {
-  opacity: 0.6;
 }

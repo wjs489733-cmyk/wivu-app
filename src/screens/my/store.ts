@@ -1,13 +1,11 @@
 import { create } from 'zustand';
-import { NOTI_TYPES, QUIET_OPTIONS, type NotiKey, type QuietKey } from './data';
+import { INITIAL_TOGGLES, NOTI_TYPES, type NotiKey, type QuietKey } from './data';
 
 /* ────────────────────────────────────────────────────────────
  * 마이·설정 섹션 로컬 상태 — 알림 토글 · 마지막 동기화 시각
- * (전역 useApp에 없는 값만. 로그아웃 시 resetMy로 같이 초기화)
+ * (전역 useApp에 없는 값만. 로그아웃·연동 해제 시 resetMy로 같이 초기화)
  * ──────────────────────────────────────────────────────────── */
 type Toggles = Record<NotiKey | QuietKey, boolean>;
-
-const INITIAL_TOGGLES = Object.fromEntries([...NOTI_TYPES, ...QUIET_OPTIONS].map((o) => [o.id, o.on])) as Toggles;
 
 type MyState = {
   toggles: Toggles;
@@ -26,5 +24,5 @@ export const useMy = create<MyState>((set) => ({
   resetMy: () => set({ toggles: INITIAL_TOGGLES, lastSync: '09:30' }),
 }));
 
-/** 켜진 알림 종류 수 (방해 금지·수업 중 무음 제외) */
+/** 켜진 알림 수 (방해 금지 제외) — 마이 '3개 켜짐' · 알림 설정 '지금 3개 켜짐' */
 export const useNotiOnCount = () => useMy((st) => NOTI_TYPES.filter((o) => st.toggles[o.id]).length);

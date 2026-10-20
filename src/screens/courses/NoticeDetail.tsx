@@ -1,67 +1,47 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
-import { Chip, Icon, Screen, Text, TopNav } from '@/ui';
-import { useNav } from '@/nav/nav';
+import { Chip, Screen, Text, TopNav } from '@/ui';
 import { P } from '@/app/paths';
 import { getCourse, professorOf } from './data';
-import { noticeKey, useCourses } from './store';
+import { noticeKey, useCourses, useIsNew } from './store';
 import { BodyText, FileRow } from './parts';
 import s from './Courses.module.css';
 
 /**
- * 공지 상세 — Figma 398:7759 (Course_v4_06_NoticeDetail)
- * 열면 읽음 처리(N 배지·'새 글' 해제). 하단 '다음 글'(마지막 글이면 '이전 글')로 이어 읽기.
+ * 공지 상세 — Figma v5 684:6409
+ * '새 공지' 배지(들어올 때 안 읽은 글이었으면) · Title 2 · '과목 · 교수 · 일시 · 조회' · 본문 Body 2 · 첨부 상자.
+ * 열면 읽음 처리 → 과목 상세의 NEW 배지·공지 숫자 강조 해제.
  */
 export function NoticeDetail() {
   const { id, nid } = useParams();
   const { course, info } = getCourse(id);
-  const nav = useNav();
   const markRead = useCourses((st) => st.markNoticeRead);
-  const idx = Math.max(0, info.notices.findIndex((n) => n.id === nid));
-  const n = info.notices[idx];
-  const next = info.notices[idx + 1];
-  const prev = info.notices[idx - 1];
-  const sibling = next ?? prev;
+  const isNew = useIsNew(course.id);
+  const n = info.notices.find((x) => x.id === nid) ?? info.notices[0];
+  // 읽음 처리 전에 '새 공지'였는지 기억 (배지가 들어오자마자 사라지지 않게)
+  const [wasNew] = useState(() => isNew(n));
 
   useEffect(() => {
     markRead(noticeKey(course.id, n.id));
   }, [markRead, course.id, n.id]);
 
   return (
-    <Screen figma="398:7759" header={<TopNav title="공지" fallback={P.course(course.id)} />}>
-      <article className={s.noticePage}>
-        <div className={s.chips}>
-          <Chip tone="brand">{course.name}</Chip>
-          <Chip tone="neutral">과목 공지</Chip>
-        </div>
-        <Text variant="title-1" as="h1">
+    <Screen figma="684:6409" header={<TopNav title="공지" fallback={P.course(course.id)} />}>
+      <article className={s.head}>
+        {wasNew && <Chip tone="brand">새 공지</Chip>}
+        <Text variant="title-2" as="h1" style={{ marginTop: wasNew ? 8 : 0 }}>
           {n.title}
         </Text>
-        <div className={s.author}>
-          <span className={s.authorAvatar}>
-            <Icon name="user" size={20} />
-          </span>
-          <div className={s.cardInfo}>
-            <Text variant="label" as="p">
-              {professorOf(course)} 교수
-            </Text>
-            <Text variant="caption-2" color="tertiary" as="p" className="tnum">
-              {n.dateFull} · 조회 {n.views}
-            </Text>
-          </div>
+        <Text variant="caption-1" color="tertiary" as="p" className="tnum" style={{ marginTop: 4 }}>
+          {course.name} · {professorOf(course)} 교수 · {n.dateFull} · 조회 {n.views}
+        </Text>
+        <div style={{ marginTop: 20 }}>
+          <BodyText>{n.body}</BodyText>
         </div>
-        <BodyText>{n.body}</BodyText>
-        {n.attachment && <FileRow file={n.attachment} variant="boxed" />}
-        {sibling && (
-          <button type="button" className={s.nextNotice} onClick={() => nav.push(P.courseNotice(course.id, sibling.id))}>
-            <Text variant="caption-2" color="tertiary" style={{ flexShrink: 0 }}>
-              {next ? '다음 글' : '이전 글'}
-            </Text>
-            <Text variant="label" className="truncate" style={{ flex: 1 }}>
-              {sibling.title}
-            </Text>
-            <Icon name="chevron-right" size={20} color="primary" />
-          </button>
+        {n.attachment && (
+          <div style={{ marginTop: 20 }}>
+            <FileRow file={n.attachment} variant="boxed" />
+          </div>
         )}
       </article>
     </Screen>

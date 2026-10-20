@@ -1,22 +1,18 @@
 import { useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
-import { Button, Card, Chip, Icon, IconButton, LargeHeader, ListGroup, MetaLine, ProgressBar, Screen, Section, SectionDivider, TabBar, Text } from '@/ui';
+import { Button, Chip, Icon, IconButton, LargeHeader, Screen, TabBar, Text } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useHasUnread } from '@/app/useUnread';
 import { useApp } from '@/store/app';
-import { courseById, SEMESTER, SEMESTER_WEEK, TODAY_MD } from '@/data/core';
+import { courseById, SEMESTER, SEMESTER_WEEK } from '@/data/core';
 import { AttendanceSheetHost } from './AttendanceSheetHost';
-import { allRecords, ATTENDANCE_COURSES, courseStats, totals, type TodayState } from './data';
-import { RecordRow } from './parts';
+import { ATTENDANCE_COURSES, courseStats, todaySessions, totals, type CourseStats, type TodayState } from './data';
 import s from './Attendance.module.css';
 
-const RECENT_COUNT = 4;
-
 /**
- * 출석 탭 루트 — Figma 392:7302
- * 히어로는 전역 attendanceComplete로 출석 전(브랜드) / 완료(잉크) 자동 분기.
- * '전체 기록'(Figma 목적지 없음) → 목록을 그 자리에서 펼침.
+ * 출석 탭 루트 — Figma v5 683:5844
+ * 이번 학기 요약(출석·지각·결석) → 오늘 수업(인증 가능 수업만 [출석 인증]) → 과목별 출석(출석률 · 결석 주의).
+ * [출석 인증] → 이 화면 위에 출석 인증 시트(v5 679:5188). 과목 행 → 과목 출석 상세(push).
  */
 export function AttendanceRoot() {
   const nav = useNav();
@@ -26,177 +22,115 @@ export function AttendanceRoot() {
   const time = useApp((st) => st.attendanceTime);
   const today: TodayState = { complete, method, time };
   const [pin, setPin] = useState(false);
-  const [expanded, setExpanded] = useState(false);
 
   const sum = totals(today);
-  const records = allRecords(today);
-  const shown = expanded ? records : records.slice(0, RECENT_COUNT);
 
   return (
     <Screen
-      figma="392:7302"
+      figma="683:5844"
       header={<LargeHeader title="출석" actions={<IconButton icon="bell" label="알림함" dot={unread} onPress={() => nav.push(P.notifications)} />} />}
       footer={<TabBar active="attendance" />}
       overlay={<AttendanceSheetHost open={pin} onClose={() => setPin(false)} />}
     >
-      <div className={s.heroWrap}>
-        <TodayHero onAttend={() => setPin(true)} />
-      </div>
+      <div className={s.page}>
+        <Text variant="caption-1" color="tertiary" as="p">
+          {SEMESTER} · {SEMESTER_WEEK}주차 · 오프라인 {ATTENDANCE_COURSES.length}과목
+        </Text>
 
-      <div className={s.stats}>
-        <StatTile label="출석" value={sum.present} />
-        <StatTile label="지각" value={sum.late} tone="warning" />
-        <StatTile label="결석" value={sum.absent} tone="error" />
-      </div>
+        <div className={s.summary} role="group" aria-label="이번 학기 요약">
+          <SummaryStat label="출석" value={sum.present} />
+          <SummaryStat label="지각" value={sum.late} />
+          <SummaryStat label="결석" value={sum.absent} error={sum.absent > 0} />
+        </div>
 
-      <SectionDivider />
-      <Section title="과목별 출석" aside={`${SEMESTER} · ${SEMESTER_WEEK}주차`}>
-        <ListGroup>
-          {ATTENDANCE_COURSES.map((id) => {
-            const c = courseById(id);
-            const st = courseStats(id, today);
-            const warn = st.absent > 0;
-            return (
-              <button key={id} type="button" className={s.courseRow} onClick={() => nav.push(P.attendanceCourse(id))}>
-                <span className={s.courseHead}>
-                  <span className={s.courseInfo}>
-                    <span className={s.courseTitle}>
-                      <Text variant="subhead" className="truncate">
-                        {c.name}
+        <section className={s.block}>
+          <Text variant="title-3" as="h2">
+            오늘 수업
+          </Text>
+          <div className={s.rows}>
+            {todaySessions(today).map((r) => {
+              const c = courseById(r.courseId);
+              return (
+                <div key={r.courseId} className={s.row}>
+                  <span className={s.rowText}>
+                    <Text variant="body-1-strong" className="truncate">
+                      {c.name}
+                    </Text>
+                    <Text variant="caption-1" color="tertiary" className="truncate" tnum>
+                      {r.start}–{r.end} · {c.room}
+                    </Text>
+                  </span>
+                  {r.status === '인증 가능' ? (
+                    <Button size="s" onClick={() => setPin(true)}>
+                      출석 인증
+                    </Button>
+                  ) : r.status === '출석' ? (
+                    <Text variant="caption-1" color="tertiary" tnum>
+                      {r.time} 출석
+                    </Text>
+                  ) : (
+                    <Text variant="caption-1" color="tertiary">
+                      예정
+                    </Text>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className={s.block}>
+          <Text variant="title-3" as="h2">
+            과목별 출석
+          </Text>
+          <div className={s.rows}>
+            {ATTENDANCE_COURSES.map((id) => {
+              const st = courseStats(id, today);
+              const warn = st.absent > 0;
+              return (
+                <button key={id} type="button" className={`${s.row} ${s.rowPress}`} onClick={() => nav.push(P.attendanceCourse(id))}>
+                  <span className={s.rowText}>
+                    <span className={s.rowTitle}>
+                      <Text variant="body-1" className="truncate">
+                        {courseById(id).name}
                       </Text>
                       {warn && <Chip tone="dangerSoft">결석 주의</Chip>}
                     </span>
-                    <Text variant="caption-2" color="secondary" tnum>
-                      출석 {st.present} · 지각 {st.late} · 결석 {st.absent}
+                    <Text variant="caption-1" color="tertiary" className="truncate" tnum>
+                      {countLine(st)}
                     </Text>
                   </span>
-                  <Text variant="subhead" color={warn ? 'error' : 'brand'} tnum>
+                  <Text variant="body-2-strong" color={warn ? 'error' : 'primary'} tnum>
                     {st.rate}%
                   </Text>
-                  <Icon name="chevron-right" size={16} color="tertiary" />
-                </span>
-                <ProgressBar value={st.rate} tone={warn ? 'error' : 'brand'} />
-              </button>
-            );
-          })}
-        </ListGroup>
-      </Section>
-
-      <SectionDivider />
-      <Section title="최근 출석 기록" aside={<ExpandLink expanded={expanded} onToggle={() => setExpanded((v) => !v)} />}>
-        <ListGroup>
-          <AnimatePresence initial={false}>
-            {shown.map((r, i) => (
-              <motion.div
-                key={r.key + r.courseId}
-                className={s.recordItem}
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1], delay: i >= RECENT_COUNT ? (i - RECENT_COUNT) * 0.03 : 0 }}
-              >
-                <RecordRow r={r} highlight={complete && r.date === TODAY_MD} onPress={() => nav.push(P.attendanceCourse(r.courseId))} />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </ListGroup>
-        {expanded && (
-          <Text variant="caption-2" color="tertiary" as="p" align="center" className={s.listFoot}>
-            {SEMESTER} 전체 {records.length}건 · 출석 {sum.present} · 지각 {sum.late} · 결석 {sum.absent}
-          </Text>
-        )}
-      </Section>
+                  <Icon name="chevron-right" size={20} color="tertiary" />
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      </div>
     </Screen>
   );
 }
 
-/* ── 오늘 수업 히어로 (홈 히어로와 같은 패턴) ───────────────── */
-function TodayHero({ onAttend }: { onAttend: () => void }) {
-  const nav = useNav();
-  const done = useApp((st) => st.attendanceComplete);
-  const time = useApp((st) => st.attendanceTime);
-
-  if (done) {
-    return (
-      <Card variant="ink" className={s.hero}>
-        <div className={s.heroTop}>
-          <Chip tone="onBrand" size="m" className={s.doneChip}>
-            <span className={s.brandDot} />
-            출석 완료 · {time} 인증
-          </Chip>
-          <Text variant="caption-1-strong" color="on-brand-muted" tnum>
-            10:00 – 11:50
-          </Text>
-        </div>
-        <div className={s.heroTitle}>
-          <Text variant="display" color="on-brand" as="h2">
-            서비스디자인
-          </Text>
-          <Icon name="check-circle" size={24} color="on-brand" />
-        </div>
-        <MetaLine items={['디자인관 302호', '전공', '김OO 교수']} color="on-brand-muted" variant="callout" />
-        <div className={s.heroActions}>
-          <Button variant="onBrandGhost" grow onClick={() => nav.push(P.attendanceCourse('service-design'))}>
-            출석 상세 보기
-          </Button>
-          <Button variant="onBrandGhost" leadingIcon="student" onClick={() => nav.modal(P.studentId)}>
-            학생증
-          </Button>
-        </div>
-      </Card>
-    );
-  }
-
-  return (
-    <Card variant="brand" className={s.hero}>
-      <div className={s.heroTop}>
-        <Chip tone="onBrand" size="m" dot>
-          출석 가능 · 10:10까지
-        </Chip>
-        <Text variant="caption-1-strong" color="on-brand-muted" tnum>
-          10:00 – 11:50
-        </Text>
-      </div>
-      <Text variant="display" color="on-brand" as="h2" className={s.heroTitle}>
-        서비스디자인
-      </Text>
-      <MetaLine items={['디자인관 302호', '전공', '김OO 교수']} color="on-brand-muted" variant="callout" />
-      <div className={s.heroActions}>
-        <Button variant="onBrand" grow onClick={onAttend}>
-          출석 인증하기
-        </Button>
-        <Button variant="onBrandGhost" leadingIcon="student" onClick={() => nav.modal(P.studentId)}>
-          학생증
-        </Button>
-      </div>
-    </Card>
-  );
+/** '출석 6 · 결석 0' / '출석 5 · 지각 1' / '출석 4 · 지각 1 · 결석 1' (v5 과목 행 문구 규칙) */
+function countLine(st: CourseStats) {
+  const parts = [`출석 ${st.present}`];
+  if (st.late) parts.push(`지각 ${st.late}`);
+  if (st.absent || !st.late) parts.push(`결석 ${st.absent}`);
+  return parts.join(' · ');
 }
 
-function StatTile({ label, value, tone }: { label: string; value: number; tone?: 'warning' | 'error' }) {
+function SummaryStat({ label, value, error }: { label: string; value: number; error?: boolean }) {
   return (
-    <div className={s.statTile}>
-      <span className={s.statValue}>
-        <Text variant="number" color={tone ?? 'primary'} tnum>
-          {value}
-        </Text>
-        <Text variant="caption-1-strong" color="secondary">
-          회
-        </Text>
-      </span>
-      <Text variant="caption-2" color="secondary">
+    <div className={s.summaryStat}>
+      <Text variant="title-2" color={error ? 'error' : 'primary'} tnum>
+        {value}
+      </Text>
+      <Text variant="caption-1" color="secondary">
         {label}
       </Text>
     </div>
-  );
-}
-
-/** '전체 기록' ↔ '접기' — Figma 목적지 없음 → 그 자리에서 펼치기 (셰브론이 펼침 방향을 알려줌) */
-function ExpandLink({ expanded, onToggle }: { expanded: boolean; onToggle: () => void }) {
-  return (
-    <button type="button" className={`${s.expandLink} t-caption-1`} onClick={onToggle} aria-expanded={expanded}>
-      {expanded ? '접기' : '전체 기록'}
-      <Icon name="chevron-right" size={16} className={s.expandIcon} />
-    </button>
   );
 }

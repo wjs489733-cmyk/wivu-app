@@ -1,10 +1,10 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { AnimatePresence, animate, motion, useMotionValue } from 'motion/react';
-import { Button, Chip, Icon, IconButton, Screen, StatusBar, Text, toast } from '@/ui';
+import { Button, Chip, Icon, Screen, StatusBar, Text, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { BUILDINGS, MAP_SHORTCUTS, ME, NEXT_BUILDING, routeLength, walkMinutes, type Building, type Pt } from './data';
+import { arrivePoint, BUILDINGS, guideTitle, MAP_SHORTCUTS, ME, NEXT_BUILDING, routeLength, type Building, type Pt } from './data';
 import s from './CampusMap.module.css';
 
 /* 캔버스 = Figma 좌표(392×852) + 여백. 드래그로 둘러볼 수 있게 조금 더 넓게 */
@@ -13,6 +13,8 @@ const OY = 60;
 const W = 560;
 const H = 980;
 const at = ([x, y]: Pt): Pt => [x + OX, y + OY];
+/** Figma 702:8726 AFTER_TIMEOUT 2.5s → 도착(702:8831) */
+const GUIDE_MS = 2500;
 
 /** 경로 위 t(0–1) 지점 */
 function pointAt(pts: Pt[], t: number): Pt {
@@ -31,13 +33,17 @@ function pointAt(pts: Pt[], t: number): Pt {
   return pts[pts.length - 1];
 }
 const pathD = (pts: Pt[]) => pts.map((p, i) => `${i ? 'L' : 'M'}${at(p)[0]} ${at(p)[1]}`).join(' ');
+/** 현재 위치가 실제로 걷는 길 = 경로에서 마지막 점만 도착 위치(벽 8px 앞)로 */
+const walkPath = (b: Building): Pt[] => [...b.route.slice(0, -1), arrivePoint(b.route)];
 
-type Guide = 'idle' | 'going' | 'arrived';
+/** 지도 상태 — idle(688:6715) → navigating(702:8726) → arrived(702:8831) */
+type Guide = 'idle' | 'navigating' | 'arrived';
 
 /**
- * 강의실 지도 — Figma 431:9033 (홈 '다음 강의실' · 히어로 '강의실 위치 보기' · 퀵메뉴 → PUSH)
- * 가상 캠퍼스 지도(실제 캠퍼스 아님). 다음 수업 건물(디자인관 401호) 강조 + 현재 위치에서 도로를 따라 경로.
- * 건물을 누르면 아래 시트가 바뀌고, '건물 정보'로 층별 안내, '길 안내 시작'으로 이동 애니메이션.
+ * 강의실 지도 — Figma v5 688:6715 (홈 '다음 강의실' · 히어로 '강의실 위치 보기' · 퀵메뉴 → PUSH)
+ * 가상 캠퍼스 지도(실제 캠퍼스 아님). 다음 수업 건물(디자인관 401호) 강조 + 아래 시트.
+ * [길 안내 시작] → 안내 중: 위 배너 'Nm 직진 후 ○○ 정문' + 경로 + 현재 위치가 2.5초 동안 경로를 따라 이동 → 도착.
+ * 안내 중 [안내 종료] · 도착 배너/[다시 안내]. 건물을 누르면 시트가 바뀌고, [건물 정보]로 층별 안내.
  * 검색 바: 건물·강의실 이름 검색, 비어 있으면 오늘 수업 바로가기. ?b=<건물 id>로 특정 건물을 열 수 있음.
  */
 export function CampusMap() {
@@ -58,8 +64,9 @@ export function CampusMap() {
   const y = useMotionValue(-OY);
 
   const b = BUILDINGS.find((it) => it.id === sel)!;
-  const mins = walkMinutes(b.route);
-  const me: Pt = guide === 'idle' ? ME : pointAt(b.route, guide === 'arrived' ? 1 : t);
+  const walk = useMemo(() => walkPath(b), [b]);
+  const me: Pt = guide === 'idle' ? ME : guide === 'arrived' ? walk[walk.length - 1] : pointAt(walk, t);
+  const left = Math.max(1, Math.ceil(b.walk * (1 - t)));
 
   // 뷰포트 크기 → 드래그 범위 · 첫 위치(Figma 화면과 같은 구도, 폭이 다르면 가운데 정렬)
   useLayoutEffect(() => {
@@ -76,24 +83,20 @@ export function CampusMap() {
     return () => ro.disconnect();
   }, [x, y]);
 
-  // 길 안내: 경로를 따라 현재 위치 이동 (데모 속도: 1분 ≈ 0.9초)
+  // 안내 중: 2.5초 동안 경로를 따라 현재 위치 이동 → 도착
   useEffect(() => {
-    if (guide !== 'going') return;
-    const dur = mins * 900;
+    if (guide !== 'navigating') return;
     const start = performance.now();
     let raf = 0;
     const step = (now: number) => {
-      const p = Math.min(1, (now - start) / dur);
+      const p = Math.min(1, (now - start) / GUIDE_MS);
       setT(p);
       if (p < 1) raf = requestAnimationFrame(step);
-      else {
-        setGuide('arrived');
-        toast(`${b.name}에 도착했어요`, 'check');
-      }
+      else setGuide('arrived');
     };
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
-  }, [guide, mins, b.name]);
+  }, [guide, sel]);
 
   const panTo = ([px, py]: Pt) => {
     const [cx, cy] = at([px, py]);
@@ -112,6 +115,15 @@ export function CampusMap() {
     setQuery('');
     inputRef.current?.blur();
   };
+  const startGuide = () => {
+    setT(0);
+    setExpanded(false);
+    setGuide('navigating');
+  };
+  const stopGuide = () => {
+    setGuide('idle');
+    setT(0);
+  };
 
   const results = useMemo(() => {
     const q = query.trim();
@@ -126,26 +138,16 @@ export function CampusMap() {
     }).slice(0, 6);
   }, [query]);
 
-  const primary = () => {
-    if (guide === 'going') {
-      setGuide('idle');
-      setT(0);
-      toast('길 안내를 종료했어요');
-    } else {
-      setT(0);
-      setGuide('going');
-      setExpanded(false);
-    }
-  };
+  const badge = guide === 'navigating' ? `안내 중 · ${left}분 남음` : guide === 'arrived' ? '도착했어요' : b.chip;
 
   return (
     <Screen
-      figma="431:9033"
+      figma="688:6715"
       bg="subtle"
       scroll={false}
       hairline={false}
       overlay={
-        <div ref={layerRef} className={s.layer}>
+        <div ref={layerRef} className={s.layer} data-guide={guide}>
           {/* 지도 */}
           <motion.div
             className={s.canvas}
@@ -160,7 +162,7 @@ export function CampusMap() {
             onDragEnd={() => setTimeout(() => (dragging.current = false), 0)}
             onClick={() => searching && closeSearch()}
           >
-            <MapBase route={b.route} guide={guide} t={t} />
+            <MapBase route={b.route} walkLen={routeLength(walk)} guide={guide} t={t} />
             {BUILDINGS.map((it) => (
               <BuildingBlock
                 key={it.id}
@@ -174,7 +176,7 @@ export function CampusMap() {
                 }}
               />
             ))}
-            <Text variant="micro" color="tertiary" className={s.gate} style={{ left: 161 + OX, top: 852 + OY + 4 }}>
+            <Text variant="caption-2" color="tertiary" className={s.gate} style={{ left: 161 + OX, top: 852 + OY + 4 }}>
               정문
             </Text>
             {/* 선택 건물 핀 */}
@@ -191,61 +193,112 @@ export function CampusMap() {
                 {b.pin}
               </motion.span>
             </AnimatePresence>
-            {/* 현재 위치 */}
-            <span className={s.me} style={{ left: at(me)[0], top: at(me)[1] }} aria-label="현재 위치">
+            {/* 현재 위치 (도착 순간은 SMART_ANIMATE처럼 0.25초로 붙음) */}
+            <motion.span
+              className={s.me}
+              initial={false}
+              animate={{ left: at(me)[0], top: at(me)[1] }}
+              transition={guide === 'navigating' ? { duration: 0 } : { duration: 0.25, ease: 'easeOut' }}
+              aria-label="현재 위치"
+            >
               <span className={s.halo} />
               <span className={s.dot} />
-            </span>
+            </motion.span>
           </motion.div>
 
           <div className={s.statusWrap}>
             <StatusBar tone="dark" />
           </div>
 
-          {/* 검색 바 */}
+          {/* 위: 검색 바 ↔ 안내 배너 */}
           <div className={s.top}>
-            <div className={s.searchBar}>
-              <IconButton icon="back" label={searching ? '검색 닫기' : '뒤로'} onPress={() => (searching ? closeSearch() : nav.back(P.home))} />
-              <input
-                ref={inputRef}
-                className={`${s.searchInput} t-callout`}
-                placeholder="건물·강의실 검색"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onFocus={() => setSearching(true)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape') closeSearch();
-                  if (e.key === 'Enter' && results?.[0]) {
-                    select(results[0].building, true);
-                    closeSearch();
-                  }
-                }}
-                type="search"
-                enterKeyHint="search"
-                aria-label="건물·강의실 검색"
-              />
-              <IconButton icon={query ? 'close' : 'search'} label={query ? '지우기' : '검색'} onPress={() => (query ? setQuery('') : inputRef.current?.focus())} />
-            </div>
-            <AnimatePresence>
-              {searching && (
-                <motion.div className={s.results} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.16 }}>
-                  {!results ? (
-                    <>
-                      <Text variant="caption-1-strong" color="tertiary" as="p" className={s.resultHead}>
-                        오늘 수업 강의실
-                      </Text>
-                      {MAP_SHORTCUTS.map((r) => (
-                        <ResultRow key={r.label} label={r.label} meta={r.meta} onPress={() => (select(r.building, true), closeSearch())} />
-                      ))}
-                    </>
-                  ) : results.length ? (
-                    results.map((r) => <ResultRow key={r.key} label={r.label} meta={r.meta} onPress={() => (select(r.building, true), closeSearch())} />)
-                  ) : (
-                    <Text variant="callout" color="secondary" as="p" className={s.resultHead} style={{ padding: '12px 16px' }}>
-                      ‘{query}’ 검색 결과가 없어요
-                    </Text>
-                  )}
+            <AnimatePresence mode="wait" initial={false}>
+              {guide === 'idle' ? (
+                <motion.div key="search" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
+                  <div className={s.searchBar}>
+                    <button type="button" className={s.barButton} aria-label={searching ? '검색 닫기' : '뒤로'} onClick={() => (searching ? closeSearch() : nav.back(P.home))}>
+                      <Icon name="back" size={24} />
+                    </button>
+                    <input
+                      ref={inputRef}
+                      className={`${s.searchInput} t-body-2`}
+                      placeholder="건물·강의실 검색"
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      onFocus={() => setSearching(true)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Escape') closeSearch();
+                        if (e.key === 'Enter' && results?.[0]) {
+                          select(results[0].building, true);
+                          closeSearch();
+                        }
+                      }}
+                      type="search"
+                      enterKeyHint="search"
+                      aria-label="건물·강의실 검색"
+                    />
+                    <button type="button" className={s.barButton} aria-label={query ? '지우기' : '검색'} onClick={() => (query ? setQuery('') : inputRef.current?.focus())}>
+                      <Icon name={query ? 'close' : 'search'} size={20} />
+                    </button>
+                  </div>
+                  <AnimatePresence>
+                    {searching && (
+                      <motion.div className={s.results} initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.16 }}>
+                        {!results ? (
+                          <>
+                            <Text variant="caption-1-strong" color="tertiary" as="p" className={s.resultHead}>
+                              오늘 수업 강의실
+                            </Text>
+                            {MAP_SHORTCUTS.map((r) => (
+                              <ResultRow key={r.label} label={r.label} meta={r.meta} onPress={() => (select(r.building, true), closeSearch())} />
+                            ))}
+                          </>
+                        ) : results.length ? (
+                          results.map((r) => <ResultRow key={r.key} label={r.label} meta={r.meta} onPress={() => (select(r.building, true), closeSearch())} />)
+                        ) : (
+                          <Text variant="body-3" color="secondary" as="p" className={s.resultEmpty}>
+                            ‘{query}’ 검색 결과가 없어요
+                          </Text>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
+              ) : guide === 'navigating' ? (
+                <motion.div key="guide" className={s.banner} data-tone="brand" role="status" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
+                  <Icon name="map" size={24} />
+                  <span className={s.bannerText}>
+                    <Text variant="body-1-strong" color="on-brand" className="truncate">
+                      {guideTitle(b)}
+                    </Text>
+                    <Text variant="caption-1" color="on-brand" className="truncate">
+                      {b.guide}
+                    </Text>
+                  </span>
+                </motion.div>
+              ) : (
+                <motion.button
+                  key="arrived"
+                  type="button"
+                  className={s.banner}
+                  data-tone="surface"
+                  onClick={stopGuide}
+                  aria-label={`${b.name}에 도착했어요 · 닫기`}
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Icon name="check" size={24} color="brand" />
+                  <span className={s.bannerText}>
+                    <Text variant="body-1-strong" className="truncate">
+                      {b.name}에 도착했어요
+                    </Text>
+                    <Text variant="caption-1" color="secondary" className="truncate">
+                      {b.arrive}
+                    </Text>
+                  </span>
+                </motion.button>
               )}
             </AnimatePresence>
           </div>
@@ -258,29 +311,31 @@ export function CampusMap() {
               aria-label="내 위치로 이동"
               onClick={() => {
                 panTo(me);
-                toast(guide === 'arrived' ? `지금 ${b.name} 앞이에요` : '지금 학생회관 앞이에요');
+                toast(guide === 'arrived' ? `지금 ${b.name} 앞이에요` : guide === 'navigating' ? `${b.name}로 가는 중이에요` : '지금 학생회관 앞이에요');
               }}
             >
-              <Icon name="pin" size={20} />
+              <Icon name="locate" size={24} />
             </button>
             <motion.section className={s.sheet} layout transition={{ duration: 0.26, ease: [0.32, 0.72, 0, 1] }} aria-label="경로 안내">
               <motion.button layout="position" type="button" className={s.grabber} aria-label={expanded ? '건물 정보 접기' : '건물 정보 펼치기'} aria-expanded={expanded} onClick={() => setExpanded((v) => !v)} />
               <motion.div layout="position" className={s.sheetHead}>
                 <div className={s.sheetInfo}>
-                  <Chip tone={b.next ? 'brand' : 'neutral'}>{guide === 'going' ? `안내 중 · ${Math.max(1, Math.ceil(mins * (1 - t)))}분 남음` : guide === 'arrived' ? '도착했어요' : b.chip}</Chip>
-                  <Text variant="title-1" as="h2" className="truncate" style={{ maxWidth: '100%' }}>
+                  <Chip tone={b.next || guide !== 'idle' ? 'brand' : 'neutral'} className="tnum">
+                    {badge}
+                  </Chip>
+                  <Text variant="title-2" as="h2" className="truncate" style={{ maxWidth: '100%' }}>
                     {b.title}
                   </Text>
-                  <Text variant="caption-1" color="secondary" className="truncate" style={{ maxWidth: '100%' }}>
+                  <Text variant="caption-1" color="tertiary" className="truncate" style={{ maxWidth: '100%' }}>
                     {b.sub}
                   </Text>
                 </div>
-                <div className={s.walk} aria-label={`도보 ${mins}분`}>
+                <div className={s.walk} aria-label={`도보 ${b.walk}분`}>
+                  <Text variant="title-2" color="brand" tnum>
+                    {b.walk}분
+                  </Text>
                   <Text variant="caption-2" color="tertiary">
                     도보
-                  </Text>
-                  <Text variant="number" color="brand" tnum>
-                    {mins}분
                   </Text>
                 </div>
               </motion.div>
@@ -289,10 +344,10 @@ export function CampusMap() {
                   <motion.div className={s.floors} initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.24 }}>
                     {b.floors.map((f) => (
                       <div key={f.floor} className={s.floorRow}>
-                        <Text variant="caption-1-strong" tnum>
+                        <Text variant="body-3-strong" tnum>
                           {f.floor}
                         </Text>
-                        <Text variant="callout" color="secondary" className="truncate">
+                        <Text variant="body-3" color="secondary" className="truncate">
                           {f.desc}
                         </Text>
                         {f.mine ? <Chip tone="brand">내 수업</Chip> : <span />}
@@ -302,12 +357,18 @@ export function CampusMap() {
                 )}
               </AnimatePresence>
               <motion.div layout="position" className={s.actions}>
-                <Button variant="soft" grow onClick={() => setExpanded((v) => !v)} aria-expanded={expanded}>
+                <Button variant="secondary" grow onClick={() => setExpanded((v) => !v)} aria-expanded={expanded}>
                   {expanded ? '정보 접기' : '건물 정보'}
                 </Button>
-                <Button variant="primary" grow onClick={primary}>
-                  {guide === 'going' ? '안내 종료' : guide === 'arrived' ? '다시 안내' : '길 안내 시작'}
-                </Button>
+                {guide === 'navigating' ? (
+                  <Button variant="secondary" grow onClick={stopGuide}>
+                    안내 종료
+                  </Button>
+                ) : (
+                  <Button variant="primary" grow onClick={startGuide}>
+                    {guide === 'arrived' ? '다시 안내' : '길 안내 시작'}
+                  </Button>
+                )}
               </motion.div>
             </motion.section>
           </div>
@@ -318,26 +379,39 @@ export function CampusMap() {
 }
 
 /* ── 지도 바탕: 녹지 · 도로 · 경로 (SVG) ───────────────────── */
-function MapBase({ route, guide, t }: { route: Pt[]; guide: Guide; t: number }) {
+function MapBase({ route, walkLen, guide, t }: { route: Pt[]; walkLen: number; guide: Guide; t: number }) {
   const total = routeLength(route);
-  const done = guide === 'idle' ? 0 : guide === 'arrived' ? total : total * t;
+  const d = pathD(route);
+  // 지나온 구간은 35%(도착 702:8831과 같은 농도), 남은 구간만 진하게 — 걷는 길은 경로의 앞부분이라 거리 그대로 대응
+  const done = guide === 'arrived' ? total : walkLen * t;
   return (
     <svg className={s.svg} width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden>
       <rect className={s.ground} x={0} y={0} width={W} height={H} />
-      {/* 녹지 (Figma 2곳 + 가장자리) */}
+      {/* 녹지 (Figma 2곳) */}
       <rect className={s.green} x={-20 + OX} y={520 + OY} width={180} height={140} rx={40} />
       <rect className={s.green} x={250 + OX} y={90 + OY} width={180} height={120} rx={40} />
-      <rect className={s.green} x={-70 + OX} y={660 + OY} width={120} height={180} rx={40} />
-      <rect className={s.green} x={330 + OX} y={640 + OY} width={140} height={160} rx={40} />
       {/* 도로 */}
       <rect className={s.road} x={0} y={300 + OY} width={W} height={22} rx={11} />
       <rect className={s.road} x={150 + OX} y={40 + OY} width={22} height={H - 40 - OY} rx={11} />
       <rect className={s.road} x={0} y={600 + OY} width={W} height={18} rx={9} />
       <rect className={s.road} x={290 + OX} y={300 + OY} width={18} height={H - 300 - OY} rx={9} />
-      {/* 경로: 흰 테두리 + 브랜드 선, 지나온 구간은 회색 */}
-      <motion.path key={pathD(route)} className={s.routeCasing} d={pathD(route)} initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} />
-      <motion.path key={`r${pathD(route)}`} className={s.route} d={pathD(route)} initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} />
-      {done > 0 && <path className={s.routeDone} d={pathD(route)} strokeDasharray={`${done} ${total}`} />}
+      {/* 경로 (안내 중·도착만): 흰 테두리 10 + 브랜드 6 */}
+      <AnimatePresence>
+        {guide !== 'idle' && (
+          <motion.g key={d} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}>
+            <g opacity={0.35}>
+              <path className={s.routeCasing} d={d} />
+              <path className={s.route} d={d} />
+            </g>
+            {done < total && (
+              <g>
+                <path className={s.routeCasing} d={d} strokeDasharray={`${total} ${total}`} strokeDashoffset={-done} />
+                <path className={s.route} d={d} strokeDasharray={`${total} ${total}`} strokeDashoffset={-done} />
+              </g>
+            )}
+          </motion.g>
+        )}
+      </AnimatePresence>
     </svg>
   );
 }
@@ -358,7 +432,7 @@ function BuildingBlock({ b, selected, onPress }: { b: Building; selected: boolea
       aria-pressed={selected}
       aria-label={`${b.name}${b.next ? ' · 다음 수업' : ''}`}
     >
-      <Text variant="micro" color="inherit">
+      <Text variant="caption-2" color="inherit">
         {b.name}
       </Text>
     </button>
@@ -372,7 +446,7 @@ function ResultRow({ label, meta, onPress }: { label: string; meta: string; onPr
         <Icon name="pin" size={16} />
       </span>
       <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <Text variant="subhead" className="truncate">
+        <Text variant="body-2-strong" className="truncate">
           {label}
         </Text>
         <Text variant="caption-2" color="tertiary" className="truncate">

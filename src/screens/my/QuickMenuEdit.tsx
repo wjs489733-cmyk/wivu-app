@@ -1,62 +1,52 @@
-import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
-import { AnimatePresence, motion, Reorder, useDragControls } from 'motion/react';
-import { Dialog, Icon, Logo, Screen, SectionDivider, Text, TextAction, TopNav, toast } from '@/ui';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
+import { useSearchParams } from 'react-router';
+import { Reorder, useDragControls } from 'motion/react';
+import { Button, Chip, CtaBar, Dialog, Icon, Screen, Text, TopNav, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
-import { QUICK_MAX, RADIAL_DEFAULT, SETUP_ITEMS, quickItem, type QuickItem } from '@/data/quickMenu';
+import { QUICK_MAX } from '@/data/quickMenu';
+import { josa, menuCatalog, menuItem } from './data';
 import s from './QuickMenu.module.css';
 
-const R = 118; // 홈 레디얼(308:11745)과 같은 반경
+type Tab = 'select' | 'order';
 const LONG_PRESS_MS = 380;
+/** 뒤로 갈 곳이 없을 때(바로 열었을 때) — Figma 나가기 확인의 목적지(674:4748 홈) */
+const FALLBACK = P.home;
+const label = (id: string) => menuItem(id)?.label ?? id;
 
 /**
- * 퀵메뉴 편집 — Figma 425:8741 (마이 › 퀵메뉴 편집 · 홈 레디얼 '메뉴 추가')
- * - 리스트: 손잡이를 끌거나 행을 길게 눌러 순서 변경(Reorder), − 로 빼기, 손잡이 포커스 후 ↑↓ 키로도 이동
- * - 미리보기: 아이콘 두 개를 차례로 누르면 자리 바꾸기
- * - 아래 타일: 눌러서 추가(최대 8개)
- * - 완료 → 전역 quickMenu 저장 → 홈 레디얼에 바로 반영
+ * 메뉴 편집(내 메뉴) — Figma v5 676:5007 선택 · 676:5106 순서 · 701:8791 변경됨 · 701:8889 나가기 확인
+ * - 메뉴 선택: 2열 텍스트 버튼을 눌러 담기/빼기(최대 8개). 8개가 찬 상태에서 새 메뉴를 누르면 맨 끝 메뉴와 바꾼다(701:8791과 같은 결과).
+ * - 순서 변경: 손잡이(≡)를 끌거나 행을 길게 눌러 끌어서 순서 변경, 손잡이에 포커스 후 ↑↓ 키로도 이동.
+ * - 바뀐 게 있으면 헤더에 '변경 N' 배지, 왼쪽 버튼이 닫기(X)로 바뀌고 누르면 나가기 확인.
+ * - 저장 → 전역 quickMenu(setQuickMenu) → 홈 내 메뉴·홈 버튼 길게 누르기 메뉴에 바로 반영.
+ * 바로 열기: ?tab=order (순서 변경 탭)
  */
 export function QuickMenuEdit() {
   const nav = useNav();
+  const [params] = useSearchParams();
   const saved = useApp((st) => st.quickMenu);
-  const save = useApp((st) => st.setQuickMenu);
-  const [draft, setDraft] = useState<string[]>(saved);
-  const [moving, setMoving] = useState<string | null>(null);
-  const [pick, setPick] = useState<string | null>(null);
+  const setQuickMenu = useApp((st) => st.setQuickMenu);
+  const [draft, setDraft] = useState<string[]>(() => saved.filter((id) => menuItem(id)).slice(0, QUICK_MAX));
+  const [tab, setTab] = useState<Tab>(params.get('tab') === 'order' ? 'order' : 'select');
   const [leave, setLeave] = useState(false);
+  const [dragging, setDragging] = useState<string | null>(null);
 
-  const items = draft.map(quickItem).filter(Boolean) as QuickItem[];
-  const dirty = draft.join() !== saved.join();
-  const full = draft.length >= QUICK_MAX;
-  const isDefault = draft.join() === RADIAL_DEFAULT.join();
-  const extras = SETUP_ITEMS.filter((id) => !draft.includes(id));
-  const focusId = moving ?? pick;
-  const focusIdx = focusId ? draft.indexOf(focusId) : -1;
+  const catalog = useMemo(() => menuCatalog(saved, draft), [saved, draft]);
+  const changes = useMemo(() => countChanges(saved, draft), [saved, draft]);
+  const dirty = changes > 0;
+  const count = draft.length;
 
-  const done = () => {
-    if (dirty) {
-      save(draft);
-      toast('퀵메뉴를 저장했어요', 'check');
-    }
-    nav.back(P.my);
+  const toggle = (id: string) => {
+    if (draft.includes(id)) return setDraft((d) => d.filter((x) => x !== id));
+    if (count < QUICK_MAX) return setDraft((d) => [...d, id]);
+    // 8개가 다 찼으면 맨 끝 메뉴 자리에 넣는다 (Figma: 8/8에서 '도서관' → '장소대여'가 빠지고 도서관 선택)
+    const last = draft[draft.length - 1];
+    setDraft((d) => [...d.slice(0, -1), id]);
+    toast(`${QUICK_MAX}개가 다 차서 ${label(last)} 대신 ${josa(label(id), '을/를')} 담았어요`);
   };
-  const remove = (id: string) => {
-    if (draft.length <= 1) {
-      toast('퀵메뉴는 1개 이상 있어야 해요');
-      return;
-    }
-    if (pick === id) setPick(null);
-    setDraft((d) => d.filter((x) => x !== id));
-  };
-  const add = (id: string) => {
-    if (full) {
-      toast(`최대 ${QUICK_MAX}개까지 담을 수 있어요`);
-      return;
-    }
-    setDraft((d) => [...d, id]);
-  };
-  const move = (id: string, dir: -1 | 1) => {
+  const move = (id: string, dir: -1 | 1) =>
     setDraft((d) => {
       const i = d.indexOf(id);
       const j = i + dir;
@@ -65,207 +55,143 @@ export function QuickMenuEdit() {
       [next[i], next[j]] = [next[j], next[i]];
       return next;
     });
+
+  const save = () => {
+    if (count === 0) return;
+    if (dirty) {
+      setQuickMenu(draft);
+      toast('내 메뉴를 저장했어요', 'check');
+    }
+    nav.back(FALLBACK);
   };
-  const tapSlot = (id: string) => {
-    if (!pick) return setPick(id);
-    if (pick === id) return setPick(null);
-    const a = draft.indexOf(pick);
-    const b = draft.indexOf(id);
-    setDraft((d) => {
-      const next = [...d];
-      [next[a], next[b]] = [next[b], next[a]];
-      return next;
-    });
-    toast(`${quickItem(pick)?.label} ↔ ${quickItem(id)?.label} 자리를 바꿨어요`);
-    setPick(null);
-  };
+
+  const figma = leave ? '701:8889' : dirty ? '701:8791' : tab === 'order' ? '676:5106' : '676:5007';
 
   return (
     <Screen
-      figma="425:8741"
+      figma={figma}
       header={
         <TopNav
-          title="퀵메뉴 편집"
-          fallback={P.my}
-          onLeading={() => (dirty ? setLeave(true) : nav.back(P.my))}
-          trailing={<TextAction onPress={done}>완료</TextAction>}
+          title="메뉴 편집"
+          leading={dirty ? 'close' : 'back'}
+          fallback={FALLBACK}
+          onLeading={dirty ? () => setLeave(true) : undefined}
         />
+      }
+      footer={
+        <CtaBar>
+          <Button block onClick={save} disabled={count === 0}>
+            {tab === 'select' ? `${count}개 저장` : '저장'}
+          </Button>
+        </CtaBar>
       }
       overlay={
         <Dialog
           open={leave}
           title="저장하지 않고 나갈까요?"
-          message="지금까지 바꾼 퀵메뉴 구성이 사라져요."
+          message="지금까지 바꾼 내 메뉴 구성이 사라져요."
           confirmLabel="나가기"
           cancelLabel="계속 편집"
           destructive
           onConfirm={() => {
             setLeave(false);
-            nav.back(P.my);
+            nav.back(FALLBACK);
           }}
           onCancel={() => setLeave(false)}
         />
       }
     >
-      {/* 레디얼 미리보기 */}
-      <div className={s.preview} aria-label="퀵메뉴 미리보기">
-        <div className={s.ring} />
-        <div className={s.hub}>
-          <Logo name="logo-wu-blue" height={30} />
+      <div className={s.page}>
+        <div className={s.head}>
+          <Text variant="title-3" as="h2">
+            내 메뉴
+          </Text>
+          <Text variant="caption-1-strong" color="brand" tnum aria-label={`${QUICK_MAX}개 중 ${count}개`}>
+            {count} / {QUICK_MAX}
+          </Text>
+          {dirty && (
+            <Chip tone="warningSoft" className="tnum">
+              변경 {changes}
+            </Chip>
+          )}
         </div>
-        {items.map((q, i) => {
-          const a = (i / items.length) * Math.PI * 2 - Math.PI / 2;
-          return (
-            <motion.button
-              key={q.id}
+        <Text variant="caption-1" color="tertiary" as="p" className={s.helper}>
+          홈의 내 메뉴와, 홈 버튼을 길게 누르면 열리는 메뉴에 보여요.
+        </Text>
+
+        <div className={s.tabs} role="tablist" aria-label="메뉴 편집 방식">
+          {(
+            [
+              ['select', '메뉴 선택'],
+              ['order', '순서 변경'],
+            ] as const
+          ).map(([v, l]) => (
+            <button
+              key={v}
               type="button"
-              layout
-              transition={{ type: 'spring', stiffness: 420, damping: 34 }}
-              className={s.slot}
-              data-active={focusId === q.id}
-              data-target={!!pick && pick !== q.id}
-              style={{ left: `calc(50% + ${Math.cos(a) * R}px)`, top: `calc(50% + ${Math.sin(a) * R}px)` }}
-              onClick={() => tapSlot(q.id)}
-              aria-label={`${i + 1}번 ${q.label}${pick === q.id ? ' · 선택됨' : ''}`}
-              aria-pressed={pick === q.id}
+              role="tab"
+              aria-selected={tab === v}
+              className={`${s.tab} ${tab === v ? 't-body-3-strong' : 't-body-3'}`}
+              onClick={() => setTab(v)}
             >
-              <Icon name={q.icon} size={20} />
-              <span className={`${s.order} t-micro tnum`}>{i + 1}</span>
-            </motion.button>
-          );
-        })}
-        <AnimatePresence mode="wait" initial={false}>
-          {focusId ? (
-            <motion.span key="focus" className={s.hint} initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-              <Text variant="micro" color="brand" className="truncate">
-                {pick && !moving ? `${quickItem(focusId)?.label} ↔ 바꿀 자리 선택` : `${quickItem(focusId)?.label} 이동 중 · ${focusIdx + 1}번 자리`}
-              </Text>
-            </motion.span>
-          ) : (
-            <motion.span key="idle" className={s.hint} data-idle initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-              <Text variant="caption-2" color="tertiary">
-                눌러서 자리 바꾸기
-              </Text>
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </div>
-
-      <div className={s.content}>
-        <div className={s.listHead}>
-          <Text variant="title-2" as="h2">
-            현재 퀵메뉴
-          </Text>
-          <Text variant="label" color="brand" tnum aria-label={`${QUICK_MAX}개 중 ${draft.length}개`}>
-            {draft.length} / {QUICK_MAX}
-          </Text>
-        </div>
-        <Text variant="caption-2" color="tertiary" as="p" className={s.helper}>
-          길게 눌러 순서를 바꾸고, − 를 눌러 뺄 수 있어요
-        </Text>
-
-        <Reorder.Group axis="y" values={draft} onReorder={setDraft} className={s.list} as="ul">
-          {items.map((q, i) => (
-            <SlotRow
-              key={q.id}
-              item={q}
-              index={i}
-              moving={moving === q.id || pick === q.id}
-              onDragState={(on) => setMoving(on ? q.id : null)}
-              onRemove={() => remove(q.id)}
-              onMove={(dir) => move(q.id, dir)}
-            />
+              {l}
+            </button>
           ))}
-        </Reorder.Group>
-      </div>
-
-      <SectionDivider />
-
-      <div className={s.content} style={{ paddingTop: 0 }}>
-        <Text variant="title-2" as="h2" className={s.addHead}>
-          추가할 수 있는 기능
-        </Text>
-        <AnimatePresence initial={false}>
-          {full && (
-            <motion.div className={s.fullNote} initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden' }}>
-              <Icon name="warning" size={16} color="secondary" />
-              <Text variant="caption-1" color="secondary">
-                {QUICK_MAX}개가 가득 찼어요. 하나를 빼면 추가할 수 있어요
-              </Text>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        <div className={s.extras}>
-          {extras.map((id) => {
-            const q = quickItem(id)!;
-            return (
-              <motion.button
-                key={id}
-                layout
-                type="button"
-                className={s.extra}
-                data-full={full}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                onClick={() => add(id)}
-                aria-label={`${q.label} 추가`}
-                aria-disabled={full}
-              >
-                <Icon name={q.icon} size={20} />
-                <Text variant="caption-2-strong" color={full ? 'tertiary' : 'secondary'}>
-                  {q.label}
-                </Text>
-                {!full && (
-                  <span className={s.plus} aria-hidden>
-                    <Icon name="plus" size={16} />
-                  </span>
-                )}
-              </motion.button>
-            );
-          })}
-          {extras.length === 0 && (
-            <Text variant="caption-1" color="tertiary" as="p" className={s.emptyExtras}>
-              모든 기능을 담았어요
-            </Text>
-          )}
         </div>
-        <button
-          type="button"
-          className={s.reset}
-          disabled={isDefault}
-          onClick={() => {
-            setDraft(RADIAL_DEFAULT);
-            setPick(null);
-            toast('기본 구성으로 되돌렸어요');
-          }}
-        >
-          <Text variant="label" color="tertiary">
-            기본 구성으로 되돌리기
+
+        {tab === 'select' ? (
+          <div className={s.grid} role="tabpanel" aria-label="메뉴 선택">
+            {catalog.map((m) => {
+              const on = draft.includes(m.id);
+              return (
+                <button key={m.id} type="button" className={s.tile} aria-pressed={on} onClick={() => toggle(m.id)}>
+                  <Text variant={on ? 'body-2-strong' : 'body-2'} color="inherit" className="truncate">
+                    {m.label}
+                  </Text>
+                  {on && <Icon name="check" size={20} />}
+                </button>
+              );
+            })}
+          </div>
+        ) : count === 0 ? (
+          <Text variant="body-3" color="tertiary" as="p" className={s.empty}>
+            메뉴 선택에서 먼저 담을 메뉴를 골라 주세요
           </Text>
-        </button>
+        ) : (
+          <Reorder.Group axis="y" values={draft} onReorder={setDraft} className={s.list} as="ul" role="tabpanel" aria-label="순서 변경">
+            {draft.map((id, i) => (
+              <OrderRow
+                key={id}
+                id={id}
+                index={i}
+                total={count}
+                dragging={dragging === id}
+                onDragState={(on) => setDragging(on ? id : null)}
+                onMove={(dir) => move(id, dir)}
+              />
+            ))}
+          </Reorder.Group>
+        )}
       </div>
     </Screen>
   );
 }
 
-/* ── 리스트 행: − · 아이콘 · 이름 · 순번 · 손잡이 ───────────────── */
-function SlotRow({
-  item,
-  index,
-  moving,
-  onDragState,
-  onRemove,
-  onMove,
-}: {
-  item: QuickItem;
-  index: number;
-  moving: boolean;
-  onDragState: (on: boolean) => void;
-  onRemove: () => void;
-  onMove: (dir: -1 | 1) => void;
-}) {
+/** '변경 N' — 새로 담은 것 + 뺀 것 + 자리가 바뀐 것 (Figma: 장소대여 빼고 도서관 담기 = 변경 2) */
+function countChanges(saved: string[], draft: string[]) {
+  const added = draft.filter((id) => !saved.includes(id)).length;
+  const removed = saved.filter((id) => !draft.includes(id)).length;
+  const keptDraft = draft.filter((id) => saved.includes(id));
+  const keptSaved = saved.filter((id) => draft.includes(id));
+  const moved = keptDraft.filter((id, i) => keptSaved[i] !== id).length;
+  return added + removed + moved;
+}
+
+/* ── 순서 행: 이름 · 손잡이(≡) — 손잡이는 바로, 행은 길게 눌러 끌기 ─────────── */
+function OrderRow({ id, index, total, dragging, onDragState, onMove }: { id: string; index: number; total: number; dragging: boolean; onDragState: (on: boolean) => void; onMove: (dir: -1 | 1) => void }) {
   const controls = useDragControls();
   const press = useRef<{ timer: number; x: number; y: number } | null>(null);
+  const name = label(id);
 
   useEffect(() => () => window.clearTimeout(press.current?.timer), []);
 
@@ -273,7 +199,6 @@ function SlotRow({
     if (press.current) window.clearTimeout(press.current.timer);
     press.current = null;
   };
-  // 행 길게 누르기 → 드래그 시작 (손잡이는 바로 시작)
   const onRowDown = (e: ReactPointerEvent) => {
     if ((e.target as HTMLElement).closest('button')) return;
     const native = e.nativeEvent;
@@ -291,21 +216,17 @@ function SlotRow({
     if (press.current && Math.hypot(e.clientX - press.current.x, e.clientY - press.current.y) > 8) cancelPress();
   };
   const onKey = (e: KeyboardEvent) => {
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      onMove(-1);
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      onMove(1);
-    }
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    onMove(e.key === 'ArrowUp' ? -1 : 1);
   };
 
   return (
     <Reorder.Item
-      value={item.id}
+      value={id}
       as="li"
       className={s.item}
-      data-moving={moving}
+      data-dragging={dragging}
       dragListener={false}
       dragControls={controls}
       onDragStart={() => onDragState(true)}
@@ -317,33 +238,20 @@ function SlotRow({
       onContextMenu={(e) => e.preventDefault()}
       transition={{ type: 'spring', stiffness: 520, damping: 40 }}
     >
-      <button type="button" className={s.remove} onClick={onRemove} aria-label={`${item.label} 빼기`}>
-        <span className={s.removeDot} />
-      </button>
-      <span className={s.itemIcon}>
-        <Icon name={item.icon} size={20} />
-      </span>
-      <Text variant="subhead" className={`${s.itemLabel} truncate`}>
-        {item.label}
-      </Text>
-      <Text variant="caption-1-strong" color="tertiary" tnum>
-        {index + 1}
+      <Text variant="body-1" className={`${s.itemLabel} truncate`}>
+        {name}
       </Text>
       <button
         type="button"
         className={s.handle}
-        aria-label={`${item.label} 순서 변경 (위·아래 화살표 키)`}
+        aria-label={`${name} 순서 변경 · ${total}개 중 ${index + 1}번째 (위·아래 화살표 키로 이동)`}
         onPointerDown={(e) => {
           e.preventDefault();
           controls.start(e);
         }}
         onKeyDown={onKey}
       >
-        <svg width="18" height="14" viewBox="0 0 18 14" aria-hidden>
-          <rect y="0" width="18" height="2" rx="1" fill="currentColor" />
-          <rect y="6" width="18" height="2" rx="1" fill="currentColor" />
-          <rect y="12" width="18" height="2" rx="1" fill="currentColor" />
-        </svg>
+        <Icon name="grip" size={20} />
       </button>
     </Reorder.Item>
   );

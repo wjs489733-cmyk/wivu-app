@@ -1,84 +1,112 @@
+/* 홈 퀵메뉴 · 부채꼴 (Figma 675:5022) — 중심 = 탭바 홈 자리, 흰 원 500 · 메뉴 56 r17 · 닫기 60 */
 .layer {
   position: absolute;
   inset: 0;
-  z-index: 3; /* 탭바(footer z4) 아래 → 홈 탭을 다시 눌러 닫을 수 있게 */
+  z-index: 6; /* 탭바(footer z4) 위 — 흰 면이 탭바를 덮고 가운데 닫기 버튼이 홈 자리에 온다 */
+  overflow: hidden;
+  touch-action: none;
 }
 .scrim {
   position: absolute;
   inset: 0;
   background: var(--wivu-color-bg-scrim);
 }
-/* 다이얼 전체가 탭바(62 + 범프 21) 위에 오도록 — 6시 방향 메뉴까지 모두 누를 수 있게 (393×852 · 375×667) */
-.dial {
+/* 0×0 기준점: 탭바 홈 자리 (Figma: 화면 아래 52 = 홈 인디케이터 34 + 18 · 안전 영역 없는 기기는 40) */
+.origin {
   position: absolute;
   left: 50%;
-  bottom: calc(max(var(--safe-bottom), 12px) + 62px + 21px + 8px);
-  width: 320px;
-  height: 320px;
-  margin-left: -160px;
+  bottom: max(calc(var(--safe-bottom) + 18px), 40px);
+  width: 0;
+  height: 0;
+  outline: none;
+}
+.plane {
+  position: absolute;
+  left: -250px;
+  top: -250px;
+  width: 500px;
+  height: 500px;
   border-radius: 50%;
   background: var(--wivu-color-bg-surface);
-  box-shadow: var(--wivu-elevation-overlay);
-  transform-origin: 50% 100%;
-}
-.spokes {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.spokes line {
-  stroke: var(--wivu-color-border-default);
-  stroke-width: 1;
-}
-.inner {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 164px;
-  height: 164px;
-  margin: -82px 0 0 -82px;
-  border-radius: 50%;
-  background: var(--wivu-color-border-default);
 }
 .item {
   position: absolute;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  width: 64px;
-  margin: -30px 0 0 -32px;
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+  border-radius: 17px;
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-icon-primary);
+  transition: background-color 0.12s ease, color 0.12s ease;
 }
-.itemIcon {
+.label {
+  white-space: nowrap;
+}
+.item[data-hot],
+.item:active {
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+}
+@media (hover: hover) {
+  .item:hover {
+    background: var(--wivu-color-bg-brand);
+    color: var(--wivu-color-text-on-brand);
+  }
+}
+.close {
+  position: absolute;
+  left: -30px;
+  top: -30px;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  background: var(--wivu-color-bg-surface);
-  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
-  color: var(--wivu-color-icon-primary);
-  transition: transform 0.12s ease, background-color 0.12s ease;
+  background: var(--wivu-color-bg-brand);
 }
-.item:active .itemIcon {
-  transform: scale(0.92);
-  background: var(--wivu-color-bg-brand-soft);
-  color: var(--wivu-color-icon-brand);
+.close:active {
+  filter: brightness(0.94);
 }
-.add {
+/* 아래 줄: 왼쪽 '내 메뉴 N' · 오른쪽 '편집' — 기준점과 같은 높이 */
+.bottomRow {
   position: absolute;
-  left: 50%;
-  top: 50%;
+  left: 0;
+  right: 0;
+  bottom: max(calc(var(--safe-bottom) + 18px), 40px);
+  height: 0;
+}
+.count {
+  position: absolute;
+  left: 28px;
+  top: 0;
+  transform: translateY(-50%);
+}
+.edit {
+  position: absolute;
+  right: 24px;
+  top: 0;
+  transform: translateY(-50%);
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 2px;
-  width: 92px;
-  height: 92px;
-  margin: -46px 0 0 -46px;
-  border-radius: 50%;
-  background: var(--wivu-color-bg-surface);
-  border: 1.5px dashed var(--wivu-color-border-brand);
+  gap: 4px;
+  height: 34px;
+  padding: 0 14px 0 12px;
+  border-radius: var(--wivu-radius-full);
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-text-secondary);
+}
+/* 터치 영역 44 */
+.edit::before {
+  content: '';
+  position: absolute;
+  inset: -5px 0;
+}
+.edit[data-hot],
+.edit:active {
+  background: var(--wivu-color-bg-brand-soft-pressed);
 }

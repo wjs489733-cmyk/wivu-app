@@ -1,0 +1,53 @@
+/* 홈 편집 · 블록 (Figma 676:5225) — 좌우 20 · 행 69(위아래 12 + 텍스트 44 + 구분선) */
+.hint {
+  padding: 12px var(--wivu-layout-inset) 16px;
+}
+.list {
+  padding-inline: var(--wivu-layout-inset);
+}
+.group {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-12);
+  padding-block: var(--wivu-space-12);
+  background: var(--wivu-color-bg-surface);
+  box-shadow: inset 0 -1px 0 var(--wivu-color-border-default);
+  border-radius: 0;
+}
+.group > .row:last-child {
+  box-shadow: none;
+}
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+/* 핸들: 보이는 아이콘 20, 누르는 영역 44 (오른쪽 정렬선에 아이콘 끝을 맞춤) */
+.grip {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: -12px -12px -12px -12px;
+  color: var(--wivu-color-text-secondary);
+  cursor: grab;
+  touch-action: none;
+  flex-shrink: 0;
+}
+.grip:active {
+  cursor: grabbing;
+  color: var(--wivu-color-icon-primary);
+}
+.grip[data-locked] {
+  color: var(--wivu-color-border-strong);
+  cursor: default;
+}

@@ -1,60 +1,48 @@
-/* ── 모바일 학생증 (Figma 407:8067, 잉크 배경) ─────────────────── */
+/* ── 모바일 학생증 (Figma v5 679:6017 · 692:7237 · 692:7574) ── */
 .wrap {
   display: flex;
   flex-direction: column;
-  gap: var(--wivu-space-16);
-  padding: 12px var(--wivu-layout-gutter) 0;
+  align-items: stretch;
+  padding: 8px var(--wivu-layout-inset) 0;
 }
 
-/* 학생증 카드: 흰 r24 · p24 · gap20 */
-.card {
+/* 탭 '학생증 | 도서관 출입' — h44 r12 p4, 선택 = 흰 면 + Body 3 Strong
+ * Figma 트랙은 bg/subtle(#FAFAFA) — 흰 바탕에서 안 보여 입력칸·Secondary와 같은 bg-brand-soft로 (공통 규칙) */
+.tabs {
   display: flex;
-  flex-direction: column;
-  gap: var(--wivu-space-20);
-  padding: var(--wivu-space-24);
-  border-radius: var(--wivu-radius-24);
-  background: var(--wivu-color-bg-surface);
+  gap: var(--wivu-space-4);
+  height: 44px;
+  padding: 4px;
+  border-radius: var(--wivu-radius-12);
+  background: var(--wivu-color-bg-brand-soft);
 }
-.top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--wivu-space-8);
-  min-width: 0;
-}
-.profile {
-  display: flex;
-  align-items: center;
-  gap: var(--wivu-space-16);
-}
-.photo {
+.tab {
   display: grid;
   place-items: center;
-  width: 64px;
-  height: 68px;
-  flex-shrink: 0;
-  border-radius: var(--wivu-radius-14);
-  background: var(--wivu-color-bg-subtle);
+  flex: 1 1 0;
+  height: 36px;
+  border-radius: 9px;
+  color: var(--wivu-color-text-secondary);
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
-.info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+.tab[aria-selected='true'] {
+  background: var(--wivu-color-bg-surface);
+  color: var(--wivu-color-text-primary);
+  box-shadow: var(--wivu-elevation-card);
 }
-.divider {
-  height: 1px;
-  background: var(--wivu-color-border-default);
-}
+
+/* QR 232 · 탭과 32 */
 .qrArea {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-top: 32px;
 }
 .modeLabel {
-  overflow: hidden;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
 }
 .modeLabel > * {
   margin-bottom: 12px;
@@ -62,61 +50,71 @@
 .qr {
   display: grid;
   place-items: center;
-  width: 184px;
-  height: 184px;
+  width: 232px;
+  height: 232px;
   color: var(--wivu-color-text-primary);
 }
+
+/* 남은 시간 + 새로고침 (QR과 20) */
 .timer {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--wivu-space-8);
-  margin-top: -4px;
+  gap: 10px;
+  margin-top: 20px;
+}
+.refresh {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-icon-primary);
+}
+.refresh::before {
+  /* 터치 영역 44 */
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+.refresh:active {
+  background: var(--wivu-color-bg-brand-soft-pressed);
 }
 
-.actions {
+/* 신원 정보 (타이머와 40, 행 사이 14) */
+.info {
   display: flex;
-  gap: var(--wivu-space-12);
+  flex-direction: column;
+  gap: 14px;
+  margin: 40px 0 0;
 }
-
-/* 오늘 출입 기록: 잉크 위 흰 8% (Figma access log fill #FFFFFF@8) */
-.log {
-  padding: 4px 16px 8px;
-  border-radius: var(--wivu-radius-16);
-  background: rgba(255, 255, 255, 0.08);
-}
-.logHead {
-  padding: 12px 0 4px;
-  opacity: 0.85;
-}
-.logRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--wivu-space-8);
-  min-height: 40px;
-  overflow: hidden;
-}
-.note {
-  padding: 0 8px;
-}
-
-/* NFC 시트 */
-.sheetHead {
+.infoRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: -4px;
+  gap: var(--wivu-space-16);
+  min-height: 22px;
 }
-.sheetHead > :last-child {
-  margin-right: -10px;
+.infoLabel {
+  width: 56px;
+  flex-shrink: 0;
 }
+.infoValue {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-16);
+  min-width: 0;
+  margin: 0;
+}
+
+/* ── NFC 태그 시트 본문 (p16/0/24 · gap 12) ── */
 .nfcBody {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--wivu-space-8);
-  padding: 24px 8px 28px;
+  gap: var(--wivu-space-12);
+  padding: 16px 0 24px;
 }
 .nfcRing {
   position: relative;
@@ -124,9 +122,8 @@
   place-items: center;
   width: 72px;
   height: 72px;
-  margin-bottom: 12px;
   border-radius: 50%;
-  background: var(--wivu-color-bg-brand-soft);
+  background: var(--wivu-color-bg-brand-tint);
   transition: background-color 0.25s ease;
 }
 .nfcRing[data-done='true'] {
@@ -142,10 +139,16 @@
 @keyframes nfcPulse {
   from {
     transform: scale(1);
-    opacity: 0.8;
+    opacity: 0.6;
   }
   to {
-    transform: scale(1.7);
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nfcPulse {
+    animation: none;
     opacity: 0;
   }
 }

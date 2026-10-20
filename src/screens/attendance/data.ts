@@ -2,12 +2,13 @@ import { COURSES, courseById, TODAY_MD, type CourseId } from '@/data/core';
 import type { AttendMethod } from '@/store/app';
 
 /* ────────────────────────────────────────────────────────────
- * 출석 섹션 데이터 — Figma 392:7302 · 406:8047 텍스트 기준
+ * 출석 섹션 데이터 — Figma v5 683:5844 · 683:5994 텍스트 기준 (이전 392:7302 · 406:8047)
  * 학기: 2026-09-01(화) 개강, 오늘 = 10.09(금) 6주차 (core NOW · TODAY_MD)
  *   4주차 추석 연휴(9.24–9.26) → 금요일 수업 휴강 · 6주차 10.05(월) 개천절 대체공휴일 → 월요일 수업 휴강
  * 출석률 = (출석 + 지각) / 진행된 수업 — 모션그래픽스 83%(4+1 / 6)
- * 출석 합계 23 · 지각 3 · 결석 2 (5과목, 오늘 출석 전 기준)
- *   ※ Figma 요약 타일(이전 기준 6/1/1)과 다름 → Figma 갱신 필요
+ * 출석 합계 23 · 지각 3 · 결석 2 (5과목, 오늘 출석 전 기준) — v5 요약 타일과 같음
+ *   ※ v5 과목별 행의 서비스디자인 '출석 6' · 브랜드디자인 '출석 5' · 디자인경영 '출석 10'은 요약(23)과 합이 안 맞음
+ *     → 이 파일 기록(4 · 3 · 9) 기준으로 표시 (Figma 갱신 필요)
  * ※ 출석 숫자의 단일 기준: 수강과목(과목 상세 '출석' 타일·출석 현황 카드)도 courseStats()를 그대로 읽는다.
  * 사이버 강의(글쓰기와 소통): 주차별 강의는 월요일 09:00에 열리고 그 주 일요일까지 들으면 출석.
  *   1–6주차 수강 완료(6주차 ~10.11, 10.07에 수강) → 7주차는 10.12(월) 오픈 · 10.18(일)까지.
@@ -167,17 +168,26 @@ export function nextSession(id: CourseId, t: TodayState) {
   return courseSessions(id, t).find((s) => s.status === '예정' || s.status === '오늘' || s.status === '인증 가능');
 }
 
-/** 기록 행 보조 문구: '10:28 인증 · PIN' / '인증 기록 없음' / '14:12 인증 · QR · 12분 지각' */
+/** 기록 행 보조 문구 (v5 683:5994): '13:58 PIN' / '인증 기록 없음' / '14:12 QR · 12분 지각' / '14:00 수업 예정' */
 export function recordMeta(r: Session, detail = false) {
   const online = courseById(r.courseId).online;
   if (r.status === '결석') return '인증 기록 없음';
   if (r.status === '출석' || r.status === '지각') {
     if (online) return `${r.doneDate ?? r.date} ${r.time} 수강 완료`;
-    return [`${r.time} 인증`, r.method, detail && r.lateMin ? `${r.lateMin}분 지각` : null].filter(Boolean).join(' · ');
+    return [`${r.time} ${r.method}`, detail && r.lateMin ? `${r.lateMin}분 지각` : null].filter(Boolean).join(' · ');
   }
   if (online) return r.opens ? `${r.opens} 09:00 오픈 예정` : `${r.date} (${r.dow})까지 수강`;
-  if (r.status === '인증 가능') return `${r.start} – ${r.end} · 10:10까지 인증`;
-  return `${r.start} – ${r.end} 예정`;
+  if (r.status === '인증 가능') return `${r.start} 수업 · ${closesAt(r.start)}까지 인증`;
+  return `${r.start} 수업 예정`;
+}
+
+/** 이의 신청 시트 회차 보조 문구 (v5 692:7904): '결석 · 인증 기록 없음' / '지각 · 14:12 QR 인증' */
+export const appealMeta = (r: Session) => `${r.status} · ${r.status === '결석' ? '인증 기록 없음' : `${r.time} ${r.method} 인증`}`;
+
+/** 출석 탭 '오늘 수업' (v5 683:5844) — 오늘 수업 3개, 서비스디자인은 출석하면 기록으로 바뀜 */
+export function todaySessions(t: TodayState): Session[] {
+  const today = todayRecord(t);
+  return TODAY_AND_NEXT.filter((x) => x.date === TODAY_MD).map((x) => (today && x.courseId === today.courseId ? today : x));
 }
 
 /** 'MM.DD' → '10.12(월)' */

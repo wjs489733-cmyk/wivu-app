@@ -1,19 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router';
-import { BottomSheet, Button, Card, Chip, Dialog, Icon, IconButton, OptionRow, Row, Screen, Text, TopNav, toast } from '@/ui';
+import { useParams, useSearchParams } from 'react-router';
+import { BottomSheet, Button, Chip, Dialog, Icon, IconButton, OptionRow, Screen, SheetAction, SheetHead, Text, TopNav, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { USER } from '@/data/core';
 import { boardById, boardTitle, REPORT_REASONS, verifiedLabel, type Comment, type Post } from './data';
 import { useBoard, usePost, usePostStats, useThread } from './store';
-import { AuthorAvatar, EmptyState, RecruitFoot, TagChip, ApplyOverlay } from './parts';
+import { ApplyOverlay, EmptyState, LocalSheetAction, RecruitRow, TagChip } from './parts';
 import { useApplyFlow } from './applyFlow';
-import { LocalIcon, type LocalIconName } from './icons';
+import { LocalIcon } from './icons';
 import s from './Board.module.css';
 
 /**
- * 게시글 상세 — Figma 420:8564 (Board_v4_03_PostDetail)
- * 공감·스크랩 토글, 댓글/답글 등록(익명 체크), ··· 메뉴(신고·차단 / 내 글은 수정·삭제)
+ * 게시글 상세 — Figma v5 687:6783 (내 글) · 698:7597 (다른 사람 글)
+ * 같은 라우트 안 상태
+ *  - 내 글: ··· → 글 메뉴 시트 698:7353 (링크 복사 / 수정하기 → 글쓰기 ?edit / 삭제하기 → 삭제 확인 698:7493)
+ *  - 다른 사람 글: ··· → 신고 시트 698:7691 (사유 6 + 신고하기 + '이 사용자 차단하기' → 차단 확인 698:7865)
+ * 공감·스크랩 토글, 댓글/답글 등록(익명). 데모 진입: ?sheet=menu|report · ?dialog=delete|block
  */
 export function PostDetail() {
   const { pid } = useParams();
@@ -22,13 +24,12 @@ export function PostDetail() {
 
   if (!post) {
     return (
-      <Screen figma="420:8564" header={<TopNav title="게시글" fallback={P.board} />}>
+      <Screen figma="687:6783" header={<TopNav title="게시글" fallback={P.board} />}>
         <EmptyState
-          icon="warning"
           title="볼 수 없는 글이에요"
           desc="삭제되었거나 차단한 사용자의 글이에요."
           action={
-            <Button variant="soft" size="m" onClick={() => nav.back(P.board)}>
+            <Button variant="secondary" size="m" onClick={() => nav.back(P.board)}>
               게시판으로
             </Button>
           }
@@ -39,25 +40,34 @@ export function PostDetail() {
   return <PostView key={post.id} post={post} />;
 }
 
+type SheetKind = null | 'menu' | 'report';
+type DialogKind = null | 'block' | 'delete';
+
 function PostView({ post }: { post: Post }) {
   const nav = useNav();
+  const [params] = useSearchParams();
   const board = boardById(post.boardId);
   const back = board.kind === 'system' ? P.board : P.boardCourse(board.id);
+  const official = board.kind === 'system';
   const stats = usePostStats(post);
   const { comments } = useThread(post);
   const toggleLike = useBoard((st) => st.toggleLike);
   const toggleScrap = useBoard((st) => st.toggleScrap);
   const addComment = useBoard((st) => st.addComment);
   const hide = useBoard((st) => st.hide);
-  const likedMap = useBoard((st) => st.liked);
   const apply = useApplyFlow();
 
-  const [sheet, setSheet] = useState<null | 'menu' | 'report'>(null);
+  const [sheet, setSheet] = useState<SheetKind>(() => {
+    const q = params.get('sheet');
+    return q === 'menu' || (q === 'report' && !post.mine && !official) ? q : null;
+  });
   const [reason, setReason] = useState<string | null>(null);
-  const [dialog, setDialog] = useState<null | 'block' | 'delete'>(null);
+  const [dialog, setDialog] = useState<DialogKind>(() => {
+    const q = params.get('dialog');
+    return (q === 'delete' && post.mine) || (q === 'block' && !post.mine && !official) ? q : null;
+  });
   const [showOlder, setShowOlder] = useState(false);
   const [text, setText] = useState('');
-  const [anon, setAnon] = useState(true);
   const [replyTo, setReplyTo] = useState<Comment | null>(null);
   const [fresh, setFresh] = useState<string | null>(null);
   const [pop, setPop] = useState(0);
@@ -70,12 +80,12 @@ function PostView({ post }: { post: Post }) {
   // 새 댓글로 스크롤
   useEffect(() => {
     if (!fresh) return;
-    const el = document.getElementById(`comment-${fresh}`);
-    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById(`comment-${fresh}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     const t = setTimeout(() => setFresh(null), 1900);
     return () => clearTimeout(t);
   }, [fresh]);
 
+  /** 익명 게시판: 내 댓글은 이 글에서 처음 받은 익명 번호를 계속 쓴다 (작성자 본인은 '작성자') */
   const myAnonName = () => {
     const mine = comments.find((c) => c.mine && /^익명\d+$/.test(c.author));
     if (mine) return mine.author;
@@ -86,9 +96,8 @@ function PostView({ post }: { post: Post }) {
   const submit = () => {
     const body = text.trim();
     if (!body) return;
-    const author = post.mine ? '작성자' : anon ? myAnonName() : USER.name;
     const c = addComment(post.id, {
-      author,
+      author: post.mine ? '작성자' : myAnonName(),
       time: '방금',
       body,
       likes: 0,
@@ -123,6 +132,7 @@ function PostView({ post }: { post: Post }) {
     toast('링크를 복사했어요', 'check');
   };
 
+  // Figma: 삭제·차단 확인 → 피드(687:6661). 들어온 곳이 있으면 그곳으로 돌아간다
   const leaveAndHide = (message: string) => {
     setDialog(null);
     nav.back(back);
@@ -130,19 +140,24 @@ function PostView({ post }: { post: Post }) {
     setTimeout(() => hide(post.id), 380);
   };
 
-  const official = board.kind === 'system';
+  const openMore = () => {
+    if (post.mine || official) return setSheet('menu');
+    setReason(null);
+    setSheet('report');
+  };
+
   const images = post.files?.filter((f) => f.kind === 'image' && f.url) ?? [];
   const docs = post.files?.filter((f) => !(f.kind === 'image' && f.url)) ?? [];
+  const meta = [post.author, post.time, `조회 ${post.views}`, official ? '운영팀' : verifiedLabel(board)].join(' · ');
 
   return (
     <Screen
-      figma="420:8564"
-      header={<TopNav title={boardTitle(board)} fallback={back} trailing={<IconButton icon="more" label="더보기" onPress={() => setSheet('menu')} />} />}
+      figma={post.mine ? '687:6783' : '698:7597'}
+      header={<TopNav title={boardTitle(board)} fallback={back} trailing={<IconButton icon="more" label={post.mine ? '내 글 메뉴' : official ? '글 메뉴' : '신고·차단'} onPress={openMore} />} />}
       footer={
         <div className={s.inputBar}>
           {replyTo && (
             <div className={s.replyTo}>
-              <LocalIcon name="reply" size={16} />
               <Text variant="caption-1-strong" color="brand" className="truncate">
                 {replyTo.author}님에게 답글 남기는 중
               </Text>
@@ -152,17 +167,9 @@ function PostView({ post }: { post: Post }) {
             </div>
           )}
           <div className={s.inputRow}>
-            {!post.mine && (
-              <button type="button" role="checkbox" aria-checked={anon} className={s.anon} onClick={() => setAnon((v) => !v)}>
-                <span className={s.anonBox}>{anon && <Icon name="check" size={16} />}</span>
-                <Text variant="caption-1-strong" color="inherit">
-                  익명
-                </Text>
-              </button>
-            )}
             <input
               ref={inputRef}
-              className={`${s.commentField} t-callout`}
+              className={`${s.commentField} t-body-3`}
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => {
@@ -176,30 +183,32 @@ function PostView({ post }: { post: Post }) {
               maxLength={300}
               enterKeyHint="send"
             />
-            <Button size="s" disabled={!text.trim()} onClick={submit}>
-              등록
-            </Button>
+            <button type="button" className={s.send} aria-label="댓글 보내기" aria-disabled={!text.trim()} onClick={() => (text.trim() ? submit() : inputRef.current?.focus())}>
+              <Icon name="send" size={24} />
+            </button>
           </div>
         </div>
       }
       overlay={
         <>
           <ApplyOverlay flow={apply} />
-          <BottomSheet open={sheet === 'menu'} onClose={() => setSheet(null)} label="글 메뉴">
-            <div className={s.sheetActions}>
-              <SheetAction icon="link" label="링크 복사" onPress={copyLink} />
-              {post.mine ? (
+          {/* 글 메뉴 (내 글 698:7353 · 운영 안내 글은 링크 복사만) */}
+          <BottomSheet open={sheet === 'menu'} onClose={() => setSheet(null)} label={post.mine ? '내 글 메뉴' : '글 메뉴'}>
+            <SheetHead title={post.mine ? '내 글' : '글 메뉴'} onClose={() => setSheet(null)} />
+            <div className={s.sheetList} style={{ marginTop: -8 }}>
+              <LocalSheetAction icon={<LocalIcon name="link" size={20} />} label="링크 복사" onPress={copyLink} />
+              {post.mine && (
                 <>
                   <SheetAction
                     icon="edit"
                     label="수정하기"
                     onPress={() => {
                       setSheet(null);
-                      toast('글 수정은 다음 버전에서 열려요');
+                      nav.modal(`${P.boardWrite}?edit=${post.id}`);
                     }}
                   />
                   <SheetAction
-                    icon="close"
+                    icon="trash"
                     label="삭제하기"
                     danger
                     onPress={() => {
@@ -208,56 +217,39 @@ function PostView({ post }: { post: Post }) {
                     }}
                   />
                 </>
-              ) : (
-                !official && (
-                  <>
-                    <SheetAction
-                      icon="warning"
-                      label="신고하기"
-                      onPress={() => {
-                        setReason(null);
-                        setSheet('report');
-                      }}
-                    />
-                    <SheetAction
-                      icon="block"
-                      label="이 사용자 차단하기"
-                      danger
-                      onPress={() => {
-                        setSheet(null);
-                        setDialog('block');
-                      }}
-                    />
-                  </>
-                )
               )}
             </div>
           </BottomSheet>
+          {/* 신고 시트 (다른 사람 글 698:7691) */}
           <BottomSheet open={sheet === 'report'} onClose={() => setSheet(null)} label="신고하기">
-            <div className={s.sheetHead}>
-              <Text variant="title-2" as="h2">
-                신고 사유를 선택해주세요
-              </Text>
-              <IconButton icon="close" label="닫기" onPress={() => setSheet(null)} />
-            </div>
-            <Text variant="caption-1" color="secondary" as="p" style={{ marginBottom: 16 }}>
-              신고한 내용은 작성자에게 알려지지 않아요. 검토 후 운영 원칙에 따라 조치해요.
-            </Text>
-            <div className={s.reasonList}>
+            <SheetHead title="신고 사유를 선택해주세요" subtitle="신고한 내용은 작성자에게 알려지지 않아요. 검토 후 운영 원칙에 따라 조치해요." onClose={() => setSheet(null)} />
+            <div className={s.optionList} role="radiogroup" aria-label="신고 사유">
               {REPORT_REASONS.map((r) => (
                 <OptionRow key={r} title={r} selected={reason === r} onPress={() => setReason(r)} />
               ))}
             </div>
-            <Button
-              block
-              disabled={!reason}
-              onClick={() => {
-                setSheet(null);
-                toast('신고가 접수됐어요. 검토 후 조치할게요', 'check');
-              }}
-            >
-              신고하기
-            </Button>
+            <div className={s.sheetCta}>
+              <Button
+                block
+                disabled={!reason}
+                onClick={() => {
+                  setSheet(null);
+                  toast('신고가 접수됐어요. 검토 후 조치할게요', 'check');
+                }}
+              >
+                신고하기
+              </Button>
+              <Button
+                variant="tertiary"
+                size="m"
+                onClick={() => {
+                  setSheet(null);
+                  setDialog('block');
+                }}
+              >
+                이 사용자 차단하기
+              </Button>
+            </div>
           </BottomSheet>
           <Dialog
             open={dialog === 'block'}
@@ -281,171 +273,130 @@ function PostView({ post }: { post: Post }) {
       }
     >
       <article className={s.detail}>
-        <div className={s.detailChips}>
+        <div className={s.tags}>
           <TagChip tag={post.tag} />
-          {post.linked && (
-            <button type="button" className={s.linkChip} onClick={() => nav.push(P.assignment(post.linked!.courseId, post.linked!.aid))}>
-              <Icon name="assignment" size={16} />
-              <Text variant="caption-2-strong" color="inherit" className="truncate">
-                연결된 과제 · {post.linked.title}
-              </Text>
-              <Icon name="chevron-right" size={16} />
-            </button>
-          )}
+          {post.mine && <Chip tone="brand">내 글</Chip>}
         </div>
-
-        <Text variant="title-1" as="h2">
+        <Text variant="title-2" as="h2" className={s.body}>
           {post.title}
         </Text>
+        <Text variant="caption-1" color="tertiary" as="p" tnum style={{ marginTop: 6 }}>
+          {meta}
+        </Text>
 
-        <div className={s.author}>
-          <AuthorAvatar brand={official} />
-          <div style={{ minWidth: 0 }}>
-            <Row gap={8}>
-              <Text variant="label">{post.author}</Text>
-              {post.mine && <Chip tone="neutral">내 글</Chip>}
-            </Row>
-            <Text variant="caption-2" color="tertiary" as="p" tnum>
-              {post.time} · 조회 {post.views} · {official ? '운영팀' : verifiedLabel(board)}
+        {post.linked && (
+          <button type="button" className={s.linkRow} style={{ marginTop: 16 }} onClick={() => nav.push(P.assignment(post.linked!.courseId, post.linked!.aid))}>
+            <Icon name="assignment" size={20} />
+            <Text variant="body-3" className="truncate">
+              {post.linked.title} · {post.linked.due} 마감
             </Text>
-          </div>
-        </div>
+            <Icon name="chevron-right" size={16} color="secondary" />
+          </button>
+        )}
 
-        <Text variant="body" as="p" className={s.body}>
+        <Text variant="body-2" color="secondary" as="p" className={s.body} style={{ marginTop: 16 }}>
           {post.body}
         </Text>
 
         {images.length > 0 && (
-          <div className={s.imageGrid} data-count={images.length}>
+          <div className={s.imageGrid} data-count={images.length} style={{ marginTop: 16 }}>
             {images.map((f) => (
               <img key={f.url} src={f.url} alt={f.name} />
             ))}
           </div>
         )}
         {docs.map((f) => (
-          <button key={f.name} type="button" className={s.fileCard} onClick={() => toast(`${f.name} 저장했어요`, 'download')}>
-            <span className={s.fileIcon}>
-              <Icon name="file" size={20} />
-            </span>
-            <span style={{ flex: 1, minWidth: 0 }}>
-              <Text variant="label" as="p" className="truncate">
-                {f.name}
-              </Text>
-              <Text variant="caption-2" color="tertiary" as="p">
-                {f.kind === 'pdf' ? 'PDF' : '파일'} · {f.size}
-              </Text>
-            </span>
-            <Icon name="download" size={20} color="secondary" />
+          <button key={f.name} type="button" className={s.linkRow} style={{ marginTop: 8 }} onClick={() => toast(`${f.name} 저장했어요`, 'download')}>
+            <Icon name="file" size={20} />
+            <Text variant="body-3" className="truncate">
+              {f.name} · {f.size}
+            </Text>
+            <Icon name="download" size={16} color="secondary" />
           </button>
         ))}
 
+        {/* 모집 글: v5 상세엔 없지만 신청 상태를 상세에서도 보고 바꿀 수 있게 탭 루트 카드와 같은 줄을 둔다 */}
         {post.recruit && (
-          <Card variant="pulse" className={s.recruitBox}>
-            <div className={s.teamHead}>
-              <Text variant="caption-1-strong">팀원 모집</Text>
-              {post.recruit.deadline && (
-                <Text variant="caption-2-strong" color="error">
-                  {post.recruit.deadline}
-                </Text>
-              )}
-            </div>
-            <Text variant="caption-1" color="secondary" as="p">
-              {post.recruit.note}
-            </Text>
-            <RecruitFoot post={post} onApply={apply.request} />
-          </Card>
+          <div style={{ marginTop: 16 }}>
+            <RecruitRow post={post} onApply={apply.request} />
+          </div>
         )}
 
-        <div className={s.reactions}>
-          <button type="button" className={`${s.reaction} t-caption-1-strong`} aria-pressed={stats.liked} onClick={like}>
+        <div className={s.actions} style={{ marginTop: 16 }}>
+          <button type="button" className={s.action} aria-pressed={stats.liked} onClick={like}>
             <span key={pop} className={pop ? s.pop : undefined} style={{ display: 'inline-flex' }}>
-              <LocalIcon name={stats.liked ? 'heart-fill' : 'heart'} size={16} />
+              <LocalIcon name={stats.liked ? 'heart-fill' : 'heart'} size={20} />
             </span>
-            공감 {stats.likeCount}
+            <Text variant="caption-1" color={stats.liked ? 'brand' : 'secondary'} tnum>
+              공감 {stats.likeCount}
+            </Text>
           </button>
           <button
             type="button"
-            className={`${s.reaction} t-caption-1-strong`}
-            aria-pressed={false}
+            className={s.action}
             onClick={() => {
               commentsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
               setTimeout(() => inputRef.current?.focus(), 250);
             }}
           >
-            <Icon name="comment" size={16} />
-            댓글 {stats.commentCount}
+            <Icon name="comment" size={20} />
+            <Text variant="caption-1" color="secondary" tnum>
+              댓글 {stats.commentCount}
+            </Text>
           </button>
-          <button type="button" className={`${s.reaction} t-caption-1-strong`} aria-pressed={stats.scrapped} onClick={scrap}>
-            {stats.scrapped ? <LocalIcon name="bookmark-fill" size={16} /> : <Icon name="bookmark" size={16} />}
-            스크랩
+          <button type="button" className={s.action} aria-pressed={stats.scrapped} onClick={scrap}>
+            {stats.scrapped ? <LocalIcon name="bookmark-fill" size={20} /> : <Icon name="bookmark" size={20} />}
+            <Text variant="caption-1" color={stats.scrapped ? 'brand' : 'secondary'}>
+              스크랩
+            </Text>
           </button>
         </div>
 
+        <div className={s.sectionGap} aria-hidden />
+
         <div ref={commentsRef} className={s.comments} style={{ scrollMarginTop: 16 }}>
-          <Text variant="subhead" as="h3">
+          <Text variant="body-2-strong" as="h3" tnum>
             댓글 {stats.commentCount}
           </Text>
           {older.length > 0 && !showOlder && (
-            <button type="button" className={`${s.moreComments} t-caption-1-strong`} onClick={() => setShowOlder(true)}>
+            <button type="button" className={`${s.moreComments} t-caption-1`} onClick={() => setShowOlder(true)}>
               이전 댓글 {older.length}개 보기
               <Icon name="chevron-down" size={16} />
             </button>
           )}
           {visible.length === 0 && (
-            <Text variant="callout" color="tertiary" as="p">
+            <Text variant="body-3" color="tertiary" as="p" style={{ padding: '10px 0' }}>
               아직 댓글이 없어요. 첫 댓글을 남겨보세요.
             </Text>
           )}
-          {visible.map((c) => {
-            const liked = likedMap[c.id] ?? false;
-            return (
-              <div key={c.id} id={`comment-${c.id}`} className={s.comment} data-reply={!!c.parent} data-fresh={fresh === c.id}>
-                <AuthorAvatar size="s" brand={c.isAuthor} />
-                <div className={s.commentMain}>
-                  <div className={s.commentHead}>
-                    <Text variant="caption-1-strong" color={c.isAuthor ? 'brand' : 'primary'}>
-                      {c.author}
-                    </Text>
-                    {c.mine && !c.isAuthor && <Chip tone="neutral">나</Chip>}
-                    <Text variant="caption-2" color="tertiary">
-                      {c.time}
-                    </Text>
-                  </div>
-                  <Text variant="callout" as="p" className={s.body}>
-                    {c.body}
-                  </Text>
-                  <div className={s.commentActions}>
-                    <button type="button" className={`${s.commentAction} t-caption-2`} aria-pressed={liked} aria-label={`댓글 공감 ${c.likes + (liked ? 1 : 0)}`} onClick={() => toggleLike(c.id, false)}>
-                      <LocalIcon name={liked ? 'heart-fill' : 'heart'} size={16} />
-                      <span className="tnum">{c.likes + (liked ? 1 : 0)}</span>
-                    </button>
-                    <button
-                      type="button"
-                      className={`${s.commentAction} t-caption-2-strong`}
-                      onClick={() => {
-                        setReplyTo(c);
-                        inputRef.current?.focus();
-                      }}
-                    >
-                      답글
-                    </button>
-                  </div>
-                </div>
+          {visible.map((c) => (
+            <div key={c.id} id={`comment-${c.id}`} className={s.comment} data-reply={!!c.parent} data-fresh={fresh === c.id}>
+              <div className={s.commentMeta}>
+                <Text variant="caption-1-strong" color={c.isAuthor ? 'brand' : 'primary'}>
+                  {c.author}
+                </Text>
+                <Text variant="caption-2" color="tertiary">
+                  {c.time}
+                </Text>
               </div>
-            );
-          })}
+              <Text variant="body-3" as="p" className={s.body}>
+                {c.body}
+              </Text>
+              <button
+                type="button"
+                className={`${s.replyBtn} t-caption-2`}
+                style={{ color: 'var(--wivu-color-text-tertiary)' }}
+                onClick={() => {
+                  setReplyTo(c);
+                  inputRef.current?.focus();
+                }}
+              >
+                답글
+              </button>
+            </div>
+          ))}
         </div>
       </article>
     </Screen>
-  );
-}
-
-function SheetAction({ icon, label, onPress, danger }: { icon: LocalIconName | 'edit' | 'close' | 'warning'; label: string; onPress: () => void; danger?: boolean }) {
-  const local = icon === 'link' || icon === 'block';
-  return (
-    <button type="button" className={`${s.sheetAction} t-body`} data-danger={danger} onClick={onPress}>
-      {local ? <LocalIcon name={icon as LocalIconName} size={20} /> : <Icon name={icon as 'edit' | 'close' | 'warning'} size={20} />}
-      {label}
-    </button>
   );
 }

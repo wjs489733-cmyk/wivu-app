@@ -1,21 +1,24 @@
 import { useState } from 'react';
-import { useParams } from 'react-router';
-import { BottomSheet, Button, Chip, CtaBar, Icon, IconButton, ListGroup, OptionRow, Screen, Text, TextArea, TopNav, toast } from '@/ui';
+import { useParams, useSearchParams } from 'react-router';
+import { BottomSheet, Button, Icon, OptionRow, Screen, SheetHead, Text, TopNav, toast } from '@/ui';
 import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
 import { courseById, type Course, type CourseId } from '@/data/core';
 import { AttendanceSheetHost } from './AttendanceSheetHost';
-import { courseSessions, courseStats, isAttendanceCourse, nextSession, type Session, type TodayState } from './data';
-import { SessionRow } from './parts';
+import { appealMeta, courseSessions, courseStats, isAttendanceCourse, type Session, type TodayState } from './data';
+import { ChoiceChip, SessionRow } from './parts';
 import { appealKey, useAttendanceLocal } from './store';
 import s from './Attendance.module.css';
 
 /**
- * 과목 출석 상세 — Figma 406:8047 (모션그래픽스). 다른 과목은 같은 틀에 data.ts 기록으로 채움.
- * 하단 버튼: 결석·지각이 있으면 '출석 이의 신청하기'(시트), 오늘 인증 가능한 수업이면 '출석 인증하기'(PIN 시트).
+ * 과목 출석 상세 — Figma v5 683:5994 (모션그래픽스). 다른 과목은 같은 틀에 data.ts 기록으로 채움.
+ * 머리(과목·교수·시간·강의실 + 출석률) → 안내(결석 있으면 오류 톤 · 지각만 있으면 주의 톤) → 4칸 요약 → 회차별 기록 → 하단 버튼.
+ * 하단 버튼: 오늘 인증 가능한 수업이면 [출석 인증하기](출석 인증 시트), 결석·지각이 있으면 [출석 이의 신청](v5 692:7904 시트).
+ * 이의 신청 시트 바로 열기: ?sheet=appeal
  */
 export function CourseAttendance() {
   const { id = 'service-design' } = useParams();
+  const [q] = useSearchParams();
   const courseId: CourseId = isAttendanceCourse(id) ? id : 'service-design';
   const c = courseById(courseId);
   const complete = useApp((st) => st.attendanceComplete);
@@ -24,37 +27,22 @@ export function CourseAttendance() {
   const today: TodayState = { complete, method, time };
   const appeals = useAttendanceLocal((st) => st.appeals);
   const [pin, setPin] = useState(false);
-  const [appealOpen, setAppealOpen] = useState(false);
 
   const st = courseStats(courseId, today);
   const sessions = courseSessions(courseId, today);
   const contestable = sessions.filter((r) => r.status === '결석' || r.status === '지각');
   const pending = contestable.filter((r) => appeals[appealKey(courseId, r.date)]);
+  const allPending = contestable.length > 0 && pending.length === contestable.length;
   const canAttend = sessions.some((r) => r.status === '인증 가능');
-  const warn = st.absent > 0 || st.late > 0;
-  const next = nextSession(courseId, today);
+  const [appealOpen, setAppealOpen] = useState(() => q.get('sheet') === 'appeal' && contestable.length > 0);
 
   const meta = c.online ? ['사이버 강의', `${c.credits}학점`, c.kind] : [`${c.professor} 교수`, compactSlots(c), c.room];
-
-  const footer = canAttend ? (
-    <CtaBar>
-      <Button block onClick={() => setPin(true)}>
-        출석 인증하기
-      </Button>
-    </CtaBar>
-  ) : contestable.length ? (
-    <CtaBar>
-      <Button variant="soft" block disabled={pending.length === contestable.length} onClick={() => setAppealOpen(true)}>
-        {pending.length === contestable.length ? '이의 신청 검토 중' : '출석 이의 신청하기'}
-      </Button>
-    </CtaBar>
-  ) : undefined;
+  const notice = st.absent > 0 ? { tone: 'error', text: '결석이 3번 더 쌓이면 학점을 받기 어려워요. 지각 3번은 결석 1번으로 처리돼요.' } : st.late > 0 ? { tone: 'warning', text: `지각이 ${st.late}번 있어요. 지각 3번은 결석 1번으로 처리돼요.` } : null;
 
   return (
     <Screen
-      figma="406:8047"
+      figma="683:5994"
       header={<TopNav title="출석 상세" fallback={P.attendance} />}
-      footer={footer}
       overlay={
         <>
           {canAttend && <AttendanceSheetHost open={pin} onClose={() => setPin(false)} />}
@@ -64,16 +52,16 @@ export function CourseAttendance() {
     >
       <div className={s.detail}>
         <div className={s.detailHead}>
-          <div className={s.detailInfo}>
-            <Text variant="title-1" as="h2" className="truncate">
+          <div className={s.rowText}>
+            <Text variant="title-2" as="h2" className="truncate">
               {c.name}
             </Text>
-            <Text variant="caption-1" color="secondary" as="p" lines={2}>
+            <Text variant="caption-1" color="tertiary" as="p" lines={2} tnum>
               {meta.join(' · ')}
             </Text>
           </div>
           <div className={s.rate}>
-            <Text variant="display" color={st.absent > 0 ? 'error' : 'brand'} tnum>
+            <Text variant="title-2" color={st.absent > 0 ? 'error' : 'primary'} tnum>
               {st.rate}%
             </Text>
             <Text variant="caption-2" color="tertiary">
@@ -82,59 +70,43 @@ export function CourseAttendance() {
           </div>
         </div>
 
-        {warn ? (
-          <div className={s.banner} data-tone="error" role="note">
-            <Icon name="warning" size={20} color="error" />
-            <div className={s.bannerText}>
-              <Text variant="label" color="error">
-                결석 {st.absent}회 · 지각 {st.late}회
-              </Text>
-              <Text variant="caption-2" color="secondary" as="p">
-                {st.absent > 0 ? (
-                  <>
-                    남은 수업에서 결석이 3회 더 쌓이면 학점 취득이 어려워요.
-                    <br />
-                    지각 3회는 결석 1회로 처리돼요.
-                  </>
-                ) : (
-                  '지각 3회는 결석 1회로 처리돼요. 수업 시작 전에 인증해 주세요.'
-                )}
-              </Text>
-            </div>
-          </div>
-        ) : (
-          <div className={s.banner} data-tone="brand" role="note">
-            <Icon name="check-circle" size={20} color="brand" />
-            <div className={s.bannerText}>
-              <Text variant="label" color="brand">
-                {c.online ? '빠짐없이 수강하고 있어요' : '결석 없이 출석하고 있어요'}
-              </Text>
-              <Text variant="caption-2" color="secondary" as="p">
-                {bannerSub(c.online ?? false, next, today)}
-              </Text>
-            </div>
+        {notice && (
+          <div className={s.notice} data-tone={notice.tone} role="note">
+            <Icon name="warning" size={20} color={notice.tone === 'error' ? 'error' : 'warning'} />
+            <Text variant="caption-1" color={notice.tone === 'error' ? 'error' : 'warning'} as="p">
+              {notice.text}
+            </Text>
           </div>
         )}
 
-        <div className={s.detailStats}>
+        <div className={s.detailStats} role="group" aria-label="출석 요약">
           <DetailStat label="출석" value={st.present} />
-          <DetailStat label="지각" value={st.late} tone="warning" />
-          <DetailStat label="결석" value={st.absent} tone="error" />
-          <DetailStat label="남은 수업" value={st.remaining} tone="secondary" />
+          <DetailStat label="지각" value={st.late} />
+          <DetailStat label="결석" value={st.absent} error={st.absent > 0} />
+          <DetailStat label={c.online ? '남은 강의' : '남은 수업'} value={st.remaining} />
         </div>
 
-        <div className={s.fullDivider} role="separator" />
-
         <section className={s.sessions}>
-          <Text variant="title-2" as="h2" className={s.sessionsTitle}>
+          <Text variant="title-3" as="h2">
             회차별 기록
           </Text>
-          <ListGroup>
-            {sessions.map((r) => (
-              <SessionRow key={r.key} r={r} note={appeals[appealKey(courseId, r.date)] ? `이의 신청 검토 중 · ${appeals[appealKey(courseId, r.date)]}` : undefined} />
-            ))}
-          </ListGroup>
+          <div className={s.rows}>
+            {sessions.map((r) => {
+              const reason = appeals[appealKey(courseId, r.date)];
+              return <SessionRow key={r.key} r={r} note={reason ? `이의 신청 검토 중 (${reason})` : undefined} />;
+            })}
+          </div>
         </section>
+
+        {canAttend ? (
+          <Button block onClick={() => setPin(true)} className={s.detailCta}>
+            출석 인증하기
+          </Button>
+        ) : contestable.length > 0 ? (
+          <Button variant="secondary" block disabled={allPending} onClick={() => setAppealOpen(true)} className={s.detailCta}>
+            {allPending ? '이의 신청 검토 중' : '출석 이의 신청'}
+          </Button>
+        ) : null}
       </div>
     </Screen>
   );
@@ -147,19 +119,10 @@ function compactSlots(c: Course) {
   return c.slots.map((x) => `${x.day} ${x.start}–${x.end}`).join(', ');
 }
 
-function bannerSub(online: boolean, next: Session | undefined, t: TodayState) {
-  if (online) return next ? `${next.week}주차 강의는 ${next.opens ? `${next.opens}에 열리고 ` : ''}${next.date} (${next.dow})까지 들으면 돼요.` : '이번 학기 강의를 모두 들었어요.';
-  if (!next) return t.complete ? `오늘 ${t.time} ${t.method} 인증까지 기록됐어요.` : '이번 학기 수업이 모두 끝났어요.';
-  if (next.status === '인증 가능') return `오늘 ${next.start} 수업 · 10:10까지 출석을 인증해 주세요.`;
-  if (next.status === '오늘') return `오늘 ${next.start} 수업이 남아 있어요.`;
-  if (t.complete && next.courseId === 'service-design') return `오늘 ${t.time} ${t.method} 인증 완료 · 다음 수업 ${next.date} (${next.dow})`;
-  return `다음 수업은 ${next.date} (${next.dow}) ${next.start}이에요.`;
-}
-
-function DetailStat({ label, value, tone }: { label: string; value: number; tone?: 'warning' | 'error' | 'secondary' }) {
+function DetailStat({ label, value, error }: { label: string; value: number; error?: boolean }) {
   return (
     <div className={s.detailStat}>
-      <Text variant="number" color={tone ?? 'primary'} tnum>
+      <Text variant="title-3" color={error ? 'error' : 'primary'} tnum>
         {value}
       </Text>
       <Text variant="caption-2" color="secondary">
@@ -169,7 +132,7 @@ function DetailStat({ label, value, tone }: { label: string; value: number; tone
   );
 }
 
-/* ── 출석 이의 신청 시트 (Figma 목적지 없음 → 코드에서 실제 흐름으로) ── */
+/* ── 출석 이의 신청 시트 (v5 692:7904) ─────────────────────────── */
 const REASONS = ['인증 오류', '병결', '공결', '기타'] as const;
 
 function AppealSheet({ open, onClose, courseId, sessions }: { open: boolean; onClose: () => void; courseId: CourseId; sessions: Session[] }) {
@@ -202,53 +165,36 @@ function AppealForm({ onClose, courseId, sessions }: { onClose: () => void; cour
 
   return (
     <>
-      <div className={s.sheetHead}>
-        <Text variant="title-2" as="h2">
-          출석 이의 신청
-        </Text>
-        <IconButton icon="close" label="닫기" onPress={onClose} />
-      </div>
-      <Text variant="caption-1" color="secondary" as="p">
-        {courseById(courseId).name} · 담당 교수님께 전달돼요
-      </Text>
+      <SheetHead title="출석 이의 신청" subtitle={`${courseById(courseId).name} · 담당 교수님께 전달돼요`} onClose={onClose} />
 
       <div className={s.sheetBlock}>
-        <Text variant="label" color="secondary">
+        <Text variant="body-3-strong" color="secondary" as="h3">
           신청할 회차
         </Text>
-        {available.map((r) => (
-          <OptionRow
-            key={r.date}
-            title={`${r.week}주차 · ${r.date} (${r.dow})`}
-            meta={`${r.status} · ${r.status === '결석' ? '인증 기록 없음' : `${r.time} 인증 · ${r.method}`}`}
-            selected={target === r.date}
-            onPress={() => setTarget(r.date)}
-          />
-        ))}
+        <div className={s.options}>
+          {available.map((r) => (
+            <OptionRow key={r.date} title={`${r.week}주차 · ${r.date} (${r.dow})`} meta={appealMeta(r)} selected={target === r.date} onPress={() => setTarget(r.date)} />
+          ))}
+        </div>
       </div>
 
       <div className={s.sheetBlock}>
-        <Text variant="label" color="secondary">
+        <Text variant="body-3-strong" color="secondary" as="h3">
           사유
         </Text>
         <div className={s.reasons} role="group" aria-label="사유">
           {REASONS.map((r) => (
-            <Chip key={r} tone="outline" pill size="m" selected={reason === r} onSelect={() => setReason(r)} className={s.reasonChip}>
-              {r}
-            </Chip>
+            <ChoiceChip key={r} label={r} selected={reason === r} onSelect={() => setReason(r)} />
           ))}
         </div>
-        {/* 입력 영역이 보이도록 필드 컨테이너(bg/subtle · 1px 보더 · r16 · p16) */}
         <div className={s.memoField}>
-          <TextArea rows={3} className={s.memoArea} placeholder="상황을 간단히 적어주세요 (선택)" value={memo} maxLength={200} onChange={(e) => setMemo(e.target.value)} aria-label="상세 내용" />
+          <textarea className={`${s.memoArea} t-body-1`} rows={2} placeholder="상황을 간단히 적어 주세요 (선택)" value={memo} maxLength={200} onChange={(e) => setMemo(e.target.value)} aria-label="상세 내용" />
         </div>
       </div>
 
-      <div className={s.sheetCta}>
-        <Button block disabled={!target || !reason} loading={sending} onClick={submit}>
-          신청하기
-        </Button>
-      </div>
+      <Button block disabled={!target || !reason} loading={sending} onClick={submit} className={s.sheetCta}>
+        신청하기
+      </Button>
     </>
   );
 }

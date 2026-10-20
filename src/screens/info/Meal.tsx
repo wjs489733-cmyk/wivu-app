@@ -1,141 +1,112 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Chip, Icon, Screen, Segmented, Text, TopNav } from '@/ui';
+import { Icon, Screen, Text, TopNav } from '@/ui';
 import { P } from '@/app/paths';
-import { CAFETERIAS, MEAL_DAYS, MEAL_MONTH, MEAL_TIME, MEAL_TIP, MEAL_TODAY, MENUS, type CafeteriaId, type Meal as MealT, type MealKind } from './data';
+import { CAFETERIAS, MEAL_DAYS, MEAL_MONTH, MEAL_TIME, MEAL_TODAY, MENUS, type CafeteriaId, type Meal as MealT } from './data';
+import { LineTabs } from './parts';
 import s from './Info.module.css';
 
 /**
- * 학식 — Figma 429:8987 (홈 '오늘의 학식' 카드 · 퀵메뉴 → PUSH)
- * 요일(월–금 10/5–10/9, 오늘 금 선택) · 식당 탭 · 시간표 기준 추천(오늘만) · 중식/석식 카드.
- * 카드를 누르면 그 끼니의 혼잡도 그래프가 펼쳐진다(기본: 중식).
+ * 오늘의 학식 — Figma v5 681:5684 (홈 '오늘의 학식' 카드 · 퀵메뉴 → PUSH)
+ * 요일(월–금 10/5–10/9, 오늘 금) · 식당 밑줄 탭 · 끼니별 '시간 · 장소' 한 줄 + 메뉴(가격) + 사진 자리 +
+ * 시간대별 혼잡도(가장 붐비는 칸 빨강 + '가장 붐벼요' 라벨). v4의 추천 카드·접는 카드·안내 문구는 v5에서 빠짐.
  */
 export function Meal() {
   const [day, setDay] = useState<number>(MEAL_TODAY);
   const [cafe, setCafe] = useState<CafeteriaId>('student');
-  const [open, setOpen] = useState<MealKind>('중식');
   const isToday = day === MEAL_TODAY;
   const place = CAFETERIAS.find((c) => c.value === cafe)!.place;
   const meals = MENUS[day][cafe];
 
   return (
-    <Screen figma="429:8987" header={<TopNav title={isToday ? '오늘의 학식' : `${MEAL_MONTH}월 ${day}일 학식`} fallback={P.home} />}>
-      <div className={s.page}>
+    <Screen figma="681:5684" header={<TopNav title={isToday ? '오늘의 학식' : `${MEAL_MONTH}월 ${day}일 학식`} fallback={P.home} />}>
+      <div className={s.mealPage}>
         <div className={s.days} role="tablist" aria-label="요일">
           {MEAL_DAYS.map((w) => {
             const on = w.d === day;
+            const today = w.d === MEAL_TODAY;
             return (
-              <button key={w.d} type="button" role="tab" aria-selected={on} className={s.day} onClick={() => setDay(w.d)} aria-label={`${MEAL_MONTH}월 ${w.d}일 ${w.dow}요일${w.d === MEAL_TODAY ? ' 오늘' : ''}`}>
-                <Text variant="caption-2" color={on ? 'on-brand' : 'tertiary'}>
+              <button key={w.d} type="button" role="tab" aria-selected={on} className={s.day} onClick={() => setDay(w.d)} aria-label={`${MEAL_MONTH}월 ${w.d}일 ${w.dow}요일${today ? ' 오늘' : ''}`}>
+                <Text variant="caption-2" color={today ? 'brand' : 'tertiary'}>
                   {w.dow}
                 </Text>
-                <Text variant="title-2" color={on ? 'on-brand' : 'primary'} tnum>
-                  {w.d}
-                </Text>
+                <span className={s.date}>
+                  <Text variant={on ? 'body-2-strong' : 'body-2'} color={on ? 'on-brand' : 'primary'} tnum>
+                    {w.d}
+                  </Text>
+                </span>
               </button>
             );
           })}
         </div>
 
-        <Segmented items={CAFETERIAS.map(({ value, label }) => ({ value, label }))} value={cafe} onChange={setCafe} />
-
-        {isToday && cafe === 'student' && (
-          <div className={s.tip}>
-            <span className={s.tipIcon}>
-              <Icon name="clock" size={20} />
-            </span>
-            <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-              <Text variant="caption-2-strong" color="brand">
-                {MEAL_TIP.label}
-              </Text>
-              <Text variant="label">{MEAL_TIP.title}</Text>
-              <Text variant="caption-2" color="secondary">
-                {MEAL_TIP.meta}
-              </Text>
-            </span>
-          </div>
-        )}
-
-        <div className={s.fullDivider} role="separator" />
+        <LineTabs label="식당" items={CAFETERIAS.map(({ value, label }) => ({ value, label }))} value={cafe} onChange={setCafe} />
 
         <AnimatePresence mode="wait" initial={false}>
-          <motion.div
-            key={`${day}-${cafe}`}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.18 }}
-            style={{ display: 'flex', flexDirection: 'column', gap: 16 }}
-          >
+          <motion.div key={`${day}-${cafe}`} className={s.meals} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.18 }}>
             {meals.map((m) => (
-              <MealCard key={m.kind} meal={m} place={place} expanded={open === m.kind} isToday={isToday} onPress={() => setOpen(m.kind)} />
+              <MealBlock key={m.kind} meal={m} place={place} />
             ))}
           </motion.div>
         </AnimatePresence>
-
-        <Text variant="caption-2" color="tertiary" as="p">
-          메뉴와 가격은 식당 사정에 따라 바뀔 수 있어요
-        </Text>
       </div>
     </Screen>
   );
 }
 
-function MealCard({ meal, place, expanded, isToday, onPress }: { meal: MealT; place: string; expanded: boolean; isToday: boolean; onPress: () => void }) {
+function MealBlock({ meal, place }: { meal: MealT; place: string }) {
   const t = MEAL_TIME[meal.kind];
+  const peak = meal.crowd.indexOf(Math.max(...meal.crowd));
   return (
-    <button type="button" className={s.mealCard} aria-expanded={expanded} onClick={onPress}>
-      <span className={s.mealHead}>
-        <Chip tone="neutral" pill className={expanded ? s.chipActive : undefined}>
-          {meal.kind}
-        </Chip>
-        <Text variant="caption-1" color="secondary" className="truncate tnum">
-          {t.range} · {place}
-        </Text>
-        <Text variant="label" tnum>
-          {meal.price}
-        </Text>
-      </span>
-      <Text variant="title-2" as="span">
-        {meal.main}
+    <section className={s.meal} aria-label={meal.kind}>
+      <Text variant="caption-1" color="tertiary" as="p" className="tnum">
+        {meal.kind} | {t.range} · {place}
       </Text>
-      <Text variant="callout" color="secondary" as="span">
-        {meal.sides}
-      </Text>
-      <AnimatePresence initial={false}>
-        {expanded && (
-          <motion.span className={s.crowd} initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.24, ease: [0.32, 0.72, 0, 1] }}>
-            <span className={s.crowdHead}>
-              <Text variant="caption-2-strong" color="secondary">
-                {isToday ? '예상 혼잡도' : '혼잡도 기록'}
-              </Text>
-              <Text variant="caption-2-strong" color="warning" tnum>
-                {meal.peak}
-              </Text>
-            </span>
-            <span className={s.bars} aria-label={`혼잡도 그래프 · ${meal.peak}`} role="img">
-              {meal.crowd.map((v, i) => (
-                <motion.span
-                  key={i}
-                  className={s.bar}
-                  data-level={i === meal.best ? 'best' : v >= 0.7 ? 'busy' : 'calm'}
-                  style={{ height: `${Math.round(v * 100)}%` }}
-                  initial={{ scaleY: 0 }}
-                  animate={{ scaleY: 1 }}
-                  transition={{ delay: 0.03 * i, duration: 0.3 }}
-                />
-              ))}
-            </span>
-            <span className={s.axis}>
-              {t.axis.map((a) => (
-                <Text key={a} variant="caption-2" color="tertiary" tnum>
-                  {a}
-                </Text>
-              ))}
-            </span>
-          </motion.span>
-        )}
-      </AnimatePresence>
-    </button>
+      <div className={s.menu}>
+        <div className={s.menuText}>
+          <Text variant="title-3" as="h2">
+            {meal.main} <span className="tnum">({meal.price})</span>
+          </Text>
+          <Text variant="body-3" color="secondary" as="p">
+            {meal.sides}
+          </Text>
+        </div>
+        {/* 사진 자리 (Figma 'thumb · 사진 자리' 64 · r12) */}
+        <span className={s.thumb} aria-hidden>
+          <Icon name="meal" size={24} />
+        </span>
+      </div>
+
+      <div className={s.crowd}>
+        <div className={s.crowdHead}>
+          <Text variant="caption-1-strong" color="secondary">
+            시간대별 혼잡도
+          </Text>
+          <Text variant="caption-1-strong" color="error" tnum>
+            {meal.peak} 가장 붐벼요
+          </Text>
+        </div>
+        <div className={s.bars} role="img" aria-label={`시간대별 혼잡도 · ${meal.peak} 가장 붐벼요`}>
+          {meal.crowd.map((v, i) => (
+            <motion.span
+              key={i}
+              className={s.bar}
+              data-peak={i === peak}
+              style={{ height: `${Math.round(v * 100)}%` }}
+              initial={{ scaleY: 0 }}
+              animate={{ scaleY: 1 }}
+              transition={{ delay: 0.03 * i, duration: 0.3 }}
+            />
+          ))}
+        </div>
+        <div className={s.axis}>
+          {t.axis.map((a) => (
+            <Text key={a} variant="caption-2" color="tertiary" tnum>
+              {a}
+            </Text>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { create } from 'zustand';
-import { POSTS, seedComments, type BoardId, type Comment, type Post } from './data';
+import { POSTS, RECENT_SEARCHES, seedComments, type BoardId, type Comment, type Post } from './data';
 
 /* ────────────────────────────────────────────────────────────
  * 게시판 섹션 상태 (섹션 로컬 zustand — 전역 useApp은 건드리지 않음)
@@ -9,6 +9,10 @@ import { POSTS, seedComments, type BoardId, type Comment, type Post } from './da
 type BoardState = {
   /** 내가 쓴 글 (최신이 앞) */
   created: Post[];
+  /** 글 수정 (내 글 메뉴 '수정하기' → 글쓰기 화면) — id → 바뀐 필드 */
+  edits: Record<string, Partial<Post>>;
+  /** 최근 검색어 (검색 레이어 699:8103) */
+  recent: string[];
   /** 글·댓글 공감 (id → on). 없으면 시드 likedByMe */
   liked: Record<string, boolean>;
   scrapped: Record<string, boolean>;
@@ -22,6 +26,9 @@ type BoardState = {
   seen: string[];
 
   addPost: (p: Post) => void;
+  updatePost: (id: string, patch: Partial<Post>) => void;
+  pushRecent: (q: string) => void;
+  removeRecent: (q: string) => void;
   toggleLike: (id: string, initial?: boolean) => boolean;
   toggleScrap: (id: string) => boolean;
   addComment: (postId: string, c: Omit<Comment, 'id' | 'postId'>) => Comment;
@@ -32,6 +39,8 @@ type BoardState = {
 
 export const useBoard = create<BoardState>((set, get) => ({
   created: [],
+  edits: {},
+  recent: RECENT_SEARCHES,
   liked: {},
   scrapped: {},
   added: {},
@@ -40,6 +49,9 @@ export const useBoard = create<BoardState>((set, get) => ({
   seen: [],
 
   addPost: (p) => set((st) => ({ created: [p, ...st.created] })),
+  updatePost: (id, patch) => set((st) => ({ edits: { ...st.edits, [id]: { ...st.edits[id], ...patch } } })),
+  pushRecent: (q) => set((st) => ({ recent: [q, ...st.recent.filter((r) => r !== q)].slice(0, 8) })),
+  removeRecent: (q) => set((st) => ({ recent: st.recent.filter((r) => r !== q) })),
   toggleLike: (id, initial = false) => {
     const next = !(get().liked[id] ?? initial);
     set((st) => ({ liked: { ...st.liked, [id]: next } }));
@@ -63,11 +75,15 @@ export const useBoard = create<BoardState>((set, get) => ({
 
 /* ── 파생 데이터 훅 ─────────────────────────────────────────── */
 
-/** 보이는 글 전체 (내가 쓴 글이 맨 앞) */
+/** 보이는 글 전체 (내가 쓴 글이 맨 앞 · 수정 내용 반영) */
 export function useAllPosts(): Post[] {
   const created = useBoard((st) => st.created);
   const hidden = useBoard((st) => st.hidden);
-  return useMemo(() => [...created, ...POSTS].filter((p) => !hidden.includes(p.id)), [created, hidden]);
+  const edits = useBoard((st) => st.edits);
+  return useMemo(
+    () => [...created, ...POSTS].filter((p) => !hidden.includes(p.id)).map((p) => (edits[p.id] ? { ...p, ...edits[p.id] } : p)),
+    [created, hidden, edits],
+  );
 }
 
 export function usePost(pid: string | undefined): Post | undefined {

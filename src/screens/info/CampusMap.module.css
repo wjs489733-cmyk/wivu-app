@@ -1,14 +1,14 @@
-/* 강의실 지도 — Figma 431:9033 (가상 캠퍼스) */
+/* 강의실 지도 — Figma v5 688:6715 · 안내 중 702:8726 · 도착 702:8831 (가상 캠퍼스) */
 .layer {
   position: absolute;
   inset: 0;
   z-index: 5; /* Screen 상단(z3)·하단(z4) 위, 홈 인디케이터(z10) 아래 — 지도가 상태바 밑까지 깔림 */
   overflow: hidden;
-  /* 지도 전용 색 — 모두 semantic 토큰에서 파생 */
-  --map-ground: var(--wivu-color-bg-canvas);
-  --map-green: #E2E8DC; /* 지도 녹지(콘텐츠 색) — UI 강조색과 분리된 탁한 세이지 */
+  /* 지도 일러스트 전용 색(콘텐츠 색 · Figma 'map' 프레임의 hex 그대로) — UI 토큰과 분리 */
+  --map-ground: #edf2fa;
+  --map-green: #dbf0db;
   --map-road: var(--wivu-color-bg-surface);
-  --map-building: color-mix(in srgb, var(--wivu-color-border-strong) 72%, var(--wivu-color-bg-surface));
+  --map-building: #d1d9e5;
   background: var(--map-ground);
 }
 .statusWrap {
@@ -43,26 +43,19 @@
 .road {
   fill: var(--map-road);
 }
-.routeCasing {
-  fill: none;
-  stroke: var(--wivu-color-bg-surface);
-  stroke-width: 9;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
+.routeCasing,
 .route {
   fill: none;
-  stroke: var(--wivu-color-bg-brand);
-  stroke-width: 4;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.routeDone {
-  fill: none;
-  stroke: var(--wivu-color-border-strong);
-  stroke-width: 4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.routeCasing {
+  stroke: var(--wivu-color-bg-surface);
+  stroke-width: 10;
+}
+.route {
+  stroke: var(--wivu-color-bg-brand);
+  stroke-width: 6;
 }
 .gate {
   position: absolute;
@@ -84,16 +77,15 @@
 .building:active {
   transform: scale(0.97);
 }
-.building[data-selected='true']:not([data-next='true']) {
-  box-shadow: 0 0 0 3px var(--wivu-color-bg-surface), 0 0 0 5px var(--wivu-color-border-brand);
-}
 .building[data-next='true'] {
   background: var(--wivu-color-bg-brand);
   color: var(--wivu-color-text-on-brand);
 }
+/* 다음 수업이 아닌 건물을 고른 경우 (v5 프레임엔 없는 상태 — 기존 동작 유지) */
 .building[data-selected='true']:not([data-next='true']) {
-  background: var(--wivu-color-bg-brand-soft);
+  background: var(--wivu-color-bg-brand-tint);
   color: var(--wivu-color-text-brand);
+  box-shadow: 0 0 0 2px var(--wivu-color-border-brand);
 }
 .pin {
   position: absolute;
@@ -120,8 +112,8 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--wivu-color-bg-brand) 22%, transparent);
-  animation: halo 2.2s ease-out infinite;
+  background: color-mix(in srgb, var(--wivu-color-bg-brand) 20%, transparent);
+  animation: halo 2.4s ease-in-out infinite;
 }
 .dot {
   position: absolute;
@@ -129,38 +121,61 @@
   top: 10px;
   width: 16px;
   height: 16px;
+  border: 3px solid var(--wivu-color-bg-surface);
   border-radius: 50%;
   background: var(--wivu-color-bg-brand);
-  box-shadow: 0 0 0 2px var(--wivu-color-bg-surface), var(--wivu-elevation-card);
 }
 @keyframes halo {
-  0% {
-    transform: scale(0.7);
-    opacity: 1;
-  }
+  0%,
   100% {
-    transform: scale(1.5);
-    opacity: 0;
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.18);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .halo {
+    animation: none;
   }
 }
 
-/* ── 상단 검색 바 ── */
+/* ── 위: 검색 바 / 안내 배너 ── */
 .top {
   position: absolute;
-  left: var(--wivu-layout-gutter);
-  right: var(--wivu-layout-gutter);
-  top: calc(var(--status-h) + 4px);
+  left: var(--wivu-layout-inset);
+  right: var(--wivu-layout-inset);
+  top: calc(var(--status-h) + 8px);
   z-index: 4;
 }
 .searchBar {
   display: flex;
   align-items: center;
-  gap: 2px;
-  height: 44px;
-  padding-inline: 0 4px;
-  border-radius: var(--wivu-radius-full);
+  gap: var(--wivu-space-8);
+  height: 48px;
+  padding: 0 6px 0 8px;
+  border-radius: var(--wivu-radius-14);
   background: var(--wivu-color-bg-surface);
-  box-shadow: var(--wivu-elevation-overlay);
+  box-shadow: var(--wivu-elevation-card);
+}
+.barButton {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--wivu-radius-12);
+  color: var(--wivu-color-icon-primary);
+}
+.barButton::after {
+  /* 터치 영역 44 */
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+.barButton:active {
+  color: var(--wivu-color-icon-brand);
 }
 .searchInput {
   flex: 1 1 auto;
@@ -174,6 +189,9 @@
 .searchInput::placeholder {
   color: var(--wivu-color-text-placeholder);
 }
+.searchInput::-webkit-search-cancel-button {
+  display: none;
+}
 .results {
   margin-top: 8px;
   padding: 8px 0;
@@ -184,6 +202,9 @@
 }
 .resultHead {
   padding: 4px 16px 6px;
+}
+.resultEmpty {
+  padding: 12px 16px;
 }
 .result {
   display: flex;
@@ -204,8 +225,36 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--wivu-color-bg-brand-soft);
+  background: var(--wivu-color-bg-brand-tint);
   color: var(--wivu-color-icon-brand);
+}
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-12);
+  width: 100%;
+  min-height: 72px;
+  padding: 14px 16px;
+  border-radius: var(--wivu-radius-16);
+  box-shadow: var(--wivu-elevation-card);
+  text-align: left;
+}
+.banner[data-tone='brand'] {
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+}
+.banner[data-tone='surface'] {
+  background: var(--wivu-color-bg-surface);
+}
+button.banner:active {
+  filter: brightness(0.97);
+}
+.bannerText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-2);
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* ── 하단: 내 위치 버튼 + 경로 시트 ── */
@@ -229,10 +278,10 @@
   place-items: center;
   width: 44px;
   height: 44px;
-  margin: 0 var(--wivu-layout-inset) 16px 0;
+  margin: 0 var(--wivu-layout-inset) 33px 0; /* Figma: 버튼 아래 → 시트 위 33 */
   border-radius: 50%;
   background: var(--wivu-color-bg-surface);
-  box-shadow: var(--wivu-elevation-overlay);
+  box-shadow: var(--wivu-elevation-card);
   color: var(--wivu-color-icon-primary);
 }
 .fab:active {
@@ -242,55 +291,52 @@
   display: flex;
   flex-direction: column;
   gap: var(--wivu-space-16);
-  padding: 8px var(--wivu-layout-inset) calc(max(var(--safe-bottom), 12px) + 12px);
+  padding: 0 var(--wivu-layout-inset) calc(max(var(--safe-bottom), 12px) + 8px);
   border-radius: var(--wivu-radius-24) var(--wivu-radius-24) 0 0;
   background: var(--wivu-color-bg-surface);
   box-shadow: var(--wivu-elevation-overlay);
 }
 .grabber {
-  /* 손잡이 모양은 그대로, 누르는 영역 88×44 (음수 마진으로 시트 레이아웃 유지) */
+  /* 손잡이 영역 29(위 10 · 손잡이 5 · 아래 14) — 누르는 영역은 88×44, 아래로 겹쳐 레이아웃 유지 */
+  position: relative;
   align-self: center;
-  display: grid;
-  place-items: center;
   width: 88px;
   height: 44px;
-  margin: -12px 0 -20px;
+  margin-bottom: -31px; /* 29 − 44 − gap 16 */
 }
 .grabber::before {
   content: '';
+  position: absolute;
+  left: 26px;
+  top: 10px;
   width: 36px;
   height: 5px;
   border-radius: 3px;
-  background: var(--wivu-color-border-strong);
+  background: var(--wivu-color-border-default);
 }
 .sheetHead {
   display: flex;
-  align-items: center;
-  gap: var(--wivu-space-8);
+  align-items: flex-end;
+  gap: var(--wivu-space-12);
+  position: relative; /* 손잡이 누르는 영역 위로 */
 }
 .sheetInfo {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: var(--wivu-space-4);
   flex: 1 1 auto;
   min-width: 0;
 }
 .walk {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-end;
   flex-shrink: 0;
-  min-width: 56px;
-  height: 56px;
-  padding-inline: 8px;
-  border-radius: var(--wivu-radius-14);
-  background: var(--wivu-color-bg-subtle);
 }
 .actions {
   display: flex;
-  gap: 10px;
+  gap: var(--wivu-space-8);
 }
 .floors {
   display: flex;
@@ -299,9 +345,8 @@
 }
 .floorRow {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
+  gap: var(--wivu-space-8);
   min-height: 40px;
-  border-top: 1px solid var(--wivu-color-border-default);
 }

@@ -2,7 +2,7 @@ import { COURSES, NOW, courseById, type Course, type CourseId } from '@/data/cor
 import { ACADEMIC_NOTICES } from '@/screens/info/data';
 
 /* ────────────────────────────────────────────────────────────
- * 수강과목 섹션 데이터 — Figma 392:7404 · 398:7666 · 398:7694 · 398:7717 · 398:7759 · 398:7782 문구 그대로.
+ * 수강과목 섹션 데이터 — Figma v5 '06 수강과목 (v5)' 684:5962 · 684:6082 · 684:6198 · 684:6271 · 684:6349 · 684:6409 · 684:6453 문구 그대로.
  * Figma에는 서비스디자인만 그려져 있어 나머지 5과목은 같은 구조로 그럴듯하게 채움(가상 인물 'OOO').
  * 기준 시각 core NOW = 2026-10-09(금) 9:41 = 6주차 · 1주차 9.1–9.4 · 6주차 10.6–10.9 (10.5 대체공휴일)
  * 1주차(OT·강의계획서·'1주차 …') 글/자료는 9월 날짜 그대로, '이번 주' 글/자료는 6주차로 둠.
@@ -49,8 +49,10 @@ export type Assignment = {
   title: string;
   due: Date;
   points: string;
+  /** 제출 형식 'PDF · 10MB 이하 · 최대 3개' */
   format: string;
-  method: string;
+  /** '개인 과제' | '팀 과제' (과제 상세 메타 '서비스디자인 · 개인 과제 · 20점') */
+  kind: '개인 과제' | '팀 과제';
   desc: string;
   attachments: FileItem[];
   /** 이미 제출해 둔 과거 과제 */
@@ -73,7 +75,7 @@ export type CourseInfo = {
 const pdf = (id: string, name: string, size: string, date?: string): FileItem => ({ id, name, kind: 'pdf', size, date });
 const d = (m: number, day: number, h: number, min: number) => new Date(2026, m - 1, day, h, min);
 
-const SUBMIT_DEFAULT = { points: '20점', format: 'PDF · 10MB 이하', method: '개인 제출 · 마감 전 재제출 가능' };
+const SUBMIT_DEFAULT = { points: '20점', format: 'PDF · 10MB 이하 · 최대 3개', kind: '개인 과제' as const };
 
 /* ── 공용 파일 (공지 첨부 = 강의자료 같은 파일) ─────────────── */
 const SD_BLUEPRINT = pdf('sd-blueprint', '서비스 블루프린트.pdf', '4.2MB', '10.09');
@@ -232,6 +234,7 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
         due: d(10, 16, 23, 59),
         ...SUBMIT_DEFAULT,
         points: '10점',
+        kind: '팀 과제',
         desc: '다음 주 현장 인터뷰를 위해 팀별 인터뷰 대상과 질문지를 정리한 계획서를 제출하세요.\n\n· 인터뷰 대상과 섭외 방법\n· 질문지 (질문 5개 이상)\n· 일정과 역할 분담',
         attachments: [UX_TEMPLATE],
       },
@@ -385,50 +388,29 @@ export function dueShort(due: Date) {
   if (dayStart(due) === dayStart(NOW)) return `오늘 ${hm(due)}`;
   return `${due.getMonth() + 1}.${due.getDate()}(${DOW[due.getDay()]}) ${hm(due)}`;
 }
-/** '10월 9일 (금) 23:59' */
-export const dueFull = (due: Date) => `${due.getMonth() + 1}월 ${due.getDate()}일 (${DOW[due.getDay()]}) ${hm(due)}`;
+/** '10.09 (금) 23:59' — v5 과제 상세 '마감' 행 */
+export const dueDetail = (due: Date) => `${pad(due.getMonth() + 1)}.${pad(due.getDate())} (${DOW[due.getDay()]}) ${hm(due)}`;
 
-/** '14시간 18분 남음' / '4일 4시간 남음' */
-export function remaining(due: Date) {
-  const min = Math.round((due.getTime() - NOW.getTime()) / 60_000);
-  if (min <= 0) return '마감됨';
-  const dd = Math.floor(min / 1440);
-  const h = Math.floor((min % 1440) / 60);
-  const m = min % 60;
-  if (dd > 0) return h > 0 ? `${dd}일 ${h}시간 남음` : `${dd}일 남음`;
-  return `${h}시간 ${m}분 남음`;
+/** 제출 기록 시각 'MM.DD HH:MM' → '10.09 (금) 09:48' (2026년 기준) */
+export function atDetail(at: string) {
+  const m = /^(\d{2})\.(\d{2}) (\d{2}:\d{2})$/.exec(at);
+  if (!m) return at;
+  const dt = new Date(NOW.getFullYear(), +m[1] - 1, +m[2]);
+  return `${m[1]}.${m[2]} (${DOW[dt.getDay()]}) ${m[3]}`;
 }
 
-/** 수강과목 카드 메타: '김OO 교수 · 금 10:00 · 디자인관 302호' */
-export function cardMeta(c: Course) {
-  if (c.online) return `${professorOf(c)} 교수 · 온라인 강의 · ${c.credits}학점`;
-  const days = c.slots.map((s) => s.day).join('·');
-  return `${professorOf(c)} 교수 · ${days} ${c.slots[0].start} · ${c.room}`;
-}
-/** 과목 상세 메타: '김OO 교수 · 금 10:00–11:50 · 디자인관 302호' */
+/** 과목 메타: '김OO 교수 · 금 10:00–11:50 · 디자인관 302호' (수강과목 탭 행 · 과목 상세 공통) */
 export function detailMeta(c: Course) {
   if (c.online) return `${professorOf(c)} 교수 · 사이버 강의 · 주차별 온라인 수강`;
   const days = c.slots.map((s) => s.day).join('·');
   return `${professorOf(c)} 교수 · ${days} ${c.slots[0].start}–${c.slots[0].end} · ${c.room}`;
 }
 
-export const kindLabel: Record<FileKind, string> = { pdf: 'PDF', link: '링크', video: '영상' };
-/** 'PDF · 4.2MB' (+ ' · 10.09') */
-export const fileMeta = (f: FileItem, withDate = false) =>
-  [f.kind === 'link' ? '외부 링크' : kindLabel[f.kind], f.kind === 'link' ? undefined : f.size, withDate ? f.date : undefined].filter(Boolean).join(' · ');
+/** v5 파일 메타: '4.2MB' (+ ' · 10.09') · 링크 '외부 링크' · 영상은 길이 */
+export const fileMeta = (f: FileItem, withDate = false) => [f.kind === 'link' ? '외부 링크' : f.size, withDate ? f.date : undefined].filter(Boolean).join(' · ');
 
-/** 'MB' 합계 (PDF만) → '8.7MB' */
-export function totalSize(files: FileItem[]) {
-  const mb = files.reduce((a, f) => {
-    const m = /([\d.]+)(MB|KB)/.exec(f.size);
-    if (!m) return a;
-    return a + (m[2] === 'KB' ? +m[1] / 1024 : +m[1]);
-  }, 0);
-  return `${mb.toFixed(1)}MB`;
-}
-
-/** 제출 샘플 파일명 — Figma '서비스분석리포트_전승민.pdf'는 실명이라 가상 인물(core USER)로 바꿈 */
+/** 제출 샘플 파일명 — Figma '서비스분석리포트_김유진.pdf' (core USER) */
 export const sampleFileName = (title: string, userName: string) => `${title.replace(/\s+/g, '')}_${userName}.pdf`;
 export const SAMPLE_SIZE = 3.8 * 1024 * 1024;
-/** 데모용 제출 시각 (Figma 400:7849 '10:24 제출') */
-export const SUBMIT_TIME = '10:24';
+/** 데모용 제출 시각 (Figma v5 684:6349 '10.09 (금) 09:48') */
+export const SUBMIT_TIME = '09:48';

@@ -1,35 +1,40 @@
-import { Chip, ListGroup, Screen, Text, TopNav } from '@/ui';
+import { useState } from 'react';
+import { Screen, Text, TopNav } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { ACADEMIC_NOTICES } from './data';
+import { NOTICE_FILTERS, NOTICE_LIST, type NoticeCategory } from './data';
+import { FilterRow, NoticeBadges } from './parts';
 import s from './Info.module.css';
 
 /**
- * 학사 공지 목록 — 코드 추가 화면 (Figma 프레임 없음)
- * 홈 '학사 공지 · 공지 전체' · 마이 '공지사항'에서 진입. 행 모양은 홈 학사 공지 카드와 같게(태그 칩 · 제목 · 날짜),
- * 누르면 학사 공지 상세(430:9007)로 PUSH.
+ * 학사 공지 목록 — Figma v5 688:6810 (홈 '학사 공지 · 공지 전체' · 마이 '공지사항' → PUSH)
+ * 분류 필터(전체·학사·장학·행사) · 행 = 배지 + 제목(Body 1) / '날짜 · 부서'(Caption 1), 행 사이 1px 선.
+ * 행을 누르면 학사 공지 상세(688:6925)로 PUSH.
  */
 export function NoticeList() {
   const nav = useNav();
+  const [filter, setFilter] = useState<'all' | NoticeCategory>('all');
+  const list = NOTICE_LIST.filter((n) => filter === 'all' || n.category === filter);
+
   return (
-    <Screen header={<TopNav title="학사 공지" fallback={P.home} />}>
-      <div className={s.page}>
-        <Text variant="caption-1" color="secondary" as="p" className={s.listMeta}>
-          학교 공지 {ACADEMIC_NOTICES.length}건 · 최신순
-        </Text>
-        <ListGroup>
-          {ACADEMIC_NOTICES.map((n) => (
+    <Screen figma="688:6810" header={<TopNav title="학사 공지" fallback={P.home} />}>
+      <div className={s.noticePage}>
+        <FilterRow label="공지 분류" items={NOTICE_FILTERS} value={filter} onChange={setFilter} />
+        <div className={s.noticeList}>
+          {list.map((n) => (
             <button key={n.id} type="button" className={s.noticeRow} onClick={() => nav.push(P.academicNotice(n.id))}>
-              <Chip tone={n.chips[0].tone}>{n.chips[0].label}</Chip>
-              <Text variant="label" className="truncate" style={{ flex: 1 }}>
-                {n.short}
-              </Text>
-              <Text variant="caption-2" color="tertiary" tnum>
-                {n.date}
+              <span className={s.noticeTitle}>
+                <NoticeBadges n={n} />
+                <Text variant="body-1" className="truncate">
+                  {n.short}
+                </Text>
+              </span>
+              <Text variant="caption-1" color="tertiary" className="tnum">
+                {n.date} · {n.author}
               </Text>
             </button>
           ))}
-        </ListGroup>
+        </div>
       </div>
     </Screen>
   );

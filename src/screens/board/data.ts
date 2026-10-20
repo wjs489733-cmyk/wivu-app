@@ -3,7 +3,7 @@ import { COURSES, courseById, type CourseId } from '@/data/core';
 import type { ChipTone, IconName } from '@/ui';
 
 /* ────────────────────────────────────────────────────────────
- * 게시판 데이터 — Figma 418:8600 · 419:8518 · 420:8564 · 420:8691 텍스트 그대로
+ * 게시판 데이터 — Figma v5 '09 게시판' (687:6491 · 687:6661 · 687:6783 · 698:7597 · 687:6877) 텍스트 그대로
  * 기준 시각 2026-10-09(금) 9:41 · 6주차. 작성자는 익명·학과명·김OO 패턴 가상 인물만.
  * 날짜 표기 글: 1주차 글(OT 정리·'1주차 …')은 9월 날짜 그대로, 최근 글은 6주차(10.03–10.07) 날짜.
  * 학교 규정·수치처럼 보이는 정보는 쓰지 않는다.
@@ -24,10 +24,10 @@ export type Board = {
   filters: string[];
   /** 글쓰기 말머리 */
   categories: string[];
-  /** 상단 고정 카드 */
-  pinned?: { label: string; title: string; to: string };
-  /** 탭 루트 타일의 새 글 점 */
-  dot?: boolean;
+  /** 피드 상단 고정 행 (v5: 배지 + 제목) */
+  pinned?: { badge: string; title: string; to: string };
+  /** 탭 루트 '학교 게시판' 타일 보조 문구 */
+  tileSub?: string;
 };
 
 const COURSE_HEADCOUNT: Record<CourseId, number> = {
@@ -52,17 +52,18 @@ const courseBoards: Board[] = COURSES.map((c) => ({
   // 서비스디자인만 Figma 공지 상세(398:7759)와 연결. 나머지 과목은 과목 상세(공지 탭)로.
   pinned:
     c.id === 'service-design'
-      ? { label: '교수님 공지 · 수강과목 연동', title: '오늘 수업 진행 방식 안내', to: P.courseNotice('service-design', 'c1') }
-      : { label: '교수님 공지 · 수강과목 연동', title: `${c.name} 과목 공지 모아보기`, to: P.course(c.id) },
+      ? { badge: '교수 공지', title: '오늘 수업 진행 방식 안내', to: P.courseNotice('service-design', 'c1') }
+      : { badge: '교수 공지', title: `${c.name} 과목 공지 모아보기`, to: P.course(c.id) },
 }));
 
-const GUIDE_PIN = { label: '운영 안내 · 재학생 인증 게시판', title: '서로 존중하는 게시판을 만들어요', to: P.boardPost('guide') };
+const GUIDE_PIN = { badge: '운영 안내', title: '서로 존중하는 게시판을 만들어요', to: P.boardPost('guide') };
 
 const campusBoards: Board[] = [
-  { id: 'free', name: '자유게시판', kind: 'campus', sub: '재학생 인증 · 익명 게시판', icon: 'comment', filters: ['잡담', '질문', '고민'], categories: ['잡담', '질문', '고민'], pinned: GUIDE_PIN, dot: true },
-  { id: 'info', name: '정보게시판', kind: 'campus', sub: '재학생 인증 · 학교생활 정보', icon: 'notice', filters: ['학사', '행사', '생활'], categories: ['학사', '행사', '생활'], pinned: GUIDE_PIN },
-  { id: 'team', name: '팀플·스터디', kind: 'campus', sub: '재학생 인증 · 팀원·스터디 모집', icon: 'users', filters: ['모집 중', '스터디', '공모전'], categories: ['스터디', '공모전', '팀플'], pinned: GUIDE_PIN, dot: true },
-  { id: 'dept', name: '시각디자인과', kind: 'campus', sub: '학과 게시판 · 시각디자인과 인증', icon: 'library', filters: ['공지', '과제', '졸업전시'], categories: ['과제', '졸업전시', '잡담'], pinned: GUIDE_PIN },
+  { id: 'free', name: '자유게시판', kind: 'campus', sub: '재학생 인증 · 익명 게시판', tileSub: '익명 · 잡담·고민', icon: 'comment', filters: ['잡담', '질문', '고민'], categories: ['잡담', '질문', '고민'], pinned: GUIDE_PIN },
+  { id: 'info', name: '정보게시판', kind: 'campus', sub: '재학생 인증 · 학교생활 정보', tileSub: '학교생활 정보', icon: 'notice', filters: ['학사', '행사', '생활'], categories: ['학사', '행사', '생활'], pinned: GUIDE_PIN },
+  { id: 'team', name: '팀플·스터디', kind: 'campus', sub: '재학생 인증 · 팀원·스터디 모집', tileSub: '팀원·스터디 모집', icon: 'users', filters: ['모집 중', '스터디', '공모전'], categories: ['스터디', '공모전', '팀플'], pinned: GUIDE_PIN },
+  { id: 'dept', name: '시각디자인과', kind: 'campus', sub: '학과 게시판 · 시각디자인과 인증', tileSub: '학과 게시판', icon: 'library', filters: ['공지', '과제', '졸업전시'], categories: ['과제', '졸업전시', '잡담'], pinned: GUIDE_PIN },
+  // v5 탭 루트·글쓰기 시트엔 없는 게시판(장터·분실물) — 기존 경로(검색 결과·직접 주소)만 살려 둔다
   { id: 'market', name: '장터', kind: 'campus', sub: '재학생 인증 · 중고거래·나눔', icon: 'bookmark', filters: ['팝니다', '삽니다', '나눔'], categories: ['팝니다', '삽니다', '나눔'], pinned: GUIDE_PIN },
   { id: 'lost', name: '분실물', kind: 'campus', sub: '재학생 인증 · 분실물 찾기', icon: 'pin', filters: ['찾아요', '주웠어요'], categories: ['찾아요', '주웠어요'], pinned: GUIDE_PIN },
 ];
@@ -70,7 +71,8 @@ const campusBoards: Board[] = [
 const guideBoard: Board = { id: 'guide', name: '운영 안내', kind: 'system', sub: '', icon: 'notice', filters: [], categories: [] };
 
 export const BOARDS: Board[] = [...courseBoards, ...campusBoards, guideBoard];
-export const CAMPUS_BOARDS = campusBoards;
+/** v5 탭 루트 '학교 게시판' 2×2 · 글쓰기 '전체 게시판' 그룹 (687:6491 · 699:8284) */
+export const CAMPUS_BOARDS = campusBoards.filter((b) => b.id !== 'market' && b.id !== 'lost');
 export const COURSE_BOARDS = courseBoards;
 
 export const boardById = (id: string): Board => BOARDS.find((b) => b.id === id) ?? courseBoards[0];
@@ -79,45 +81,32 @@ export const isBoardId = (id: string) => BOARDS.some((b) => b.id === id);
 export const boardTitle = (b: Board) => (b.kind === 'course' ? `${b.name} 게시판` : b.name);
 export const verifiedLabel = (b: Board) => (b.kind === 'course' ? '수강생 인증' : b.id === 'dept' ? '학과 인증' : '재학생 인증');
 
-/* ── 탭 루트 '내 수업 게시판' 카드 (Figma 문구) ────────────────── */
-/** hot: 새 글이 몰린 게시판 (brand-soft 카드) — Figma는 서비스디자인·UX 리서치만 강조 */
-export const MY_COURSE_CARDS: { id: CourseId; newCount: number; summary?: string; hot?: boolean }[] = [
-  { id: 'service-design', newCount: 3, summary: '질문 2 · 팀플 1', hot: true },
-  { id: 'ux-research', newCount: 5, summary: '팀플 모집 2', hot: true },
-  { id: 'brand-design', newCount: 1, summary: '자료 1' },
-  { id: 'motion-graphics', newCount: 0 },
-  { id: 'design-management', newCount: 0 },
-  { id: 'writing', newCount: 0 },
+/* ── 탭 루트 '내 수업 게시판' 목록 (687:6491 — 처음 4개, '전체 6'으로 펼침) ──── */
+/** 오늘 새 글 수 — 0보다 크면 'NEW' 배지 + '오늘 새 글 n' */
+export const MY_COURSE_ROWS: { id: CourseId; newToday: number }[] = [
+  { id: 'service-design', newToday: 3 },
+  { id: 'brand-design', newToday: 0 },
+  { id: 'ux-research', newToday: 1 },
+  { id: 'design-management', newToday: 0 },
+  { id: 'motion-graphics', newToday: 0 },
+  { id: 'writing', newToday: 0 },
 ];
+export const COURSE_ROWS_FOLDED = 4;
+export const courseHeadcount = (id: CourseId) => COURSE_HEADCOUNT[id];
 
-/* ── 말머리 색 ──────────────────────────────────────────────── */
+/* ── 말머리 색 (v5 Badge) ─────────────────────────────────────
+ * 피드백 4번(컬러 최소화): 기본은 Neutral. 기한이 있는 모집 글(팀플)만 Warning, 운영·교수 공지성 말머리만 Brand. */
 const TAG_TONE: Record<string, ChipTone> = {
-  질문: 'brand',
-  팀플: 'pulse',
-  자료: 'neutral',
-  후기: 'neutral',
-  잡담: 'neutral',
-  고민: 'neutral',
-  학사: 'brand',
-  행사: 'neutral',
-  생활: 'pulse',
-  스터디: 'brand',
-  공모전: 'pulse',
+  팀플: 'warningSoft',
   공지: 'brand',
-  과제: 'brand',
-  졸업전시: 'pulse',
-  팝니다: 'brand',
-  삽니다: 'pulse',
-  나눔: 'neutral',
-  찾아요: 'warningSoft',
-  주웠어요: 'brand',
   안내: 'brand',
 };
 export const tagTone = (tag: string): ChipTone => TAG_TONE[tag] ?? 'neutral';
 
 /* ── 글 ─────────────────────────────────────────────────────── */
 export type Attachment = { name: string; size: string; kind: 'pdf' | 'image' | 'file'; url?: string };
-export type Recruit = { current: number; max: number; deadline?: string; note: string; courseId?: CourseId };
+/** when: 카드 한 줄 요약('금 15:00 수업') · note: 신청 시트의 상세 한 줄 */
+export type Recruit = { current: number; max: number; deadline?: string; note: string; when?: string; courseId?: CourseId };
 export type LinkedAssignment = { courseId: CourseId; aid: string; title: string; due: string };
 
 export type Post = {
@@ -161,15 +150,14 @@ export type Comment = {
 const A1: LinkedAssignment = { courseId: 'service-design', aid: 'a1', title: '서비스 분석 리포트', due: '오늘 23:59' };
 
 export const POSTS: Post[] = [
-  /* 서비스디자인 — Figma 419:8518
+  /* 서비스디자인 — Figma v5 687:6661 (피드) · 687:6783 (p1 상세) · 698:7597 (p2 상세)
    * p1은 '내 글'(알림 '내 글에 댓글 2개가 달렸어요') → mine: true · 내 공감 없음(공감 4는 다른 사람들) */
   {
     id: 'p1',
     boardId: 'service-design',
     tag: '질문',
     title: '서비스 분석 리포트, 분석 대상 겹쳐도 되나요?',
-    excerpt: '배달앱으로 정했는데 다른 분들도 많이 고르셨을 것 같아서요. 관점만 다르면 괜찮을까요?',
-    body: '배달앱으로 분석 대상을 정했는데, 다른 분들도 많이 고르셨을 것 같아서요.\n\n관점(예: 라이더 vs 주문자)만 다르면 같은 서비스를 골라도 괜찮을까요? 수업 때 여쭤보려다 놓쳐서 여기 남겨봅니다.',
+    body: '배달앱으로 분석 대상을 정했는데, 다른 분들도 많이 고르셨을 것 같아서요.\n\n관점(예: 라이더 vs 주문자)만 다르면 겹쳐도 괜찮을까요? 수업 때 여쭤보려다 놓쳐서 여기 남겨봅니다.',
     author: '익명',
     time: '12분 전',
     views: 54,
@@ -183,29 +171,28 @@ export const POSTS: Post[] = [
     id: 'p2',
     boardId: 'service-design',
     tag: '팀플',
-    title: '블루프린트 워크숍 같이 할 팀 구해요 (2/4)',
-    excerpt: '오늘 후반부 워크숍 팀 미정이신 분! 카페 서비스로 진행하려고 해요.',
-    body: '오늘 후반부 워크숍 팀 미정이신 분! 카페 서비스로 진행하려고 해요.\n\n지금 2명이고 2명 더 구해요. 학생회관 카페 주문 동선을 서비스 블루프린트로 그려볼 생각이에요. 참여 신청 눌러주시면 수업 끝나고 바로 연락드릴게요 :)',
+    // 피드(687:6661)와 상세(698:7597)의 제목·본문·시간이 서로 달라 상세 기준으로 통일 — 인원은 피드 메타 '모집 2/4'로 이미 보여서 제목의 (2/4)는 뺐다
+    title: '블루프린트 워크숍 같이 할 팀 구해요',
+    body: '다음 주 수업 블루프린트 워크숍 같이 할 팀 구해요. 지금 2명이고 2명 더 구해요. 화요일 저녁에 오프라인으로 모일 수 있는 분이면 좋겠어요.',
     author: '익명',
     time: '38분 전',
-    views: 41,
-    likes: 2,
+    views: 88,
+    likes: 7,
     comments: 3,
     isNew: true,
-    recruit: { current: 2, max: 4, deadline: '오늘 마감', note: '금 10:00 수업 후반부 워크숍 · 카페 서비스', courseId: 'service-design' },
+    recruit: { current: 2, max: 4, deadline: '오늘 마감', note: '다음 주 수업 블루프린트 워크숍 · 화요일 저녁 오프라인', when: '화 저녁 오프라인', courseId: 'service-design' },
   },
   {
     id: 'p3',
     boardId: 'service-design',
     tag: '자료',
     title: '현장 관찰 노트 템플릿 공유합니다',
-    excerpt: '지난주에 쓴 관찰 노트 양식이에요. 필요하신 분 쓰세요 :)',
-    body: '지난주에 쓴 관찰 노트 양식이에요. 필요하신 분 쓰세요 :)\n\n시간대별 관찰 기록, 사용자 행동, 페인 포인트, 사진 메모 칸으로 나눠뒀어요. 출력해서 써도 되고 태블릿에서 바로 필기해도 돼요.',
-    author: '시각디자인과',
-    time: '어제',
+    body: '지난주 관찰할 때 쓴 노트 양식이에요. 필요하신 분 쓰세요.\n\n시간대별 관찰 기록, 사용자 행동, 페인 포인트, 사진 메모 칸으로 나눠뒀어요. 출력해서 써도 되고 태블릿에서 바로 필기해도 돼요.',
+    author: '익명',
+    time: '2시간 전',
     views: 132,
-    likes: 18,
-    comments: 5,
+    likes: 12,
+    comments: 3,
     files: [{ name: '현장관찰노트_템플릿.pdf', size: '1.2MB', kind: 'pdf' }],
   },
   {
@@ -213,13 +200,12 @@ export const POSTS: Post[] = [
     boardId: 'service-design',
     tag: '질문',
     title: '고객 여정 지도 툴 뭐 쓰세요?',
-    excerpt: 'Figma 템플릿 vs Miro 고민 중입니다',
-    body: 'Figma 템플릿 vs Miro 고민 중입니다\n\n팀원들이랑 동시에 편집해야 해서 협업이 편한 쪽이면 좋겠어요. 다들 뭐 쓰시는지 궁금해요.',
+    body: 'Figma로 하려는데 템플릿 추천해 주실 분 있나요?\n\n팀원들이랑 동시에 편집해야 해서 협업이 편한 쪽이면 좋겠어요.',
     author: '익명',
     time: '어제',
     views: 87,
-    likes: 3,
-    comments: 8,
+    likes: 2,
+    comments: 5,
     isNew: true,
   },
   {
@@ -251,7 +237,7 @@ export const POSTS: Post[] = [
     likes: 7,
     comments: 4,
     isNew: true,
-    recruit: { current: 3, max: 5, deadline: 'D-2 마감', note: '금 15:00 수업 · 인터뷰 대상 섭외 경험 있으면 좋아요', courseId: 'ux-research' },
+    recruit: { current: 3, max: 5, deadline: 'D-2 마감', note: '금 15:00 수업 · 인터뷰 대상 섭외 경험 있으면 좋아요', when: '금 15:00 수업', courseId: 'ux-research' },
   },
   {
     id: 'u2',
@@ -266,7 +252,7 @@ export const POSTS: Post[] = [
     likes: 2,
     comments: 1,
     isNew: true,
-    recruit: { current: 1, max: 3, deadline: 'D-5 마감', note: '정량 조사 파트 · 온라인 회의 위주', courseId: 'ux-research' },
+    recruit: { current: 1, max: 3, deadline: 'D-5 마감', note: '정량 조사 파트 · 온라인 회의 위주', when: '온라인 회의 위주', courseId: 'ux-research' },
   },
   {
     id: 'u3',
@@ -560,7 +546,7 @@ export const POSTS: Post[] = [
     views: 176,
     likes: 18,
     comments: 9,
-    recruit: { current: 2, max: 4, deadline: 'D-4 마감', note: '주 1회 화요일 저녁 · 중앙도서관' },
+    recruit: { current: 2, max: 4, deadline: 'D-4 마감', note: '주 1회 화요일 저녁 · 중앙도서관', when: '화 저녁 · 중앙도서관' },
   },
   {
     id: 't2',
@@ -574,7 +560,7 @@ export const POSTS: Post[] = [
     views: 82,
     likes: 6,
     comments: 3,
-    recruit: { current: 2, max: 3, deadline: 'D-6 마감', note: '포스터 부문 · 주 1회 회의' },
+    recruit: { current: 2, max: 3, deadline: 'D-6 마감', note: '포스터 부문 · 주 1회 회의', when: '포스터 부문' },
   },
   {
     id: 't3',
@@ -588,7 +574,7 @@ export const POSTS: Post[] = [
     views: 64,
     likes: 4,
     comments: 2,
-    recruit: { current: 3, max: 6, deadline: 'D-3 마감', note: '월·수·금 08:30 · 학생회관' },
+    recruit: { current: 3, max: 6, deadline: 'D-3 마감', note: '월·수·금 08:30 · 학생회관', when: '월·수·금 08:30' },
   },
 
   /* 시각디자인과 */
@@ -741,17 +727,18 @@ export const POPULAR = ['p1', 'i1', 't1'];
 const C = (postId: string, n: number, author: string, time: string, body: string, likes = 0, extra: Partial<Comment> = {}): Comment => ({ id: `${postId}-c${n}`, postId, author, time, body, likes, ...extra });
 
 const EXPLICIT: Comment[] = [
-  // p1 — Figma 420:8564 (위 3개) + 이어지는 답글
-  C('p1', 1, '익명1', '8분 전', '지난주에 교수님이 같은 서비스여도 관점이 다르면 괜찮다고 하셨어요! 대신 문제 정의를 다르게 잡으라고 하셨던 걸로 기억해요.', 3),
-  C('p1', 2, '작성자', '6분 전', '헉 감사합니다 그럼 라이더 관점으로 가볼게요', 1, { parent: 'p1-c1', isAuthor: true }),
-  C('p1', 3, '익명2', '3분 전', '저도 배달앱인데 인터뷰 자료 같이 공유해요 🙌', 0),
-  C('p1', 4, '작성자', '2분 전', '좋아요! 수업 끝나고 쪽지 드릴게요', 0, { parent: 'p1-c3', isAuthor: true }),
-  C('p1', 5, '익명3', '1분 전', '저는 주문자 관점으로 잡았어요. 겹쳐도 문제 정의만 다르면 될 것 같아요', 1),
-  C('p1', 6, '익명2', '방금', '오 그럼 셋이 비교해봐도 재밌겠네요', 0, { parent: 'p1-c5' }),
+  // p1 — Figma v5 687:6783 (위 3개) + 이어지는 답글
+  C('p1', 1, '익명1', '8분 전', '같은 서비스여도 분석 관점이 다르면 괜찮다고 지난주에 말씀하셨어요.', 3),
+  C('p1', 2, '작성자', '6분 전', '오 다행이다, 감사해요!', 1, { parent: 'p1-c1', isAuthor: true }),
+  C('p1', 3, '익명2', '3분 전', '저도 배달앱인데 저는 가게 사장님 관점으로 해보려고요 :)', 0),
+  C('p1', 4, '작성자', '2분 전', '관점이 다 달라서 나중에 비교해봐도 재밌겠네요', 0, { parent: 'p1-c3', isAuthor: true }),
+  C('p1', 5, '익명3', '1분 전', '저는 주문자 관점으로 잡았어요. 문제 정의만 다르게 잡으면 될 것 같아요', 1),
+  C('p1', 6, '익명2', '방금', '그럼 셋이 인터뷰 자료 같이 봐요!', 0, { parent: 'p1-c5' }),
 
-  C('p2', 1, '익명1', '30분 전', '저 아직 팀 없어요! 신청 눌렀어요', 1),
-  C('p2', 2, '작성자', '25분 전', '확인했어요 🙂 수업 끝나고 302호 앞에서 봬요', 0, { parent: 'p2-c1', isAuthor: true }),
-  C('p2', 3, '익명2', '10분 전', '혹시 한 자리 남았나요?', 0),
+  // p2 — Figma v5 698:7597
+  C('p2', 1, '익명1', '8분 전', '저 관심 있어요! 화요일 저녁 가능해요.', 1),
+  C('p2', 2, '작성자', '6분 전', '좋아요, 쪽지 드릴게요!', 0, { parent: 'p2-c1', isAuthor: true }),
+  C('p2', 3, '익명2', '3분 전', '혹시 온라인으로도 참여할 수 있나요?', 0),
 
   C('p3', 1, '익명1', '어제', '이거 진짜 필요했어요. 감사합니다!', 4),
   C('p3', 2, '익명2', '어제', '페인 포인트 칸 따로 있는 게 좋네요', 2),
@@ -759,7 +746,7 @@ const EXPLICIT: Comment[] = [
 
   C('p4', 1, '익명1', '어제', '저희 팀은 Figma 템플릿 써요. 수업 과제 양식이랑 바로 이어져서 편해요', 3),
   C('p4', 2, '익명2', '어제', 'Miro는 포스트잇 정리할 때 좋긴 한데 최종 정리는 결국 Figma로 옮기게 되더라고요', 2),
-  C('p4', 3, '작성자', '어제', '둘 다 쓰는 쪽으로 가야겠네요. 감사해요!', 0, { isAuthor: true }),
+  C('p4', 3, '작성자', '어제', '추천 감사해요! 수업 양식부터 써볼게요', 0, { parent: 'p4-c1', isAuthor: true }),
 
   C('p5', 1, '익명1', '09.04', '결석해서 몰랐는데 감사합니다 🙏', 2),
   C('p5', 2, '익명2', '09.05', '과제 일정 표로 정리해주셔서 보기 편해요', 1),
@@ -832,6 +819,9 @@ export function seedComments(post: Post): Comment[] {
 
 /* ── 검색 ───────────────────────────────────────────────────── */
 export const RECENT_SEARCHES = ['서비스 분석 리포트', '스터디룸', '팀플', '관찰 노트'];
+
+/* ── 과제 연결 시트 (699:8424) — 팀 단위로 내는 과제는 상태 자리에 '팀 과제' ── */
+export const TEAM_ASSIGNMENTS = new Set(['ux-research:a2']);
 
 /* ── 신고 사유 ──────────────────────────────────────────────── */
 export const REPORT_REASONS = ['욕설·비하 표현', '광고·홍보성 글', '음란·선정적인 내용', '개인정보 노출', '도배·낚시성 글', '기타'];

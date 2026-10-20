@@ -16,9 +16,10 @@ import { QrAttend } from './QrAttend';
 const SHEET_EXIT_MS = 320;
 
 /**
- * /attendance/pin — 시작한 화면(홈 또는 출석 탭) 위에 PIN 시트가 열린 상태
- * 알림함·QR 화면의 PIN·전시 패널 '예외 · PIN 오류'(?error=1)·'출석 번호 2자리'(?digits=2)에서 들어온다.
- * 시트를 그냥 닫을 때(dismiss)만 들어온 곳으로 돌아가고, 인증 완료·QR 전환은 시트가 직접 다음 화면으로 보낸다.
+ * /attendance/pin — 시작한 화면(홈 또는 출석 탭) 위에 출석 인증 시트가 열린 상태 (v5 679:5188 …)
+ * 알림함·QR 화면 '번호로 인증하기'·전시 패널 '예외 · PIN 오류'(?error=1)·'자릿수 지정 PIN'(?digits=2)에서 들어온다.
+ * 그냥 닫으면(dismiss) 들어온 곳으로 돌아가고, 출석 완료 뒤 [확인]은 시작한 곳(기본 홈 · v5 675:4839)으로 바꾼다.
+ * QR 전환은 시트가 직접 다음 화면으로 보낸다.
  */
 function PinRoute() {
   const [q] = useSearchParams();
@@ -34,6 +35,7 @@ function PinRoute() {
     if (digits) setPinDigits(digits);
   }, [digits, setPinDigits]);
   useEffect(() => () => clearTimeout(timer.current), []);
+  const originPath = origin === 'attendance' ? P.attendance : P.home;
 
   return (
     <>
@@ -45,7 +47,8 @@ function PinRoute() {
         digits={digits}
         onClose={(reason) => {
           setOpen(false);
-          if (reason === 'dismiss') timer.current = window.setTimeout(() => nav.back(origin === 'attendance' ? P.attendance : P.home), SHEET_EXIT_MS);
+          if (reason === 'dismiss') timer.current = window.setTimeout(() => nav.back(originPath), SHEET_EXIT_MS);
+          if (reason === 'done') timer.current = window.setTimeout(() => nav.fade(originPath, { replace: true }), SHEET_EXIT_MS);
         }}
       />
     </>
@@ -53,10 +56,10 @@ function PinRoute() {
 }
 
 export const screens: ScreenDef[] = [
-  { path: P.attendance, element: <AttendanceRoot />, title: '출석 탭', figma: ['392:7302'], section: '출석' },
-  { path: P.attendanceCourse(':id'), element: <CourseAttendance />, title: '과목 출석 상세', figma: ['406:8047'], section: '출석' },
-  { path: P.attendancePin, element: <PinRoute />, title: '출석 · PIN 입력', figma: ['372:7253', '432:9081', '432:9226', '432:9371', '508:3344', '519:3437', '508:3118', '508:3786', '508:3568'], section: '출석' },
-  { path: P.attendanceQr, element: <QrAttend />, title: 'QR 출석 인증', figma: ['408:8098'], section: '출석' },
-  { path: P.attendanceDone, element: <AttendanceDone />, title: '출석 · 인증 완료', figma: ['372:7221'], section: '출석' },
-  { path: P.studentId, element: <StudentId />, title: '모바일 학생증', figma: ['407:8067'], section: '출석' },
+  { path: P.attendance, element: <AttendanceRoot />, title: '출석 탭', figma: ['683:5844'], section: '출석' },
+  { path: P.attendanceCourse(':id'), element: <CourseAttendance />, title: '과목 출석 상세', figma: ['683:5994', '692:7904'], section: '출석' },
+  { path: P.attendancePin, element: <PinRoute />, title: '출석 인증 (번호)', figma: ['679:5188', '679:5413', '679:5633', '679:5848', '692:6987'], section: '출석' },
+  { path: P.attendanceQr, element: <QrAttend />, title: 'QR 출석 인증', figma: ['683:6109'], section: '출석' },
+  { path: P.attendanceDone, element: <AttendanceDone />, title: '출석 인증 완료', figma: ['679:5848'], section: '출석' },
+  { path: P.studentId, element: <StudentId />, title: '모바일 학생증', figma: ['679:6017', '692:7237', '692:7574'], section: '출석' },
 ];

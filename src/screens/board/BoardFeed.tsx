@@ -3,7 +3,7 @@ import { useParams, useSearchParams } from 'react-router';
 import { Button, Chip, Icon, IconButton, Screen, Text, TopNav } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { boardById, type Board, type Post } from './data';
+import { boardById, boardTitle, type Board, type Post } from './data';
 import { useAllPosts, useBoard } from './store';
 import { BoardSearch, EmptyState, Fab, PostRow } from './parts';
 import s from './Board.module.css';
@@ -18,9 +18,10 @@ function postsOf(board: Board, posts: Post[]) {
 }
 
 /**
- * 수업 게시판 피드 — Figma 419:8518 (Board_v4_02_CourseFeed)
- * 같은 화면을 '전체 게시판' 6종(자유·정보·팀플·스터디·시각디자인과·장터·분실물)에도 재사용한다.
- * 경로: P.boardCourse(courseId | 'free' | 'info' | 'team' | 'dept' | 'market' | 'lost')
+ * 수업 게시판 피드 — Figma v5 687:6661 (수업 게시판 · 서비스디자인)
+ * 말머리 필터 = v5 Button S (선택 Primary / 나머지 Secondary) · 고정 행(교수 공지) · 글 행(하단 1px 선)
+ * 같은 화면을 학교 게시판(자유·정보·팀플·스터디·시각디자인과 + 경로만 남긴 장터·분실물)에도 재사용한다.
+ * 경로: P.boardCourse(courseId | 'free' | 'info' | 'team' | 'dept' | 'market' | 'lost') · ?filter=모집 중
  */
 export function BoardFeed() {
   const nav = useNav();
@@ -49,55 +50,34 @@ export function BoardFeed() {
 
   return (
     <Screen
-      figma="419:8518"
-      header={
-        <TopNav
-          title={
-            <span className={s.feedTitle}>
-              <Text variant="title-3" className="truncate">
-                {board.name}
-              </Text>
-              <Text variant="caption-2" color="tertiary" className="truncate">
-                {board.sub}
-              </Text>
-            </span>
-          }
-          fallback={P.board}
-          trailing={<IconButton icon="search" label={`${board.name} 검색`} onPress={() => setSearch(true)} />}
-        />
-      }
+      figma="687:6661"
+      header={<TopNav title={boardTitle(board)} fallback={P.board} trailing={<IconButton icon="search" label={`${board.name} 검색`} onPress={() => setSearch(true)} />} />}
       overlay={
         <>
           <Fab onPress={write} />
           <BoardSearch open={search} onClose={() => setSearch(false)} scope={board.id === 'team' ? undefined : board.id} />
         </>
       }
-      bottomSpace={88}
+      bottomSpace={16 + 44 + 16}
     >
       <div className={s.feedTop}>
+        <div className={s.filters} role="radiogroup" aria-label="말머리 필터">
+          {[ALL, ...board.filters].map((f) => (
+            <Button key={f} size="s" variant={filter === f ? 'primary' : 'secondary'} role="radio" aria-checked={filter === f} onClick={() => setFilter(f)}>
+              {f}
+            </Button>
+          ))}
+        </div>
         {board.pinned && (
           <button type="button" className={s.pinned} onClick={() => nav.push(board.pinned!.to)}>
-            <Icon name="notice" size={20} />
-            <span className={s.pinnedText}>
-              <Text variant="micro" color="brand" className="truncate">
-                {board.pinned.label}
-              </Text>
-              <Text variant="label" className="truncate">
-                {board.pinned.title}
-              </Text>
-            </span>
+            <Chip tone="brand">{board.pinned.badge}</Chip>
+            <Text variant="body-3" className="truncate">
+              {board.pinned.title}
+            </Text>
             <Icon name="chevron-right" size={16} />
           </button>
         )}
-        <div className={s.filters} role="tablist" aria-label="말머리 필터">
-          {[ALL, ...board.filters].map((f) => (
-            <Chip key={f} size="m" tone="neutral" selected={filter === f} onSelect={() => setFilter(f)}>
-              {f}
-            </Chip>
-          ))}
-        </div>
       </div>
-      <div className={s.feedDivider} />
 
       {list.length ? (
         <div className={s.postList}>
@@ -107,11 +87,10 @@ export function BoardFeed() {
         </div>
       ) : (
         <EmptyState
-          icon={filter === ALL ? 'comment' : 'search'}
           title={filter === ALL ? '아직 글이 없어요' : `‘${filter}’ 글이 아직 없어요`}
           desc="첫 글을 남겨 대화를 시작해보세요."
           action={
-            <Button variant="soft" size="m" leadingIcon="edit" onClick={write}>
+            <Button variant="secondary" size="m" leadingIcon="edit" onClick={write}>
               글쓰기
             </Button>
           }

@@ -1,302 +1,176 @@
-/* ── 출석 탭 루트 (Figma 392:7302) ───────────────────────────── */
+/* ── 출석 섹션 (Figma v5 · 03 출석 인증 · 05 출석) ───────────────
+ * 간격 규칙: 묶음 안 8~12 · 묶음 사이 24~32 · 텍스트 좌측 20 */
 
-/* 히어로 — 홈 히어로와 같은 규격(r24, p20, 최소 240) */
-.heroWrap {
-  padding: 0 var(--wivu-layout-gutter);
-}
-.hero {
-  min-height: 240px;
+/* 공통 행 — 구분선 없이 간격으로 (v5 행 p12 · 68) */
+.rows {
   display: flex;
   flex-direction: column;
 }
-.heroTop {
+.row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--wivu-space-8);
-}
-.heroTitle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 20px;
-  margin-bottom: 8px;
-}
-.heroActions {
-  display: flex;
-  gap: var(--wivu-space-8);
-  margin-top: auto;
-  padding-top: 24px;
-}
-.brandDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--wivu-color-bg-brand);
-}
-/* 잉크 카드 위 칩은 살짝 더 어둡게 (홈과 동일) */
-.doneChip {
-  background: rgba(255, 255, 255, 0.14);
-}
-
-/* 요약 타일 3개 (bg/subtle r16) */
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--wivu-space-12);
-  padding: 24px var(--wivu-layout-gutter) 0;
-}
-.statTile {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-height: 74px;
-  padding: 12px 16px;
-  border-radius: var(--wivu-radius-16);
-  background: var(--wivu-color-bg-subtle);
-}
-.statValue {
-  display: flex;
-  align-items: baseline;
-  gap: 2px;
-}
-
-/* 과목별 출석 행 */
-.courseRow {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: var(--wivu-space-8);
   width: 100%;
-  padding-block: 16px;
+  min-height: 68px;
+  padding-block: 12px;
   text-align: left;
 }
-.courseRow + .courseRow::before,
-.recordItem + .recordItem::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--wivu-color-border-default);
+.rowPress {
+  gap: 10px;
+  transition: opacity 0.1s ease;
 }
-.courseRow:active,
-.recordRow:active {
-  background: var(--wivu-color-bg-subtle);
-  box-shadow: 0 0 0 16px var(--wivu-color-bg-subtle);
-  clip-path: inset(0 -16px);
+.rowPress:active {
+  opacity: 0.6;
 }
-.courseHead {
-  display: flex;
-  align-items: center;
-  gap: var(--wivu-space-8);
-}
-.courseInfo {
+.rowText {
   display: flex;
   flex-direction: column;
   gap: 2px;
   flex: 1 1 auto;
   min-width: 0;
 }
-.courseTitle {
+.rowTitle {
   display: flex;
   align-items: center;
   gap: 6px;
   min-width: 0;
 }
 
-/* 최근 출석 기록 */
-.recordItem {
-  position: relative;
-  overflow: hidden;
-}
-.recordRow {
+/* ── 출석 탭 (683:5844) ── */
+.page {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
-  min-height: 66px;
-  padding-block: 14px;
-  text-align: left;
+  flex-direction: column;
+  padding: 0 var(--wivu-layout-inset);
 }
-.recordDate {
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 12px;
+  padding-block: 16px;
+  border-radius: var(--wivu-radius-16);
+  background: var(--wivu-color-bg-subtle);
+}
+.summaryStat,
+.detailStat {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 40px;
-  flex-shrink: 0;
+  gap: 2px;
 }
-.recordMain {
+.block {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-.statusChip {
-  min-width: 44px;
-  height: 24px;
-  justify-content: center;
-}
-.expandLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  margin-right: -4px;
-  padding: 4px 0 4px 8px;
-  color: var(--wivu-color-text-tertiary);
-}
-.expandLink:active {
-  color: var(--wivu-color-text-secondary);
-}
-/* 아이콘 세트의 chevron-down은 화살표형 → 셰브론(오른쪽)을 돌려 씀 */
-.expandIcon {
-  transform: rotate(90deg);
-  transition: transform 0.25s ease;
-}
-.expandLink[aria-expanded='true'] .expandIcon {
-  transform: rotate(-90deg);
-}
-.listFoot {
-  padding-top: 4px;
+  gap: var(--wivu-space-8);
+  margin-top: 28px;
 }
 
-/* ── 과목 출석 상세 (Figma 406:8047) ─────────────────────────── */
+/* ── 과목 출석 상세 (683:5994) ── */
 .detail {
   display: flex;
   flex-direction: column;
-  gap: var(--wivu-space-24);
-  padding: 8px var(--wivu-layout-gutter) 0;
+  padding: 8px var(--wivu-layout-inset) 0;
 }
 .detailHead {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: var(--wivu-space-12);
-  padding-inline: 4px;
 }
-.detailInfo {
-  display: flex;
-  flex-direction: column;
+.detailHead .rowText {
   gap: 4px;
-  flex: 1 1 auto;
-  min-width: 0;
 }
 .rate {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   flex-shrink: 0;
+  margin-top: 6px;
 }
-.banner {
+.notice {
   display: flex;
-  gap: 10px;
-  padding: 16px;
-  border-radius: var(--wivu-radius-16);
+  align-items: flex-start;
+  gap: var(--wivu-space-8);
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-radius: var(--wivu-radius-12);
 }
-.banner[data-tone='error'] {
-  /* status/error @8% — Figma warning banner */
-  background: color-mix(in srgb, var(--wivu-color-status-error) 8%, white);
+.notice[data-tone='error'] {
+  background: var(--wivu-color-bg-error-tint);
 }
-.banner[data-tone='brand'] {
-  background: var(--wivu-color-bg-brand-soft);
+.notice[data-tone='warning'] {
+  background: var(--wivu-color-bg-warning-tint);
 }
-.bannerText {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
+.notice > svg {
+  margin-top: -1px;
 }
 .detailStats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--wivu-space-8);
-}
-.detailStat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  padding: 12px 0;
-  border-radius: var(--wivu-radius-12);
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 16px;
+  padding-block: 14px;
+  border-radius: var(--wivu-radius-16);
   background: var(--wivu-color-bg-subtle);
-}
-.fullDivider {
-  height: 1px;
-  margin-inline: calc(var(--wivu-layout-gutter) * -1);
-  background: var(--wivu-color-border-default);
 }
 .sessions {
   display: flex;
   flex-direction: column;
-  gap: var(--wivu-space-12);
-}
-.sessionsTitle {
-  padding-inline: 4px;
+  gap: var(--wivu-space-8);
+  margin-top: 28px;
 }
 .sessionRow {
-  position: relative;
   display: flex;
   align-items: center;
   gap: var(--wivu-space-12);
-  min-height: 66px;
-  padding-block: 14px;
+  min-height: 62px;
+  padding-block: 10px;
 }
-.sessionRow + .sessionRow::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--wivu-color-border-default);
-}
-.sessionWeek {
-  width: 40px;
-  flex-shrink: 0;
-}
-.appealNote {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 2px;
+.detailCta {
+  margin-top: 20px;
 }
 
-/* 이의 신청 시트 */
-.sheetHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: -4px;
-}
-.sheetHead > :last-child {
-  margin-right: -10px;
-}
+/* 이의 신청 시트 (692:7904) — 헤드 아래 20 · 라벨과 내용 8 · 묶음 사이 20 */
 .sheetBlock {
   display: flex;
   flex-direction: column;
   gap: var(--wivu-space-8);
+  margin-top: 4px;
+}
+.sheetBlock + .sheetBlock {
   margin-top: 20px;
+}
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-8);
 }
 .reasons {
   display: flex;
   flex-wrap: wrap;
   gap: var(--wivu-space-8);
 }
-.reasonChip {
-  height: 36px;
+/* v5 Choice Chip — h38 pill p14 · 선택 = 연파랑 면 + 파란 1.5 테두리 */
+.choiceChip {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
   padding-inline: 14px;
-}
-.sheetCta {
-  margin-top: 24px;
-}
-/* 이의 신청 메모 필드 */
-.memoField {
-  padding: var(--wivu-space-16);
-  border-radius: var(--wivu-radius-16);
-  background: var(--wivu-color-bg-subtle);
+  border-radius: var(--wivu-radius-full);
+  background: var(--wivu-color-bg-surface);
+  color: var(--wivu-color-text-secondary);
   box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
-  transition: box-shadow var(--wivu-duration-press) ease, background-color var(--wivu-duration-press) ease;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.choiceChip[data-selected='true'] {
+  background: var(--wivu-color-bg-brand-tint);
+  color: var(--wivu-color-text-brand);
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-brand);
+}
+/* 메모 칸 = v5 입력칸 (회색 면 r12 → 포커스 흰 면 + 파란 1.5) */
+.memoField {
+  margin-top: 4px;
+  padding: 14px 16px;
+  border-radius: var(--wivu-radius-12);
+  background: var(--wivu-color-bg-brand-soft);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
 }
 .memoField:focus-within {
   background: var(--wivu-color-bg-surface);
@@ -304,5 +178,104 @@
 }
 .memoArea {
   display: block;
-  min-height: 72px;
+  width: 100%;
+  min-height: 60px;
+  resize: none;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--wivu-color-text-primary);
+  caret-color: var(--wivu-color-text-brand);
+}
+.memoArea::placeholder {
+  color: var(--wivu-color-text-placeholder);
+}
+.sheetCta {
+  margin-top: 20px;
+}
+
+/* ── 출석 인증 시트 (679:5188 …) ── */
+.pinHead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.pinForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wivu-space-8);
+  margin-top: 20px;
+}
+.pinFieldWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pinField {
+  display: flex;
+  align-items: center;
+  height: 52px;
+  padding-inline: var(--wivu-space-16);
+  border-radius: var(--wivu-radius-12);
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-text-primary);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.pinField[data-state='focused'] {
+  background: var(--wivu-color-bg-surface);
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-brand);
+}
+.pinField[data-state='error'] {
+  background: var(--wivu-color-bg-surface);
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-status-error);
+}
+.pinCaret {
+  width: 1.5px;
+  height: 22px;
+  margin-left: 1px;
+  border-radius: 1px;
+  background: var(--wivu-color-text-brand);
+  animation: blink 1s steps(1) infinite;
+}
+/* 비어 있으면 커서를 맨 앞(자리표시자 앞)에 */
+.pinCaret[data-empty='true'] {
+  order: -1;
+  margin: 0 1px 0 0;
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+.pinAlt {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+.pinPad {
+  margin-top: 16px;
+}
+
+/* 출석 완료 (679:5848) — 체크 56 · 16 · 제목 · 4 · 수업 줄 · 24 · [확인] */
+.done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.doneCheck {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
+}
+.doneTitle {
+  margin: 16px 0 4px;
+}
+.doneCta {
+  margin-top: 24px;
 }

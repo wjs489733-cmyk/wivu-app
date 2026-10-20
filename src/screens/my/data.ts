@@ -1,46 +1,60 @@
-import type { IconName } from '@/ui';
-import { COURSES, TOTAL_CREDITS } from '@/data/core';
-import { SYNC_COUNTS } from '@/screens/courses/data';
-import { allRecords } from '@/screens/attendance/data';
+import { QUICK_ITEMS, quickItem } from '@/data/quickMenu';
 
-/* 마이·설정 데이터 — Figma 424:8665 · 426:8846 · 426:8952 텍스트 그대로 */
+/* 마이·설정 데이터 — Figma v5 681:5941 · 701:8603 · 701:8324 · 676:5007 텍스트 그대로 */
 
-export type NotiKey = 'attendance' | 'assignment' | 'notice' | 'board';
-export type QuietKey = 'quiet' | 'classMute';
+/** 알림 종류 키 — 초기 설정(entry/Setup)도 같은 키로 저장한다(attendance·assignment·notice·board) */
+export type NotiKey = 'attendance' | 'assignment' | 'notice' | 'board' | 'team' | 'meal';
+export type QuietKey = 'quiet';
 
-/** 알림 종류 (426:8846) — 기본값도 Figma 그대로 (게시판 활동만 꺼짐) */
-export const NOTI_TYPES: { id: NotiKey; icon: IconName; title: string; meta: string; on: boolean }[] = [
-  { id: 'attendance', icon: 'attendance', title: '출석 시작 알림', meta: '수업 시작 10분 전 · 인증 마감 3분 전', on: true },
-  { id: 'assignment', icon: 'assignment', title: '과제 마감 알림', meta: '마감 하루 전 · 3시간 전', on: true },
-  { id: 'notice', icon: 'notice', title: '학사·장학 공지', meta: '수강정정, 장학, 학사 일정', on: true },
-  { id: 'board', icon: 'comment', title: '게시판 활동', meta: '댓글 · 좋아요', on: false },
+type ToggleItem<K> = { id: K; title: string; meta?: string; on: boolean };
+
+/** 알림 설정 그룹 (701:8603) — 기본값도 Figma 그대로 (수업 3개만 켜짐) */
+export const NOTI_GROUPS: { title: string; items: ToggleItem<NotiKey | QuietKey>[] }[] = [
+  {
+    title: '수업',
+    items: [
+      { id: 'attendance', title: '출석 인증 알림', meta: '인증이 열리면 바로 · 수업 시작 5분 전', on: true },
+      { id: 'assignment', title: '과제 마감 알림', meta: '마감 24시간 전 · 3시간 전', on: true },
+      { id: 'notice', title: '수업 공지', meta: '휴강 · 보강 · 강의실 변경', on: true },
+    ],
+  },
+  {
+    title: '게시판',
+    items: [
+      { id: 'board', title: '댓글 · 답글', meta: '내 글과 내 댓글에 달리면', on: false },
+      { id: 'team', title: '팀플 신청 · 수락', on: false },
+    ],
+  },
+  { title: '학교', items: [{ id: 'meal', title: '학식 메뉴', meta: '매일 11:00 · 오늘 메뉴 미리 보기', on: false }] },
+  { title: '방해 금지', items: [{ id: 'quiet', title: '방해 금지 시간', meta: '23:00 – 08:00 · 출석 알림은 예외', on: false }] },
 ];
 
-export const QUIET_OPTIONS: { id: QuietKey; title: string; meta: string; on: boolean }[] = [
-  { id: 'quiet', title: '방해 금지 시간', meta: '23:00 – 07:00', on: true },
-  { id: 'classMute', title: '수업 중 소리 끄기', meta: '수업 시간표 기준 자동', on: true },
-];
+const ALL_TOGGLES = NOTI_GROUPS.flatMap((g) => g.items);
+/** 알림 종류(방해 금지 제외) — '지금 N개 켜짐' 집계 대상. 초기 설정 화면도 이 목록의 id로 저장 여부를 거른다 */
+export const NOTI_TYPES = ALL_TOGGLES.filter((o): o is ToggleItem<NotiKey> => o.id !== 'quiet');
+export const INITIAL_TOGGLES = Object.fromEntries(ALL_TOGGLES.map((o) => [o.id, o.on])) as Record<NotiKey | QuietKey, boolean>;
 
-/** 미리보기 배너 — 켜진 알림 종류에 맞춰 바뀜 (초기 설정 411:12022와 같은 문구) */
-export const NOTI_PREVIEW: Record<NotiKey, { title: string; meta: string; time: string }> = {
-  attendance: { title: '출석 인증 10분 전이에요', meta: '서비스디자인 · 디자인관 302호 · 10:10까지', time: '09:50' },
-  assignment: { title: '과제 마감 3시간 전', meta: '서비스 분석 리포트 · 오늘 23:59', time: '20:59' },
-  notice: { title: '학사 공지가 올라왔어요', meta: '2학기 중간고사 시행 안내', time: '10.08' },
-  board: { title: '내 글에 댓글이 달렸어요', meta: '서비스디자인 게시판 · 방금', time: '지금' },
-};
-
-/** 학교 연동으로 불러온 데이터 (426:8952) — 숫자는 실제 데이터에서 계산 (진입 연동 화면과 같은 SYNC_COUNTS) */
-export const SYNC_ITEMS: { id: string; icon: IconName; title: string; value: string }[] = [
-  { id: 'courses', icon: 'courses', title: '수강 과목', value: `${COURSES.length}과목 · ${TOTAL_CREDITS}학점` },
-  { id: 'timetable', icon: 'timetable', title: '시간표', value: `주 ${COURSES.reduce((a, c) => a + c.slots.length, 0)}개 수업` },
-  { id: 'assignments', icon: 'assignment', title: '과제', value: `진행 중 ${SYNC_COUNTS.assignments}건` },
-  { id: 'notices', icon: 'notice', title: '공지', value: `새 글 ${SYNC_COUNTS.notices}건` },
-  { id: 'attendance', icon: 'attendance', title: '출석 기록', value: `${allRecords({ complete: false, method: null, time: null }).length}회차` },
-];
+/** 학교 연동으로 가져오는 정보 (701:8324) */
+export const SYNC_ITEMS = ['시간표 · 수강과목', '출석 기록', '과제 · 공지 · 강의자료', '모바일 학생증 · 도서관 출입'];
 
 export const APP_VERSION = '1.0.0';
 
-/** 받침 유무로 조사 고르기 — josa('대구가톨릭대학교', '와/과') → '대구가톨릭대학교와' */
+/* ── 내 메뉴 (676:5007) ─────────────────────────────────────────
+ * 고를 수 있는 12개 — Figma 2열 그리드 순서 그대로. 항목·이름은 공통 카탈로그(@/data/quickMenu) 그대로. */
+export type MenuItem = { id: string; label: string };
+export const MENU_ORDER = ['student-id', 'attendance', 'meal', 'assignment', 'calendar', 'notice', 'map', 'rental', 'library', 'exam', 'qr', 'shuttle'];
+
+export function menuItem(id: string): MenuItem | undefined {
+  const q = quickItem(id);
+  return q ? { id, label: q.label } : undefined;
+}
+/** 그리드 목록: v5 12개 + 지금 담겨 있지만 v5 목록에 없는 것(예: 예전 구성의 '게시판') — 담긴 메뉴가 안 보이는 일이 없게 */
+export function menuCatalog(...selected: string[][]): MenuItem[] {
+  const extra = [...new Set(selected.flat())].filter((id) => !MENU_ORDER.includes(id) && QUICK_ITEMS.some((q) => q.id === id));
+  return [...MENU_ORDER, ...extra].map(menuItem).filter(Boolean) as MenuItem[];
+}
+
+/** 받침 유무로 조사 고르기 — josa('도서관', '을/를') → '도서관을' */
 export function josa(word: string, pair: '와/과' | '을/를' | '이/가' | '은/는') {
   const last = word.charCodeAt(word.length - 1);
   const hasBatchim = last >= 0xac00 && last <= 0xd7a3 && (last - 0xac00) % 28 !== 0;
