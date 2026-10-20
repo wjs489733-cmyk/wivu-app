@@ -160,10 +160,10 @@
 .textTabs {
   display: flex;
   align-items: baseline;
-  gap: var(--wivu-space-12);
+  gap: var(--wivu-space-16);
 }
 .textTab {
-  color: var(--wivu-color-text-placeholder);
+  color: var(--wivu-color-text-tertiary);
   transition: color 0.15s ease;
 }
 .textTab[aria-selected='true'] {

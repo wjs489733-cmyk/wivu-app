@@ -1,19 +1,18 @@
-import { BottomSheet, Button, Chip, Icon, IconButton, Text } from '@/ui';
+import { BottomSheet, Button, Chip, Icon, Text } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
 import { ATTENDANCE_WINDOW } from '@/data/core';
 import { TODAY, longDate, nextClassDate, periodNote, slotText, type TTCourse } from './data';
-import { InfoBox, InfoRow, MapChip } from './parts';
+import { InfoBox, InfoRow, MapLink } from './parts';
 import s from './Timetable.module.css';
 
 /**
- * 수업 상세 시트 — Figma 402:7846 (Schedule_v4_02_ClassSheet)
- * 서비스디자인: 출석 인증 가능(10:00–10:10) → AttendanceSheet로 이어짐.
- *   시간 흐름: 상태바 9:41은 장식이고 시나리오는 '수업이 막 시작돼 10:10까지 인증 가능' — 출석 탭 히어로와 같은 칩
- *   (Figma 402:7846 '19분 후 시작 · 출석 10:00–10:10'은 히어로와 어긋나 맞춤)
- * 다른 과목: 출석은 수업 시간에만 열린다는 안내 + 비활성 버튼
- * 직접 추가한 과목: '과목 상세' 대신 '시간표에서 빼기'
+ * 수업 상세 시트 — Figma v5 685:6329 (시간표 · 수업 상세 시트)
+ * 배지 · 과목명(Title 2) · 정보 박스(시간/장소+지도/담당) · [과목 상세] [출석 인증]
+ * 서비스디자인: '곧 시작 · 10:00' → 출석 인증 = 출석 번호 시트(679:5188, AttendanceSheet)로 이어짐.
+ * 다른 과목: 출석 인증은 수업 시간에만 열려 비활성 + 한 줄 안내(기능상 필요해 남김).
+ * 직접 추가한 과목: 과목 상세가 없어 [시간표에서 빼기]만.
  */
 export function ClassSheet({ open, course, onClose, onAttend, onRemove }: { open: boolean; course: TTCourse | null; onClose: () => void; onAttend: () => void; onRemove: (c: TTCourse) => void }) {
   return (
@@ -31,96 +30,73 @@ function SheetBody({ course: c, onClose, onAttend, onRemove }: { course: TTCours
   const next = nextClassDate(c);
   const isToday = next?.date === TODAY;
 
-  // 상단 상태 칩
-  let chip: { text: string; tone: 'brand' | 'neutral' | 'pulse' };
-  if (isAttendCourse && attended) chip = { text: `출석 완료 · ${attendTime ?? '10:01'} 인증`, tone: 'pulse' };
-  else if (isAttendCourse) chip = { text: `출석 가능 · ${ATTENDANCE_WINDOW.closes}까지`, tone: 'brand' };
-  else if (next && isToday) chip = { text: `오늘 ${next.slot.start} 시작`, tone: 'brand' };
-  else if (next) chip = { text: `다음 수업 ${longDate(next.date)} ${next.slot.start}`, tone: 'neutral' };
-  else chip = { text: '사이버 강의', tone: 'pulse' };
+  // 상단 배지
+  let badge: { text: string; tone: 'brand' | 'neutral' };
+  if (isAttendCourse && attended) badge = { text: `출석 완료 · ${attendTime ?? '10:01'} 인증`, tone: 'neutral' };
+  else if (isAttendCourse) badge = { text: `곧 시작 · ${ATTENDANCE_WINDOW.opens}`, tone: 'brand' };
+  else if (next && isToday) badge = { text: `오늘 ${next.slot.start} 시작`, tone: 'brand' };
+  else if (next) badge = { text: `다음 수업 ${longDate(next.date)} ${next.slot.start}`, tone: 'neutral' };
+  else badge = { text: '사이버 강의', tone: 'neutral' };
 
-  const time = c.slots.length === 1 ? `${slotText(c, ' – ')}${periodNote(c.slots[0]) ? ` (${periodNote(c.slots[0])})` : ''}` : slotText(c, ' – ');
-  const prof = c.online ? '사이버 강의' : `${c.professor} 교수`;
+  const pn = c.slots.length === 1 ? periodNote(c.slots[0]) : null;
+  const time = c.online ? '사이버 강의 · 시간 무관' : `${slotText(c)}${pn ? ` · ${pn}` : ''}`;
+  const prof = c.online && c.professor === '사이버 강의' ? '사이버 강의' : `${c.professor} 교수`;
 
-  // 출석 버튼 상태 + 안내
   const canAttend = isAttendCourse && !attended;
   const note = !c.core
-    ? '시간표에만 추가한 수업이에요 · 수강신청 학점에는 반영되지 않아요'
+    ? null
     : isAttendCourse
-    ? attended
-      ? '오늘 출석이 이미 인증됐어요'
-      : null
-    : next
-      ? `출석 인증은 수업 시작(${next.slot.start})부터 10분 동안 열려요`
-      : '사이버 강의는 강의 영상 시청으로 출석이 처리돼요';
+      ? null
+      : next
+        ? `출석 인증은 수업 시작(${next.slot.start})부터 10분 동안 열려요`
+        : '사이버 강의는 강의 영상 시청으로 출석이 처리돼요';
+
+  const go = (to: string) => {
+    onClose();
+    nav.push(to);
+  };
 
   return (
     <>
-      <div className={s.sheetHead} style={{ marginTop: -2 }}>
-        <div className={s.sheetTitle}>
-          <Chip tone={chip.tone}>{chip.text}</Chip>
-          <Text variant="title-1" as="h2">
-            {c.name}
-          </Text>
-        </div>
-        <div style={{ margin: '-10px -10px 0 0' }}>
-          <IconButton icon="close" label="닫기" onPress={onClose} />
-        </div>
+      <div className={s.sheetTop}>
+        <Chip tone={badge.tone}>{badge.text}</Chip>
+        <button type="button" className={s.sheetClose} onClick={onClose} aria-label="닫기">
+          <Icon name="close" size={24} />
+        </button>
       </div>
+      <Text variant="title-2" as="h2" style={{ marginTop: 8 }}>
+        {c.name}
+      </Text>
 
-      <div style={{ marginTop: 20 }}>
+      <div style={{ marginTop: 16 }}>
         <InfoBox>
-          <InfoRow icon="clock" label="시간" value={time} />
-          <InfoRow
-            icon="pin"
-            label="장소"
-            value={c.room}
-            trailing={
-              !c.online && (
-                <MapChip
-                  onPress={() => {
-                    onClose();
-                    nav.push(P.campusMap);
-                  }}
-                />
-              )
-            }
-          />
-          <InfoRow icon="user" label="담당" value={`${prof} · ${c.kind} ${c.credits}학점`} />
+          <InfoRow label="시간" value={time} />
+          <InfoRow label="장소" value={c.room} trailing={!c.online && <MapLink onPress={() => go(P.campusMap)} />} />
+          <InfoRow label="담당" value={`${prof} · ${c.kind} ${c.credits}학점`} />
         </InfoBox>
       </div>
 
       <div className={s.sheetActions}>
         {c.core ? (
-          <Button
-            variant="soft"
-            grow
-            onClick={() => {
-              onClose();
-              nav.push(P.course(c.id));
-            }}
-          >
-            과목 상세
-          </Button>
+          <>
+            <Button variant="secondary" grow onClick={() => go(P.course(c.id))}>
+              과목 상세
+            </Button>
+            <Button variant="primary" grow disabled={!canAttend} leadingIcon={isAttendCourse && attended ? 'check' : undefined} onClick={onAttend}>
+              {isAttendCourse && attended ? '출석 완료' : '출석 인증'}
+            </Button>
+          </>
         ) : (
           // 직접 추가한 수업은 수강신청 과목이 아니라 출석 대상이 아님 → 빼기만
-          <Button variant="outline" grow onClick={() => onRemove(c)}>
+          <Button variant="secondary" block onClick={() => onRemove(c)}>
             시간표에서 빼기
-          </Button>
-        )}
-        {c.core && (
-          <Button variant="primary" grow disabled={!canAttend} leadingIcon={isAttendCourse && attended ? 'check' : undefined} onClick={onAttend}>
-            {isAttendCourse && attended ? '출석 완료' : '출석 인증하기'}
           </Button>
         )}
       </div>
       {note && (
-        <div className={s.sheetNote}>
-          <Icon name="clock" size={16} color="tertiary" />
-          <Text variant="caption-1" color="tertiary">
-            {note}
-          </Text>
-        </div>
+        <Text variant="caption-1" color="tertiary" as="p" className={s.sheetNote}>
+          {note}
+        </Text>
       )}
     </>
   );

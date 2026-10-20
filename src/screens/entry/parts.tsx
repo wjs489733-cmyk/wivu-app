@@ -1,126 +1,50 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { Chip, Icon, Text } from '@/ui';
-import { useNav } from '@/nav/nav';
-import { P } from '@/app/paths';
-import type { School } from './data';
+import type { ReactNode } from 'react';
+import { Navigate, useLocation } from 'react-router';
+import { Icon, Text } from '@/ui';
 import s from './Entry.module.css';
 
-/* 진입 화면 전용 부품 — Figma Entry v4 공통 헤더(원형 뒤로 44 + 제목/진행 막대) */
+/* 진입 화면 전용 부품 (v5) */
 
-type EntryHeaderProps = {
-  back?: boolean;
-  title?: string;
-  progress?: { step: number; total: number };
-  right?: ReactNode;
-  onBack?: () => void;
-  /** 뒤로 갈 기록이 없을 때 갈 진입 단계 (기본 스플래시) — 진입 흐름 밖(홈)으로는 나가지 않는다 */
-  fallback?: string;
-};
+/** v4 경로 → v5 경로 대체(replace). 들어올 때의 전환·깊이(state)는 그대로 넘겨 뒤로 가기가 자연스럽게. */
+export function Redirect({ to }: { to: string }) {
+  const { state } = useLocation();
+  return <Navigate to={to} replace state={state} />;
+}
 
-export function EntryHeader({ back = true, title, progress, right, onBack, fallback = P.splash }: EntryHeaderProps) {
-  const nav = useNav();
+/** 본문 안 브랜드 텍스트 링크 + 오른쪽 셰브론 16 ('대학교 찾기 ›' · '학교 변경 ›')
+ *  보이는 높이 20, 터치 영역 44 (위아래 음수 여백) */
+export function ChevronLink({ children, onPress }: { children: ReactNode; onPress: () => void }) {
   return (
-    <div className={s.header}>
-      <div className={s.headerLeft}>
-        {back && (
-          <button type="button" className={s.backCircle} aria-label="뒤로" onClick={onBack ?? (() => nav.back(fallback))}>
-            <Icon name="back" size={24} />
-          </button>
-        )}
-        {title && (
-          <Text variant="title-3" as="h1">
-            {title}
+    <button type="button" className={`${s.chevronLink} t-body-3-strong`} onClick={onPress}>
+      {children}
+      <Icon name="chevron-right" size={16} />
+    </button>
+  );
+}
+
+/**
+ * 진행 단계 — Figma 'v5/Progress Step' 666:5078 (State=Done · Active · Pending)
+ * 표시 22 원: 완료 = 브랜드 면 + 체크 · 진행 중 = 브랜드 2px 링 + 8 점 · 대기 = border-strong 1.5 링
+ * 제목 Body 2 (진행 중 Body 2 Strong, 대기 tertiary) · 보조 문구 Caption 1 brand는 진행 중에만.
+ */
+export type StepState = 'done' | 'active' | 'pending';
+export function ProgressStep({ state, title, sub }: { state: StepState; title: ReactNode; sub?: ReactNode }) {
+  return (
+    <li className={s.pStep} aria-current={state === 'active' ? 'step' : undefined}>
+      <span className={s.pMark} data-state={state} aria-hidden>
+        {state === 'done' && <Icon name="check" size={16} color="on-brand" />}
+      </span>
+      <span className={s.pText}>
+        <Text variant={state === 'active' ? 'body-2-strong' : 'body-2'} color={state === 'pending' ? 'tertiary' : 'primary'} as="span" style={{ display: 'block' }}>
+          {title}
+          <span className="sr-only">{state === 'done' ? ' · 완료' : state === 'active' ? ' · 진행 중' : ' · 대기'}</span>
+        </Text>
+        {state === 'active' && sub && (
+          <Text variant="caption-1" color="brand" as="span" style={{ display: 'block' }}>
+            {sub}
           </Text>
         )}
-        {progress && <Progress {...progress} />}
-      </div>
-      {right}
-    </div>
-  );
-}
-
-export function Progress({ step, total }: { step: number; total: number }) {
-  return (
-    <div className={s.progress} role="progressbar" aria-valuenow={step} aria-valuemin={1} aria-valuemax={total} aria-label={`${total}단계 중 ${step}단계`}>
-      {Array.from({ length: total }, (_, i) => (
-        <span key={i} data-on={i < step} />
-      ))}
-    </div>
-  );
-}
-
-export function TextLink({ children, onPress, tone = 'secondary' }: { children: ReactNode; onPress?: () => void; tone?: 'secondary' | 'brand' | 'tertiary' }) {
-  return (
-    <button type="button" className={`${s.textLink} t-label`} data-tone={tone} onClick={onPress}>
-      {children}
-    </button>
-  );
-}
-
-/** 큰 제목 + 설명 (Display 28/36 + Body) */
-export function Hero({ title, desc }: { title: ReactNode; desc?: ReactNode }) {
-  return (
-    <div className={s.hero}>
-      <Text variant="display" as="h2" className={s.heroTitle}>
-        {title}
-      </Text>
-      {desc && (
-        <Text variant="body" color="secondary" as="p">
-          {desc}
-        </Text>
-      )}
-    </div>
-  );
-}
-
-/** 학교 행 (40 원형 이니셜 · 이름 · 소재지 · →) — 검색어 하이라이트 */
-export function SchoolRow({ school, highlight, selected, onPress }: { school: School; highlight?: string; selected?: boolean; onPress: () => void }) {
-  const name = school.name;
-  const i = highlight ? name.indexOf(highlight) : -1;
-  return (
-    <button type="button" className={s.schoolRow} data-selected={selected} onClick={onPress}>
-      <span className={`${s.initial} t-headline`} data-selected={selected}>
-        {name.slice(0, 1)}
       </span>
-      <span className={s.schoolMain}>
-        <Text variant="headline" as="span" className="truncate" style={{ display: 'block' }}>
-          {i >= 0 ? (
-            <>
-              {name.slice(0, i)}
-              <span style={{ color: 'var(--wivu-color-text-brand)' }}>{name.slice(i, i + highlight!.length)}</span>
-              {name.slice(i + highlight!.length)}
-            </>
-          ) : (
-            name
-          )}
-        </Text>
-        <Text variant="caption-2" color="secondary" as="span" style={{ display: 'block' }}>
-          {school.location}
-        </Text>
-      </span>
-      {selected && <Chip tone="brand" pill>가장 가까움</Chip>}
-      <Icon name="chevron-right" size={20} color="primary" />
-    </button>
-  );
-}
-
-/** 고정 비율 일러스트 영역을 남은 높이에 맞춰 축소 (작은 폰 대응) */
-export function FitBox({ width, height, children }: { width: number; height: number; children: ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
-  useLayoutEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([e]) => {
-      const { width: w, height: h } = e.contentRect;
-      setScale(Math.min(1.06, w / width, h / height));
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [width, height]);
-  return (
-    <div ref={ref} className={s.fitOuter}>
-      <div style={{ position: 'absolute', left: '50%', top: '50%', width, height, transform: `translate(-50%, -50%) scale(${scale})`, transformOrigin: 'center' }}>{children}</div>
-    </div>
+    </li>
   );
 }

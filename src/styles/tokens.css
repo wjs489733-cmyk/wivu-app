@@ -36,7 +36,7 @@
   --wivu-layout-inset: 20px; /** 텍스트 좌측 / 오른쪽 정렬선 392−20 */
   --wivu-layout-section-gap: 32px;
   --wivu-layout-tabbar-height: 84px; /** 탭바 본체 (홈 범프 제외, 홈 인디케이터 포함) */
-  --wivu-layout-navbar-height: 52px;
+  --wivu-layout-navbar-height: 56px;
   --wivu-layout-statusbar-height: 54px;
   --wivu-layout-home-indicator: 34px;
   --wivu-duration-push: 300ms; /** 상세 PUSH LEFT 0.3s */

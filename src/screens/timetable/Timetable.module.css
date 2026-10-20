@@ -1,345 +1,270 @@
-/* ── 시간표 그리드 (Figma 392:7472: 360×500, 시간 열 32, 헤더 32, 1시간 52) ── */
+/* ── 시간표 탭 v5 (Figma 685:6192: 콘텐츠 좌우 20) ── */
+.summary {
+  padding: 0 var(--wivu-layout-inset);
+}
+.body {
+  display: flex;
+  flex-direction: column;
+  padding: 12px var(--wivu-layout-inset) 0;
+}
+
+/* 편집 안내 (Figma 697:7142: bg/brand-tint r12 p12/14 · 아이콘 + Caption 1 brand) */
+.hint {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--wivu-space-8);
+  padding: 12px 14px;
+  margin-bottom: var(--wivu-space-12);
+  border-radius: var(--wivu-radius-12);
+  background: var(--wivu-color-bg-brand-tint);
+  color: var(--wivu-color-icon-brand);
+}
+.hint > svg {
+  flex-shrink: 0;
+  margin-top: -1px;
+}
+
+/* ── 시간표 그리드 (352×442 · 시간 열 28 · 머리 28 · 1시간 46 · 세로선·바깥 보더 없음) ── */
 .grid {
-  --time-col: 32px;
-  --head-h: 32px;
-  --hour-h: 52px;
+  --time-col: 28px;
   --col: calc((100% - var(--time-col)) / 5);
   position: relative;
-  margin-inline: var(--wivu-layout-gutter);
-  border-radius: var(--wivu-radius-16);
-  background: var(--wivu-color-bg-surface);
-  overflow: hidden;
-}
-.grid::after {
-  /* 바깥 보더 (블록 위로) */
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
-  pointer-events: none;
-}
-.todayCol {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: calc(var(--time-col) + var(--col) * 4);
-  width: var(--col);
-  background: var(--wivu-color-bg-brand-soft);
 }
 .hline {
   position: absolute;
-  left: 0;
+  left: var(--time-col);
   right: 0;
   height: 1px;
   background: var(--wivu-color-border-default);
 }
-.vline {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: var(--wivu-color-border-default);
-}
 .dayHead {
   position: absolute;
-  top: 0;
-  height: var(--head-h);
+  top: 4px;
   width: var(--col);
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center;
 }
 .hourLabel {
   position: absolute;
-  left: 0;
-  width: var(--time-col);
-  text-align: center;
+  left: 2px;
 }
-
-/* 수업 블록: brand-soft + 왼쪽 3px 브랜드 선 / 오늘 다음 수업 = brand 채움 */
-.block {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 5px 4px 4px 7px;
-  border-radius: var(--wivu-radius-8);
-  background: var(--wivu-color-bg-brand-soft);
-  box-shadow: inset 3px 0 0 var(--wivu-color-border-brand);
-  overflow: hidden;
-  text-align: left;
-  transition: transform var(--wivu-duration-press) ease, opacity 0.2s ease, filter var(--wivu-duration-press) ease;
-}
-.block:active {
-  transform: scale(0.96);
-  filter: brightness(0.97);
-}
-.block[data-focus='true'] {
-  padding-left: 6px;
-  background: var(--wivu-color-bg-brand);
-  box-shadow: none;
-}
-/* 시간표에만 추가한 수업 안내 (학기 줄 아래) */
-.extraNote {
-  display: flex;
-  align-items: center;
-  gap: var(--wivu-space-8);
-  margin-top: -4px;
-  padding: 0 var(--wivu-layout-inset) var(--wivu-space-12);
-}
-.extraSwatch {
-  flex-shrink: 0;
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-  outline: 1.5px dashed var(--wivu-color-border-brand);
-  outline-offset: -1.5px;
-}
-
-/* 직접 추가한 수업(수강신청 과목 아님 · 학점 미반영): 점선 테두리로 구분 */
-.block[data-extra='true'] {
-  background: var(--wivu-color-bg-surface);
-  box-shadow: none;
-  outline: 1.5px dashed var(--wivu-color-border-brand);
-  outline-offset: -1.5px;
-}
-.block[data-dim='true'] {
-  opacity: 0.4;
-}
-.block[data-new='true'] {
-  animation: newRing 0.9s ease-in-out 3;
-}
-@keyframes newRing {
-  0%,
-  100% {
-    box-shadow: inset 3px 0 0 var(--wivu-color-border-brand), 0 0 0 0 rgba(76, 128, 240, 0);
-  }
-  50% {
-    box-shadow: inset 3px 0 0 var(--wivu-color-border-brand), 0 0 0 4px rgba(76, 128, 240, 0.35); /* brand/500 35% */
-  }
-}
-/* 블록 안 두 줄 표기 — 좁은 블록이라 행간만 14로 조임 (12px 텍스트) */
-.blockText {
-  white-space: pre-line;
-  line-height: 14px;
-  word-break: keep-all;
-}
-.removeBadge {
-  position: absolute;
-  right: 3px;
-  bottom: 3px;
-  display: grid;
-  place-items: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--wivu-color-status-error);
-  color: var(--wivu-color-text-on-brand);
-}
-
-/* 현재 시각 9:41 */
+/* 현재 시각 9:41 (2px status/error) */
 .nowLine {
   position: absolute;
   left: var(--time-col);
   right: 0;
   height: 2px;
-  margin-top: -1px;
   background: var(--wivu-color-status-error);
+  z-index: 1;
   pointer-events: none;
-  z-index: 2;
 }
-.nowLine::before {
-  content: '';
+
+/* 수업 블록 (r8 · p6/4/0/6) */
+.blockWrap {
   position: absolute;
-  left: -4px;
-  top: -3px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--wivu-color-status-error);
 }
-
-/* 편집 모드 안내 */
-.editHint {
-  display: flex;
-  align-items: center;
-  gap: var(--wivu-space-8);
-  margin: 0 var(--wivu-layout-gutter) var(--wivu-space-12);
-  padding: 12px var(--wivu-space-16);
-  border-radius: var(--wivu-radius-12);
-  background: var(--wivu-color-bg-brand-soft);
-  color: var(--wivu-color-text-brand);
-}
-
-/* 사이버 강의 카드 (bg/subtle r16 p14/16) */
-.online {
-  display: flex;
-  align-items: center;
-  gap: var(--wivu-space-12);
-  width: calc(100% - var(--wivu-layout-gutter) * 2);
-  margin: var(--wivu-space-16) var(--wivu-layout-gutter) 0;
-  padding: 14px var(--wivu-space-16);
-  border-radius: var(--wivu-radius-16);
-  background: var(--wivu-color-bg-subtle);
-  text-align: left;
-  transition: transform var(--wivu-duration-press) ease;
-}
-.online + .online {
-  margin-top: var(--wivu-space-8);
-}
-.online:active {
-  transform: scale(0.985);
-}
-.onlineMain {
+.block {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  padding: 6px 4px 0 6px;
+  border-radius: var(--wivu-radius-8);
+  background: var(--wivu-color-bg-subtle);
+  overflow: hidden;
+  text-align: left;
+  transition: transform var(--wivu-duration-press) ease, filter var(--wivu-duration-press) ease;
+}
+.block:active {
+  transform: scale(0.97);
+  filter: brightness(0.97);
+}
+.block[data-tone='today'] {
+  background: var(--wivu-color-bg-brand-tint);
+}
+/* 직접 추가한 수업: 연파랑 면 + 파란 1.5 점선 (Figma dash 4/3) */
+.block[data-tone='extra'] {
+  background: var(--wivu-color-bg-brand-tint);
+  padding: 8px 4px 0 8px;
+}
+.block[data-tone='extra']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1.5px dashed var(--wivu-color-border-brand);
+  pointer-events: none;
+}
+.blockText {
+  white-space: pre-line;
+  word-break: keep-all;
+}
+/* '−' 배지: 블록 오른쪽 위 모서리에 걸침 (18 원 중심 = 오른쪽 −5, 위 +4) */
+.blockBadge {
+  right: -11px;
+  top: -12px;
+}
+
+/* 사이버 강의 행 (Figma: p12/0 · 간격 10 · Badge + Body 2 Strong / Caption 1 + 셰브론) */
+.online {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  text-align: left;
+  border-radius: var(--wivu-radius-8);
+}
+.online:active {
+  background: var(--wivu-color-bg-subtle);
+}
+.onlineMain {
   flex: 1 1 auto;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.onlineRemove {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+.onlineRemove > button {
+  inset: 0;
 }
 
 .actions {
   display: flex;
-  gap: var(--wivu-space-12);
-  margin: var(--wivu-space-12) var(--wivu-layout-gutter) 0;
+  gap: var(--wivu-space-8);
+  margin-top: var(--wivu-space-12);
 }
 
-/* ── 수업 상세 시트 ── */
-.sheetHead {
+/* ── 수업 상세 시트 (685:6329) ── */
+.sheetTop {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--wivu-space-8);
+  min-height: 24px;
 }
-.sheetTitle {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  min-width: 0;
+.sheetClose {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: -10px -10px -10px 0;
+  color: var(--wivu-color-icon-primary);
 }
 .sheetActions {
   display: flex;
   gap: var(--wivu-space-8);
-  margin-top: var(--wivu-space-20);
+  margin-top: var(--wivu-space-16);
 }
 .sheetNote {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--wivu-space-4);
   margin-top: var(--wivu-space-12);
 }
 
-/* ── 수업 추가 (403:7931) ── */
+/* ── 수업 추가 (685:6485: 콘텐츠 p8/20) ── */
+.add {
+  display: flex;
+  flex-direction: column;
+  padding: 8px var(--wivu-layout-inset) 0;
+}
 .filters {
   display: flex;
   gap: var(--wivu-space-8);
+  margin-top: var(--wivu-space-12);
   overflow-x: auto;
-  padding-inline: var(--wivu-layout-gutter);
   scrollbar-width: none;
 }
 .filters::-webkit-scrollbar {
   display: none;
 }
 .count {
-  display: flex;
-  gap: var(--wivu-space-4);
-  padding-inline: var(--wivu-layout-inset);
-}
-.results {
-  margin-inline: var(--wivu-layout-gutter);
-  padding: 4px var(--wivu-space-16);
-  border-radius: var(--wivu-radius-16);
-  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
+  margin: 20px 0 4px;
 }
 .result {
-  position: relative;
   display: flex;
   align-items: center;
   gap: var(--wivu-space-12);
-  padding-block: var(--wivu-space-16);
-  cursor: pointer;
-}
-.result + .result::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--wivu-color-border-default);
+  padding: 12px 0;
 }
 .resultMain {
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  flex: 1 1 auto;
-  min-width: 0;
   text-align: left;
+  border-radius: var(--wivu-radius-8);
 }
-.resultMain:focus-visible {
-  outline: 2px solid var(--wivu-color-border-brand);
-  outline-offset: 4px;
-  border-radius: 4px;
+.resultMain:active {
+  opacity: 0.6;
 }
-.hl {
-  color: var(--wivu-color-text-brand);
-}
-
-/* 겹침 검사 미니 주간 막대 */
-.check {
-  display: flex;
-  flex-direction: column;
-  gap: var(--wivu-space-12);
-  padding: var(--wivu-space-16);
-  border-radius: var(--wivu-radius-16);
-  box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
-}
-.checkHead {
-  display: flex;
-  align-items: center;
-  gap: var(--wivu-space-8);
-}
-.checkIcon {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+.result > :last-child {
   flex-shrink: 0;
 }
+
+/* ── 수업 정보 시트 (697:7430) ── */
 .mini {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: var(--wivu-space-8);
+  gap: 6px;
+  margin-top: var(--wivu-space-16);
 }
 .miniCol {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--wivu-space-4);
+  gap: 6px;
 }
 .miniTrack {
   position: relative;
   width: 100%;
-  height: 72px;
+  height: 40px;
   border-radius: var(--wivu-radius-6);
   background: var(--wivu-color-bg-subtle);
   overflow: hidden;
 }
 .miniBar {
   position: absolute;
-  left: 3px;
-  right: 3px;
-  border-radius: 3px;
-}
-.miniBar[data-kind='mine'] {
-  background: var(--wivu-color-border-default);
-}
-.miniBar[data-kind='new'] {
+  left: 0;
+  right: 0;
+  min-height: 6px;
+  border-radius: var(--wivu-radius-4);
   background: var(--wivu-color-bg-brand);
 }
 .miniBar[data-kind='clash'] {
   background: var(--wivu-color-status-error);
+}
+/* 상태 배너 (bg r12 p12/14 · 아이콘 + Body 3 Strong / Caption 1) */
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--wivu-space-8);
+  padding: 12px 14px;
+  margin-top: var(--wivu-space-16);
+  border-radius: var(--wivu-radius-12);
+}
+.banner[data-kind='added'] {
+  background: var(--wivu-color-bg-brand-tint);
+  color: var(--wivu-color-icon-brand);
+}
+.banner[data-kind='clash'] {
+  background: var(--wivu-color-bg-error-tint);
+  color: var(--wivu-color-status-error);
+}
+.banner[data-kind='ok'] {
+  background: var(--wivu-color-bg-subtle);
+  color: var(--wivu-color-icon-primary);
+}
+.banner > svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.bannerText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }

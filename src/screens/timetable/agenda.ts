@@ -1,14 +1,13 @@
 import { P } from '@/app/paths';
-import { ATTENDANCE_WINDOW, courseById } from '@/data/core';
+import { courseById } from '@/data/core';
 import {
   CAT,
-  DOW,
   SEMESTER_END,
   SEMESTER_START,
   TODAY,
+  dday,
+  dotDate,
   dowOf,
-  parseIso,
-  shortDate,
   toMin,
   type CalEvent,
   type Category,
@@ -17,15 +16,15 @@ import {
 
 /* 캘린더 계산 — 날짜별 일정·점·다가오는 일정 (순수 함수) */
 
-export type Filter = 'all' | Category;
-
 export type AgendaItem = {
   key: string;
   category: Category;
+  /** 왼쪽 시간 열: '10:00' · '종일' */
   time: string;
-  sub?: string;
   title: string;
   meta: string;
+  /** 메타를 빨강으로 (오늘 마감 미제출) */
+  metaError?: boolean;
   /** 정렬용 (분) */
   sort: number;
   event?: CalEvent;
@@ -33,7 +32,6 @@ export type AgendaItem = {
 };
 
 export type Ctx = {
-  attended: boolean;
   /** 과제 제출 여부 — 수강과목 스토어(courses/store useIsSubmitted)와 같은 판정 */
   isSubmitted: (courseId: string, aid: string) => boolean;
 };
@@ -52,85 +50,66 @@ export function classesOn(courses: TTCourse[], events: CalEvent[], date: string)
   return courses.flatMap((c) => c.slots.filter((sl) => sl.day === dow).map((sl) => ({ course: c, slot: sl })));
 }
 
-/** 과제 일정 상태: 제출 완료 / 미제출(오늘 마감) / null(아직 여유) */
-export function assignmentStatus(e: CalEvent, ctx: Pick<Ctx, 'isSubmitted'>): '제출 완료' | '미제출' | null {
+/** 과제 일정 상태: 제출 완료 / 미제출(오늘·지난 마감) / null(아직 여유) */
+export function assignmentStatus(e: CalEvent, ctx: Ctx): '제출 완료' | '미제출' | null {
   if (e.category !== 'assignment' || !e.courseId || !e.aid) return null;
   if (ctx.isSubmitted(e.courseId, e.aid)) return '제출 완료';
   return e.date <= TODAY ? '미제출' : null;
 }
 
-export function eventMeta(e: CalEvent, ctx: Ctx) {
+/** 목록 메타 — 과제: '서비스디자인 · 미제출'(Figma 686:6385) / 여유 있으면 'D-6' · 그 밖: 장소 */
+export function eventMeta(e: CalEvent, ctx: Ctx): { text: string; error?: boolean } {
   if (e.category === 'assignment' && e.courseId && e.aid) {
-    // Figma 392:7540: '브랜드디자인 · 23:59' · 오늘 마감은 '서비스디자인 · 미제출'
-    return `${courseById(e.courseId).name} · ${assignmentStatus(e, ctx) ?? e.start ?? ''}`;
+    const st = assignmentStatus(e, ctx);
+    return { text: `${courseById(e.courseId).name} · ${st ?? dday(e.date)}`, error: st === '미제출' };
   }
-  if (e.meta) return e.meta;
-  const time = e.allDay ? '하루 종일' : e.start ?? '';
-  return [time, e.place].filter(Boolean).join(' · ') || CAT[e.category].detail;
+  if (e.meta) return { text: e.meta };
+  if (e.place) return { text: e.place };
+  return { text: e.allDay ? '하루 종일' : CAT[e.category].detail };
 }
 
-function eventTime(e: CalEvent, date: string): { time: string; sub?: string; sort: number } {
-  if (e.allDay) return { time: '종일', sort: -1 };
-  if (e.span && date !== e.date) return { time: '종일', sort: -1 };
-  if (e.start && e.end) return { time: e.start, sub: e.end, sort: toMin(e.start) };
-  if (e.deadline && !e.start && e.end) return { time: e.end, sub: '마감', sort: toMin(e.end) };
-  const t = e.start ?? e.end ?? '';
-  return { time: t || '종일', sort: t ? toMin(t) : -1 };
+function eventTime(e: CalEvent, date: string): { time: string; sort: number } {
+  if (e.allDay || (e.span && date !== e.date)) return { time: '종일', sort: -1 };
+  const t = e.start ?? e.end;
+  return t ? { time: t, sort: toMin(t) } : { time: '종일', sort: -1 };
 }
 
-/** 선택일 일정 (Figma 392:7540 '카드 · 선택일 일정') */
-export function dayAgenda(date: string, courses: TTCourse[], events: CalEvent[], filter: Filter, ctx: Ctx): AgendaItem[] {
+/** 선택일 일정 (Figma 686:6385: 시간 + 분류 / 제목 + 장소) — 수업 + 일정, 시간순 */
+export function dayAgenda(date: string, courses: TTCourse[], events: CalEvent[], ctx: Ctx): AgendaItem[] {
   const items: AgendaItem[] = [];
-  if (filter === 'all' || filter === 'class') {
-    for (const { course, slot } of classesOn(courses, events, date)) {
-      const attendNote = date === TODAY && course.id === ATTENDANCE_WINDOW.courseId ? (ctx.attended ? ' · 출석 완료' : ' · 출석 가능') : '';
-      items.push({
-        key: `class-${course.id}-${slot.day}`,
-        category: 'class',
-        time: slot.start,
-        sub: slot.end,
-        title: course.name,
-        meta: course.room + attendNote,
-        sort: toMin(slot.start),
-        course,
-      });
-    }
+  for (const { course, slot } of classesOn(courses, events, date)) {
+    items.push({ key: `class-${course.id}-${slot.day}`, category: 'class', time: slot.start, title: course.name, meta: course.room, sort: toMin(slot.start), course });
   }
   for (const e of eventsOn(events, date)) {
-    if (filter !== 'all' && filter !== e.category) continue;
-    const t = eventTime(e, date);
-    items.push({ key: e.id, category: e.category, ...t, title: e.title, meta: eventMeta(e, ctx), event: e });
+    const m = eventMeta(e, ctx);
+    items.push({ key: e.id, category: e.category, ...eventTime(e, date), title: e.title, meta: m.text, metaError: m.error, event: e });
   }
   return items.sort((a, b) => a.sort - b.sort);
 }
 
-/** 달력 점 — 매주 반복되는 수업은 '수업' 필터일 때만 (Figma: 11일엔 과제 점만) */
-export function dotsOn(date: string, courses: TTCourse[], events: CalEvent[], filter: Filter): Category[] {
+/** 달력 점 — 매주 반복되는 수업은 찍지 않는다 (Figma 686:6385: 학사 · 과제 · 개인만) */
+export function dotsOn(date: string, events: CalEvent[]): Category[] {
   const cats = new Set<Category>();
-  if (filter === 'class' && classesOn(courses, events, date).length) cats.add('class');
-  for (const e of eventsOn(events, date)) if (filter === 'all' || filter === e.category) cats.add(e.category);
-  return (['class', 'assignment', 'academic', 'personal'] as Category[]).filter((c) => cats.has(c)).slice(0, 3);
+  for (const e of eventsOn(events, date)) cats.add(e.category);
+  return (['academic', 'assignment', 'personal'] as Category[]).filter((c) => cats.has(c)).slice(0, 3);
 }
 
-/** 다가오는 일정 — 오늘 이후, 수업 제외 */
-export function upcoming(events: CalEvent[], filter: Filter, ctx: Ctx): AgendaItem[] {
-  return events
-    .filter((e) => e.date > TODAY && (filter === 'all' || filter === e.category))
-    .sort((a, b) => (a.date === b.date ? toMin(a.start ?? a.end ?? '00:00') - toMin(b.start ?? b.end ?? '00:00') : a.date < b.date ? -1 : 1))
-    .map((e) => ({
-      key: e.id,
-      category: e.category,
-      time: shortDate(e.date),
-      sub: DOW[parseIso(e.date).getDay()],
-      title: e.title,
-      meta: eventMeta(e, ctx),
-      sort: 0,
-      event: e,
-    }));
+/** 다가오는 일정 — 오늘 이후 첫 일정 (수업 제외) */
+export function nextEvent(events: CalEvent[]): CalEvent | null {
+  const list = events
+    .filter((e) => e.date > TODAY)
+    .sort((a, b) => (a.date === b.date ? toMin(a.start ?? a.end ?? '00:00') - toMin(b.start ?? b.end ?? '00:00') : a.date < b.date ? -1 : 1));
+  return list[0] ?? null;
+}
+
+/** 다가오는 일정 카드 문구: '10.12 (월) 교내 취업박람회 · 14:00' */
+export function nextEventLabel(e: CalEvent) {
+  const time = e.allDay ? '하루 종일' : e.start ?? e.end;
+  return `${dotDate(e.date)} ${e.short ?? e.title}${time ? ` · ${time}` : ''}`;
 }
 
 /** 일정 행을 눌렀을 때 갈 곳 */
-export function itemTarget(it: AgendaItem): { kind: 'push' | 'sheet'; to: string } {
+export function itemTarget(it: Pick<AgendaItem, 'course' | 'event' | 'key'>): { kind: 'push' | 'sheet'; to: string } {
   if (it.course) return it.course.core ? { kind: 'push', to: P.course(it.course.id) } : { kind: 'sheet', to: it.course.id };
   if (it.event?.to) return { kind: 'push', to: it.event.to };
   return { kind: 'push', to: P.calendarEvent(it.key) };

@@ -1,66 +1,62 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { Button, Chip, Dialog, Icon, IconButton, Screen, TabBar, Text, TextAction, toast } from '@/ui';
+import { Button, Chip, CtaBar, Dialog, Icon, LargeHeader, Screen, TabBar, Text, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { SEMESTER, TODAY_CLASSES, WEEK_LABEL } from '@/data/core';
+import { SEMESTER, WEEK_LABEL } from '@/data/core';
 import { AttendanceSheet } from '@/screens/attendance/AttendanceSheet';
-import { NOW_MIN, josa, toMin, type TTCourse } from './data';
+import { josa, type TTCourse } from './data';
 import { useMyCourses, useSchedule } from './store';
 import { TimetableGrid } from './TimetableGrid';
 import { ClassSheet } from './ClassSheet';
-import { BellButton, ScheduleHeader } from './parts';
-import sc from './Schedule.module.css';
+import { BellButton, RemoveBadge, ScheduleHeader } from './parts';
 import s from './Timetable.module.css';
 
+/** 수강신청 과목의 '−'를 눌렀을 때 (프로토타입에선 뺄 수 없음 — 실제 정정은 학교 포털) */
+const ENROLLED_TOAST = '수강신청한 과목은 학교 포털에서 바꿀 수 있어요';
+
 /**
- * 시간표 탭 루트 — Figma 392:7472 (Schedule_v4_01_Root) + 수업 상세 시트 402:7846
- * ?sheet=<courseId> 로 시트가 열린 상태로 진입 (Figma 프레임 402:7846)
+ * 시간표 탭 루트 — Figma v5 685:6192 (+ 수업 상세 시트 685:6329)
+ * 편집 모드(같은 라우트의 상태) — 697:7142 시간표 편집 · 697:7306 수업 빼기 확인
+ *   [시간표 편집] → 헤더 '시간표 편집', 안내 배너, 모든 블록에 '−', 하단 [수업 추가] [완료], 탭바 숨김.
+ *   직접 추가한 수업 '−' → 확인창 → 빼기(→ 시간표 탭). 수강신청 과목 '−' → 토스트(학교 포털 안내).
+ * 진입 쿼리: ?sheet=<courseId> 시트 열린 상태 · ?edit=1 편집 모드
  */
 export function TimetableScreen() {
   const nav = useNav();
   const [params] = useSearchParams();
   const courses = useMyCourses();
+  const removeCourse = useSchedule((st) => st.removeCourse);
   const lastAdded = useSchedule((st) => st.lastAdded);
   const clearLastAdded = useSchedule((st) => st.clearLastAdded);
-  const removeCourse = useSchedule((st) => st.removeCourse);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const sheetParam = params.get('sheet');
   const [sheetCourse, setSheetCourse] = useState<TTCourse | null>(() => courses.find((c) => c.id === sheetParam) ?? null);
   const [sheetOpen, setSheetOpen] = useState(!!sheetCourse);
   const [pin, setPin] = useState(false);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(params.get('edit') === '1');
   const [removing, setRemoving] = useState<TTCourse | null>(null);
   // 확인창이 닫히는 애니메이션 동안 문구 유지
   const lastRemoving = useRef<TTCourse | null>(null);
   if (removing) lastRemoving.current = removing;
   const removeName = lastRemoving.current?.name ?? '';
 
-  // 학점 규칙(단일): 학점은 수강신청 과목(core)만 센다 — 수강과목·마이·학교 연동과 같은 17학점.
-  // 수업 추가로 넣은 과목은 '시간표에만 추가(학점 미반영)' — 실제 정정은 학교 포털에서 하고 동기화로 반영된다.
-  const credits = courses.filter((c) => c.core).reduce((a, c) => a + c.credits, 0);
-  const extraCount = courses.filter((c) => !c.core).length;
+  // Figma 685:6192 '6과목 17학점' · 697:7142 '7과목 20학점' — 시간표에 놓인 과목 기준(직접 추가 포함)으로 센다
+  const credits = courses.reduce((a, c) => a + c.credits, 0);
   const grid = courses.filter((c) => c.slots.length);
   const online = courses.filter((c) => !c.slots.length);
-  // 오늘(금) 아직 끝나지 않은 첫 수업 → 브랜드 채움 블록 (9:41 기준 서비스디자인)
-  const focusId = TODAY_CLASSES.find((id) => courses.some((c) => c.id === id && c.slots.some((sl) => sl.day === '금' && toMin(sl.end) > NOW_MIN)));
 
-  // ?sheet= 진입: 시트 상태로만 쓰고 주소는 정리 (뒤로 돌아왔을 때 시트가 다시 열리지 않게).
-  // 라우터 이동 없이 히스토리 항목만 바꿔 화면이 다시 마운트되지 않게 한다.
+  // 주소 정리: ?sheet=는 한 번만 쓰고 지우고, 편집 모드는 ?edit=1로 남긴다
+  // (수업 추가 모달에서 돌아와도 편집 모드 유지). 라우터 이동 없이 히스토리 항목만 바꿔 다시 마운트되지 않게.
   useEffect(() => {
-    if (!sheetParam) return;
     const [path] = window.location.hash.split('?');
-    window.history.replaceState(window.history.state, '', path);
-  }, [sheetParam]);
+    const next = editing ? `${path}?edit=1` : path;
+    if (window.location.hash !== next) window.history.replaceState(window.history.state, '', next);
+  }, [editing]);
 
-  // 방금 추가한 수업: 보이게 스크롤 + 펄스 후 해제
   useEffect(() => {
-    if (!lastAdded) return;
-    const el = scrollRef.current?.querySelector<HTMLElement>(`[data-course="${lastAdded}"]`);
-    el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    const t = window.setTimeout(clearLastAdded, 2800);
-    return () => window.clearTimeout(t);
+    if (lastAdded) clearLastAdded();
   }, [lastAdded, clearLastAdded]);
 
   const openSheet = (c: TTCourse) => {
@@ -68,33 +64,29 @@ export function TimetableScreen() {
     setSheetOpen(true);
   };
   const closeSheet = () => setSheetOpen(false);
-
-  const onBlock = (c: TTCourse) => {
-    if (!editing) return openSheet(c);
-    if (c.core) toast('수강신청한 과목은 시간표에서 뺄 수 없어요');
-    else setRemoving(c);
+  const askRemove = (c: TTCourse) => (c.core ? toast(ENROLLED_TOAST) : setRemoving(c));
+  const startEdit = () => {
+    setEditing(true);
+    scrollRef.current?.scrollTo({ top: 0 });
   };
 
   return (
     <Screen
-      figma="392:7472"
+      figma="685:6192"
       scrollRef={scrollRef}
-      header={
-        <ScheduleHeader
-          tab="timetable"
-          trailing={
-            editing ? (
-              <TextAction onPress={() => setEditing(false)}>완료</TextAction>
-            ) : (
-              <>
-                <IconButton icon="edit" label="시간표 편집" onPress={() => setEditing(true)} />
-                <BellButton />
-              </>
-            )
-          }
-        />
+      header={editing ? <LargeHeader title="시간표 편집" /> : <ScheduleHeader tab="timetable" trailing={<BellButton />} />}
+      footer={
+        editing ? (
+          <CtaBar>
+            <Button variant="secondary" onClick={() => nav.modal(P.timetableAdd)}>
+              수업 추가
+            </Button>
+            <Button onClick={() => setEditing(false)}>완료</Button>
+          </CtaBar>
+        ) : (
+          <TabBar active="timetable" onActivePress={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} />
+        )
       }
-      footer={<TabBar active="timetable" onActivePress={() => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} />}
       overlay={
         <>
           <ClassSheet
@@ -124,68 +116,69 @@ export function TimetableScreen() {
                 toast(`${removing.name}${josa(removing.name, '을', '를')} 시간표에서 뺐어요`, 'check');
               }
               setRemoving(null);
+              // Figma 697:7306 [빼기] → 685:6192 (편집 끝난 시간표)
+              setEditing(false);
             }}
           />
         </>
       }
     >
-      <div className={sc.semester}>
-        <Chip tone="brand" pill>
-          {SEMESTER}
-        </Chip>
-        <Text variant="caption-1" color="secondary">
-          {WEEK_LABEL} · {credits}학점
-        </Text>
-      </div>
-      {extraCount > 0 && (
-        <div className={s.extraNote} role="note">
-          <span className={s.extraSwatch} aria-hidden />
-          <Text variant="caption-2" color="secondary">
-            점선 수업 {extraCount}개는 시간표에만 추가했어요 · 학점 미반영
-          </Text>
-        </div>
-      )}
+      <Text variant="caption-1" color="tertiary" as="p" className={s.summary}>
+        {SEMESTER} · {WEEK_LABEL} · {courses.length}과목 {credits}학점
+      </Text>
 
-      {editing && (
-        <div className={s.editHint} role="status">
-          <Icon name="edit" size={16} />
-          <Text variant="caption-1-strong" color="brand">
-            {courses.some((c) => !c.core) ? '직접 추가한 수업을 눌러 시간표에서 뺄 수 있어요' : '직접 추가한 수업이 없어요 · 수업 추가로 넣어 보세요'}
-          </Text>
-        </div>
-      )}
-
-      <TimetableGrid courses={grid} focusId={focusId} editing={editing} newId={lastAdded} onBlock={onBlock} />
-
-      {online.map((c) => (
-        <button
-          key={c.id}
-          type="button"
-          className={s.online}
-          data-course={c.id}
-          style={editing && c.core ? { opacity: 0.4 } : undefined}
-          onClick={() => (c.core ? (editing ? onBlock(c) : nav.push(P.course(c.id))) : editing ? setRemoving(c) : openSheet(c))}
-        >
-          <Chip tone="pulse">사이버</Chip>
-          <span className={s.onlineMain}>
-            <Text variant="subhead" className="truncate">
-              {c.name}
+      <div className={s.body}>
+        {editing && (
+          <div className={s.hint} role="status">
+            <Icon name="info" size={20} />
+            <Text variant="caption-1" color="brand">
+              − 를 눌러 수업을 빼요. 직접 추가한 수업은 점선으로 보여요.
             </Text>
-            <Text variant="caption-2" color="secondary" className="truncate">
-              {c.onlineNote}
-            </Text>
-          </span>
-          <Icon name={editing && !c.core ? 'close' : 'chevron-right'} size={20} color={editing && !c.core ? 'error' : 'primary'} />
-        </button>
-      ))}
+          </div>
+        )}
 
-      <div className={s.actions}>
-        <Button variant="soft" grow leadingIcon="plus" onClick={() => nav.modal(P.timetableAdd)}>
-          수업 추가
-        </Button>
-        <Button variant="soft" grow leadingIcon={editing ? 'check' : 'edit'} onClick={() => setEditing((v) => !v)}>
-          {editing ? '편집 완료' : '시간표 편집'}
-        </Button>
+        <TimetableGrid courses={grid} editing={editing} onBlock={openSheet} onRemove={askRemove} />
+
+        <div style={{ marginTop: 16 }}>
+          {online.map((c) => (
+            <div key={c.id} style={{ display: 'flex', alignItems: 'center' }}>
+              <button
+                type="button"
+                className={s.online}
+                style={{ flex: 1, minWidth: 0 }}
+                data-course={c.id}
+                onClick={() => (c.core ? nav.push(P.course(c.id)) : editing ? askRemove(c) : openSheet(c))}
+              >
+                <Chip tone="neutral">사이버</Chip>
+                <span className={s.onlineMain}>
+                  <Text variant="body-2-strong" className="truncate">
+                    {c.name}
+                  </Text>
+                  <Text variant="caption-1" color="tertiary" className="truncate">
+                    {c.onlineNote}
+                  </Text>
+                </span>
+                {!(editing && !c.core) && <Icon name="chevron-right" size={20} />}
+              </button>
+              {editing && !c.core && (
+                <span className={s.onlineRemove}>
+                  <RemoveBadge label={`${c.name} 빼기`} onPress={() => askRemove(c)} />
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {!editing && (
+          <div className={s.actions}>
+            <Button variant="secondary" size="m" grow leadingIcon="plus" onClick={() => nav.modal(P.timetableAdd)}>
+              수업 추가
+            </Button>
+            <Button variant="secondary" size="m" grow onClick={startEdit}>
+              시간표 편집
+            </Button>
+          </div>
+        )}
       </div>
     </Screen>
   );

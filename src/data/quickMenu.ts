@@ -1,7 +1,7 @@
 import type { IconName } from '@/ui';
 import { P } from '@/app/paths';
 
-/* 퀵메뉴 카탈로그 — 홈 레디얼 메뉴 · 초기 설정(411:12208) · 퀵메뉴 편집(425:8741) 공통 */
+/* 내 메뉴 카탈로그 — 홈 '내 메뉴' 블록 · 홈 탭 길게 누르기 퀵메뉴 · 메뉴 편집(v5 676:5007) 공통 */
 export type QuickItem = { id: string; label: string; icon: IconName; path?: string; mode?: 'push' | 'modal' | 'tab'; note?: string };
 
 export const QUICK_ITEMS: QuickItem[] = [
@@ -16,15 +16,16 @@ export const QUICK_ITEMS: QuickItem[] = [
   { id: 'qr', label: 'QR 인증', icon: 'qr', path: P.attendanceQr, mode: 'modal' },
   { id: 'map', label: '강의실 지도', icon: 'map', path: P.campusMap, mode: 'push' },
   { id: 'library', label: '도서관', icon: 'library', note: '도서관 좌석 연동은 다음 버전에서 열려요' },
-  { id: 'exam', label: '시험', icon: 'exam', path: P.calendar, mode: 'tab' },
+  { id: 'exam', label: '시험 일정', icon: 'exam', path: P.calendar, mode: 'tab' },
   { id: 'nfc', label: 'NFC 출석', icon: 'nfc', note: 'NFC 태그는 실제 기기에서만 동작해요' },
+  { id: 'shuttle', label: '셔틀버스', icon: 'pin', note: '셔틀버스 시간표는 다음 버전에서 열려요' },
 ];
 
 /** 초기 설정(411:12208)에서 고를 수 있는 12개 — 선택 8 + 미선택 4 순서 그대로 */
 export const SETUP_ITEMS = ['notice', 'student-id', 'rental', 'board', 'calendar', 'attendance', 'meal', 'assignment', 'map', 'qr', 'library', 'exam'];
 export const QUICK_MAX = 8;
 
-/** 레디얼 메뉴 기본 순서 (Figma 308:11745: 12시 방향부터 시계 방향) */
-export const RADIAL_DEFAULT = ['notice', 'student-id', 'rental', 'board', 'calendar', 'attendance', 'meal', 'assignment'];
+/** 내 메뉴 기본 구성 · 순서 (v5 메뉴 편집 676:5007 · 홈 '내 메뉴' 674:4748 기준) */
+export const RADIAL_DEFAULT = ['student-id', 'attendance', 'meal', 'assignment', 'calendar', 'notice', 'map', 'rental'];
 
 export const quickItem = (id: string) => QUICK_ITEMS.find((q) => q.id === id);

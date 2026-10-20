@@ -257,13 +257,13 @@
     },
     "navbar-height": {
       "$value": {
-        "value": 52,
+        "value": 56,
         "unit": "px"
       },
       "$extensions": {
         "com.wivu": {
           "source": "code",
-          "note": "상단 내비 바"
+          "note": "v5 Top Nav 56 (Figma 666:4906, 10-21)"
         }
       }
     },

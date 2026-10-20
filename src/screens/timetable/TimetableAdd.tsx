@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { BottomSheet, Button, Chip, Icon, IconButton, Screen, SearchField, Text, TopNav, toast } from '@/ui';
+import { BottomSheet, Button, Icon, Screen, SheetHead, Text, TextField, TopNav, toast } from '@/ui';
 import { P } from '@/app/paths';
 import { CATALOG, DAYS, josa, slotText, toMin, findConflicts, type Conflict, type TTCourse } from './data';
 import { useMyCourses, useSchedule } from './store';
@@ -18,9 +18,9 @@ const FILTERS: { value: Filter; label: string }[] = [
 type Status = { kind: 'added' } | { kind: 'clash'; conflicts: Conflict[] } | { kind: 'ok' };
 
 /**
- * 수업 추가 — Figma 403:7931 (검색) · 403:8007 (추가 완료: 같은 라우트의 상태)
- * 검색어·필터로 카탈로그를 거르고, 내 시간표와 겹치는지 바로 검사한다.
- * '추가' → 로컬 스토어에 넣고 토스트 → 시간표 그리드에 블록이 생김. ?q=UX 로 Figma 상태 재현.
+ * 수업 추가 — Figma v5 685:6485 (검색) · 697:7430 (수업 정보 시트) · 685:6621 (추가 완료 토스트) — 모두 같은 라우트의 상태
+ * 검색어·구분 버튼으로 카탈로그를 거르고, 내 시간표와 겹치는지 바로 검사한다.
+ * '추가' → 로컬 스토어에 넣고 토스트 → 시간표 그리드에 점선 블록이 생김. ?q=UX 로 Figma 상태 재현.
  */
 export function TimetableAdd() {
   const [params] = useSearchParams();
@@ -30,8 +30,8 @@ export function TimetableAdd() {
   const [detailOpen, setDetailOpen] = useState(false);
   const mine = useMyCourses();
   const addCourse = useSchedule((st) => st.addCourse);
-  // 학점은 수강신청 과목만 (시간표에 직접 추가한 수업은 학점 미반영 — TimetableScreen과 같은 규칙)
-  const credits = mine.filter((m) => m.core).reduce((a, c) => a + c.credits, 0);
+  // 수강신청 학점(수강과목·마이와 같은 17학점) — 시간표에 직접 추가한 수업은 포함하지 않는다
+  const enrolled = mine.filter((m) => m.core).reduce((a, c) => a + c.credits, 0);
 
   const status = (c: TTCourse): Status => {
     if (mine.some((m) => m.id === c.id)) return { kind: 'added' };
@@ -53,12 +53,13 @@ export function TimetableAdd() {
   const add = (c: TTCourse) => {
     addCourse(c.id);
     const first = c.slots[0];
-    toast(`${first ? `${first.day} ${first.start} ` : ''}${c.name}${josa(c.name, '을', '를')} 시간표에 추가했어요`, 'check');
+    // Figma 685:6621 '목 13:00 UX/UI 프로토타이핑을 추가했어요'
+    toast(`${first ? `${first.day} ${first.start} ` : ''}${c.name}${josa(c.name, '을', '를')} 추가했어요`, 'check');
   };
 
   return (
     <Screen
-      figma="403:7931"
+      figma="685:6485"
       header={<TopNav title="수업 추가" leading="close" fallback={P.timetable} />}
       overlay={
         <BottomSheet open={detailOpen} onClose={() => setDetailOpen(false)} label="수업 정보">
@@ -66,8 +67,7 @@ export function TimetableAdd() {
             <CourseCheck
               course={detail}
               status={status(detail)}
-              credits={credits}
-              mine={mine}
+              enrolled={enrolled}
               onClose={() => setDetailOpen(false)}
               onAdd={() => {
                 add(detail);
@@ -78,30 +78,23 @@ export function TimetableAdd() {
         </BottomSheet>
       }
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 8 }}>
-        <div style={{ paddingInline: 16 }}>
-          <SearchField value={q} onChange={setQ} placeholder="과목명이나 교수명으로 검색" />
-        </div>
+      <div className={s.add}>
+        <TextField value={q} onChange={(e) => setQ(e.target.value)} onClear={() => setQ('')} placeholder="과목명이나 교수명으로 검색" enterKeyHint="search" aria-label="수업 검색" />
 
-        <div className={s.filters} role="tablist" aria-label="과목 구분">
+        <div className={s.filters} role="group" aria-label="과목 구분">
           {FILTERS.map((f) => (
-            <Chip key={f.value} size="m" pill tone="neutral" selected={filter === f.value} onSelect={() => setFilter(f.value)}>
+            <Button key={f.value} size="s" variant={filter === f.value ? 'primary' : 'secondary'} aria-pressed={filter === f.value} onClick={() => setFilter(f.value)}>
               {f.label}
-            </Chip>
+            </Button>
           ))}
         </div>
 
-        <div className={s.count}>
-          <Text variant="caption-1" color="secondary">
-            {query ? '검색 결과' : '개설 과목'}
-          </Text>
-          <Text variant="caption-1-strong" color="brand" tnum>
-            {results.length}
-          </Text>
-        </div>
+        <Text variant="caption-1-strong" color="secondary" as="p" className={s.count} tnum>
+          {query ? '검색 결과' : '개설 과목'} {results.length}
+        </Text>
 
         {results.length ? (
-          <div className={s.results}>
+          <div>
             {results.map((c) => {
               const st = status(c);
               const clash = st.kind === 'clash' ? st.conflicts[0].course.name : null;
@@ -116,24 +109,31 @@ export function TimetableAdd() {
                     }}
                     aria-label={`${c.name} 수업 정보와 겹침 확인`}
                   >
-                    <Text variant="subhead" className="truncate">
-                      <Highlight text={c.name} q={q.trim()} />
+                    <Text variant="body-1-strong" className="truncate">
+                      {c.name}
                     </Text>
                     {/* 강의실까지 보이도록 2줄 허용 (375 폭에서 요일이 여러 개인 과목) */}
-                    <Text variant="caption-2" color="secondary" lines={2}>
+                    <Text variant="caption-1" color="tertiary" lines={2}>
                       {c.online ? slotText(c) : `${c.professor} 교수 · ${slotText(c)} · ${c.room}`}
                     </Text>
-                    <Text variant="caption-2" color={clash ? 'error' : 'tertiary'} className="truncate">
-                      {c.kind} {c.credits}학점{clash ? ` · ${clash}${josa(clash, '과', '와')} 시간 겹침` : ''}
-                    </Text>
+                    {clash ? (
+                      <Text variant="caption-1" color="error" className="truncate">
+                        {clash}
+                        {josa(clash, '과', '와')} 시간이 겹쳐요
+                      </Text>
+                    ) : (
+                      <Text variant="caption-1" color="tertiary" className="truncate">
+                        {c.kind} {c.credits}학점{c.core ? ' · 수강 중' : ''}
+                      </Text>
+                    )}
                   </button>
                   {st.kind === 'ok' ? (
-                    <Button size="s" onClick={() => add(c)}>
+                    <Button size="s" onClick={() => add(c)} aria-label={`${c.name} 추가`}>
                       추가
                     </Button>
                   ) : (
-                    <Button size="s" disabled>
-                      {st.kind === 'added' ? '추가됨' : '불가'}
+                    <Button size="s" variant="secondary" disabled>
+                      {st.kind === 'added' ? '추가됨' : '겹침'}
                     </Button>
                   )}
                 </div>
@@ -141,94 +141,64 @@ export function TimetableAdd() {
             })}
           </div>
         ) : (
-          <div style={{ paddingInline: 16 }}>
-            <EmptyNote icon="search" title={`‘${q.trim()}’에 맞는 수업이 없어요`} desc="과목명이나 교수명으로 다시 검색해 보세요" />
-          </div>
+          <EmptyNote title={`‘${q.trim()}’에 맞는 수업이 없어요`} desc="과목명이나 교수명으로 다시 검색해 보세요" />
         )}
       </div>
     </Screen>
   );
 }
 
-function Highlight({ text, q }: { text: string; q: string }) {
-  if (!q) return <>{text}</>;
-  const i = text.toLowerCase().indexOf(q.toLowerCase());
-  if (i < 0) return <>{text}</>;
-  return (
-    <>
-      {text.slice(0, i)}
-      <span className={s.hl}>{text.slice(i, i + q.length)}</span>
-      {text.slice(i + q.length)}
-    </>
-  );
-}
-
-/* ── 수업 정보 + 겹침 검사 시트 ─────────────────────────────── */
-function CourseCheck({ course: c, status, credits, mine, onClose, onAdd }: { course: TTCourse; status: Status; credits: number; mine: TTCourse[]; onClose: () => void; onAdd: () => void }) {
+/* ── 수업 정보 + 겹침 검사 시트 (Figma 697:7430) ─────────────── */
+function CourseCheck({ course: c, status, enrolled, onClose, onAdd }: { course: TTCourse; status: Status; enrolled: number; onClose: () => void; onAdd: () => void }) {
+  const mine = useMyCourses();
   const clashIds = new Set(status.kind === 'clash' ? status.conflicts.map((x) => x.course.id) : []);
-  const head =
+  const prof = c.online && c.professor === '사이버 강의' ? '사이버 강의' : `${c.professor} 교수`;
+
+  const banner =
     status.kind === 'added'
-      ? { icon: 'check' as const, bg: 'var(--wivu-color-bg-brand-soft)', fg: 'brand', text: '이미 내 시간표에 있는 수업이에요' }
+      ? {
+          icon: 'check' as const,
+          title: '이미 내 시간표에 있는 수업이에요',
+          sub: c.core ? `수강신청한 과목이에요 · 이번 학기 ${enrolled}학점에 포함` : '직접 추가한 수업이에요 · 시간표 편집에서 뺄 수 있어요',
+        }
       : status.kind === 'clash'
         ? {
             icon: 'warning' as const,
-            bg: 'var(--wivu-color-bg-subtle)',
-            fg: 'error',
-            text: `${status.conflicts[0].course.name}${josa(status.conflicts[0].course.name, '과', '와')} 시간이 겹쳐요`,
+            title: `${status.conflicts[0].course.name}${josa(status.conflicts[0].course.name, '과', '와')} 시간이 겹쳐요`,
             sub: status.conflicts.map((x) => `${x.course.name} ${x.slot.day} ${x.slot.start}–${x.slot.end}`).join(' · '),
           }
-        : { icon: 'check' as const, bg: 'var(--wivu-color-bg-pulse-soft)', fg: 'pulse', text: c.online ? '사이버 강의라 시간이 겹치지 않아요' : '내 시간표와 겹치는 수업이 없어요' };
+        : {
+            icon: 'check' as const,
+            title: c.online ? '사이버 강의라 시간이 겹치지 않아요' : '내 시간표와 겹치는 수업이 없어요',
+            sub: '시간표에만 추가돼요 · 수강신청 정정은 학교 포털에서 해요',
+          };
 
   return (
     <>
-      <div className={s.sheetHead} style={{ marginTop: -2 }}>
-        <div className={s.sheetTitle}>
-          <Chip tone={c.online ? 'pulse' : 'brand'}>{c.online ? `사이버 · ${c.kind} ${c.credits}학점` : `${c.kind} ${c.credits}학점`}</Chip>
-          <Text variant="title-1" as="h2">
-            {c.name}
+      <SheetHead title={c.name} subtitle={c.online ? `사이버 · ${c.kind} ${c.credits}학점` : `${c.kind} ${c.credits}학점 · ${prof}`} onClose={onClose} />
+
+      <InfoBox>
+        <InfoRow label="시간" value={slotText(c)} />
+        <InfoRow label="장소" value={c.room} />
+        <InfoRow label="담당" value={prof} />
+      </InfoBox>
+
+      {!c.online && <MiniWeek course={c} mine={mine} clashIds={clashIds} />}
+
+      <div className={s.banner} data-kind={status.kind} role="status">
+        <Icon name={banner.icon} size={20} />
+        <span className={s.bannerText}>
+          <Text variant="body-3-strong" color={status.kind === 'added' ? 'brand' : status.kind === 'clash' ? 'error' : 'primary'}>
+            {banner.title}
           </Text>
-        </div>
-        <div style={{ margin: '-10px -10px 0 0' }}>
-          <IconButton icon="close" label="닫기" onPress={onClose} />
-        </div>
-      </div>
-
-      <div style={{ marginTop: 16 }}>
-        <InfoBox>
-          <InfoRow icon="clock" label="시간" value={slotText(c, ' – ')} />
-          <InfoRow icon="pin" label="장소" value={c.room} />
-          <InfoRow icon="user" label="담당" value={c.online ? '사이버 강의' : `${c.professor} 교수`} />
-        </InfoBox>
-      </div>
-
-      <div className={s.check} style={{ marginTop: 12 }} role="status">
-        <div className={s.checkHead}>
-          <span className={s.checkIcon} style={{ background: head.bg }}>
-            <Icon name={head.icon} size={16} color={head.fg} />
-          </span>
-          <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-            <Text variant="label" color={status.kind === 'clash' ? 'error' : 'primary'}>
-              {head.text}
-            </Text>
-            {'sub' in head && (
-              <Text variant="caption-2" color="secondary">
-                {head.sub}
-              </Text>
-            )}
-          </span>
-        </div>
-        {!c.online && <MiniWeek course={c} mine={mine} clashIds={clashIds} />}
-        <Text variant="caption-1" color="secondary">
-          {c.core
-            ? `수강신청한 과목이에요 · 이번 학기 ${credits}학점에 포함`
-            : status.kind === 'added'
-              ? `시간표에만 추가한 수업이에요 · 수강신청 ${credits}학점에는 반영되지 않아요`
-              : `시간표에만 추가돼요 · 수강신청 ${credits}학점은 그대로예요 (정정은 학교 포털에서)`}
-        </Text>
+          <Text variant="caption-1" color="secondary">
+            {banner.sub}
+          </Text>
+        </span>
       </div>
 
       <div style={{ marginTop: 20 }}>
-        <Button block disabled={status.kind !== 'ok'} leadingIcon={status.kind === 'ok' ? 'plus' : undefined} onClick={onAdd}>
+        <Button block disabled={status.kind !== 'ok'} onClick={onAdd}>
           {status.kind === 'ok' ? '시간표에 추가' : status.kind === 'added' ? '추가됨' : '시간이 겹쳐 추가할 수 없어요'}
         </Button>
       </div>
@@ -236,7 +206,7 @@ function CourseCheck({ course: c, status, credits, mine, onClose, onAdd }: { cou
   );
 }
 
-/** 월~금 9–18시 미니 막대: 내 수업(회색) · 새 수업(브랜드) · 겹침(빨강) */
+/** 월~금 미니 주간 (9–18시): 이 수업(파랑) · 겹치는 내 수업(빨강). 수업 있는 요일 이름 = 파랑 */
 function MiniWeek({ course, mine, clashIds }: { course: TTCourse; mine: TTCourse[]; clashIds: Set<string> }) {
   const START = 9 * 60;
   const SPAN = 9 * 60;
@@ -246,26 +216,27 @@ function MiniWeek({ course, mine, clashIds }: { course: TTCourse; mine: TTCourse
   });
   return (
     <div className={s.mini} aria-hidden>
-      {DAYS.map((d) => (
-        <div key={d} className={s.miniCol}>
-          <div className={s.miniTrack}>
-            {mine
-              .filter((m) => m.id !== course.id)
-              .flatMap((m) => m.slots.filter((sl) => sl.day === d).map((sl) => ({ m, sl })))
-              .map(({ m, sl }) => (
-                <span key={m.id + sl.start} className={s.miniBar} data-kind={clashIds.has(m.id) ? 'clash' : 'mine'} style={pos(sl.start, sl.end)} />
-              ))}
-            {course.slots
-              .filter((sl) => sl.day === d)
-              .map((sl) => (
+      {DAYS.map((d) => {
+        const own = course.slots.filter((sl) => sl.day === d);
+        return (
+          <div key={d} className={s.miniCol}>
+            <Text variant="caption-2-strong" color={own.length ? 'brand' : 'tertiary'}>
+              {d}
+            </Text>
+            <div className={s.miniTrack}>
+              {mine
+                .filter((m) => clashIds.has(m.id))
+                .flatMap((m) => m.slots.filter((sl) => sl.day === d).map((sl) => ({ m, sl })))
+                .map(({ m, sl }) => (
+                  <span key={m.id + sl.start} className={s.miniBar} data-kind="clash" style={pos(sl.start, sl.end)} />
+                ))}
+              {own.map((sl) => (
                 <span key={sl.start} className={s.miniBar} data-kind="new" style={{ ...pos(sl.start, sl.end), opacity: clashIds.size ? 0.85 : 1 }} />
               ))}
+            </div>
           </div>
-          <Text variant="caption-2" color="tertiary">
-            {d}
-          </Text>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

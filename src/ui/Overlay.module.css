@@ -24,7 +24,9 @@
   border-radius: var(--wivu-radius-24) var(--wivu-radius-24) 0 0;
   padding: 0 var(--wivu-layout-inset) calc(max(var(--safe-bottom), 12px) + 12px);
   box-shadow: var(--wivu-elevation-overlay);
-  touch-action: none;
+  /* 끌어서 닫기는 핸들에서만(dragListener=false) — 시트 본문은 세로 스크롤 허용 */
+  touch-action: pan-y;
+  overscroll-behavior: contain;
 }
 .handleArea {
   display: flex;

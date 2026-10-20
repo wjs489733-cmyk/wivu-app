@@ -3,7 +3,7 @@ import { COURSES, NOW, courseById, type CourseId, type Weekday } from '@/data/co
 import { ASSIGNMENT_LIST } from '@/screens/courses/data';
 
 /* ────────────────────────────────────────────────────────────
- * 시간표 · 캘린더 섹션 데이터 — Figma 392:7472 · 402:7846 · 403:7931 · 392:7540 · 404:7979 · 405:8022
+ * 시간표 · 캘린더 섹션 데이터 — Figma v5 07 시간표(685:6192 …) · 08 캘린더(686:6385 …)
  * 기준 시각: core NOW (2026-10-09 금 9:41 · 6주차). 과목은 core COURSES가 기준, 검색 카탈로그는 가상 과목.
  * ──────────────────────────────────────────────────────────── */
 
@@ -42,6 +42,8 @@ export const shortDate = (s: string) => {
   const d = parseIso(s);
   return `${d.getMonth() + 1}.${d.getDate()}`;
 };
+/** '10.12 (월)' (Figma v5 다가오는 일정 카드) */
+export const dotDate = (s: string) => `${shortDate(s)} (${DOW[parseIso(s).getDay()]})`;
 /** 'D-3' · 'D-DAY' · '종료' */
 export const dday = (s: string) => {
   const n = dayDiff(TODAY, s);
@@ -71,7 +73,7 @@ export type TTCourse = {
 const BLOCK: Record<CourseId, { name: string; room: string; note?: string }> = {
   'service-design': { name: '서비스\n디자인', room: '디자인관\n302' },
   'brand-design': { name: '브랜드\n디자인', room: '디자인관\n401' },
-  'ux-research': { name: 'UX\n리서치', room: '정보관\n210' },
+  'ux-research': { name: 'UX 리서치', room: '정보관\n210' },
   'design-management': { name: '디자인\n경영', room: '인문관\n305' },
   'motion-graphics': { name: '모션\n그래픽스', room: '디자인관\nB103' },
   writing: { name: '글쓰기와\n소통', room: '', note: '시간 무관 · 7주차 강의 10.12 오픈' },
@@ -153,19 +155,22 @@ export function nextClassDate(c: TTCourse): { date: string; slot: Slot } | null 
 
 /* ── 캘린더 ────────────────────────────────────────────────── */
 export type Category = 'class' | 'assignment' | 'academic' | 'personal';
-export const CATEGORIES: Category[] = ['class', 'assignment', 'academic', 'personal'];
-/** 카테고리 색 — 디자인 규칙 §5 칩 색 매핑(학사 → brand)을 따름.
- *  Figma 392:7540은 학사=초록(pulse)·수업=브랜드였지만, 학사를 brand로 통일하면서 수업은 잉크(진한 남색)로 구분 */
-export const CAT: Record<Category, { label: string; detail: string; color: string; tone: 'brand' | 'dangerSoft' | 'outline' | 'neutral' }> = {
-  class: { label: '수업', detail: '수업', color: 'var(--wivu-color-text-primary)', tone: 'outline' },
+/** 일정 추가 '분류' 순서 (Figma 686:6717: 개인 · 수업 · 과제 · 학사) */
+export const CATEGORIES: Category[] = ['personal', 'class', 'assignment', 'academic'];
+/** 카테고리 표기 — v5: 달력 점 색(학사 brand · 과제 error · 개인 tertiary)과 배지 톤.
+ *  수업은 매주 반복이라 달력 점을 찍지 않는다 (Figma 686:6385). */
+export const CAT: Record<Category, { label: string; detail: string; color: string; tone: 'brand' | 'dangerSoft' | 'neutral' }> = {
+  class: { label: '수업', detail: '수업', color: 'var(--wivu-color-text-primary)', tone: 'neutral' },
   assignment: { label: '과제', detail: '과제', color: 'var(--wivu-color-status-error)', tone: 'dangerSoft' },
   academic: { label: '학사', detail: '학사 일정', color: 'var(--wivu-color-bg-brand)', tone: 'brand' },
-  personal: { label: '개인', detail: '개인 일정', color: 'var(--wivu-color-text-tertiary)', tone: 'neutral' },
+  personal: { label: '개인', detail: '내 일정', color: 'var(--wivu-color-text-tertiary)', tone: 'neutral' },
 };
 
 export type CalEvent = {
   id: string;
   title: string;
+  /** 좁은 자리(다가오는 일정 카드)용 짧은 제목 */
+  short?: string;
   category: Category;
   /** 목록·D-day 기준 날짜 */
   date: string;
@@ -201,14 +206,14 @@ export type CalEvent = {
 };
 
 /** 과제 일정 — 수강과목 과제 목록(courses/data.ts ASSIGNMENT_LIST)에서 파생 (단일 기준).
- *  제목은 '{과제명} 제출' (Figma 392:7540 '브랜드 무드보드 제출'), 목록 메타는 agenda.eventMeta가 제출 상태로 계산 */
+ *  제목은 '{과제명} 마감' (Figma v5 686:6385 '서비스 분석 리포트 마감'), 목록 메타는 agenda.eventMeta가 제출 상태로 계산 */
 const hhmm = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 export const ASSIGNMENT_EVENTS: CalEvent[] = ASSIGNMENT_LIST.map((a) => {
   const course = courseById(a.courseId);
   const date = iso(a.due);
   return {
     id: `${a.courseId}-${a.id}`,
-    title: `${a.title} 제출`,
+    title: `${a.title} 마감`,
     category: 'assignment',
     date,
     start: hhmm(a.due),
@@ -224,12 +229,23 @@ export const ASSIGNMENT_EVENTS: CalEvent[] = ASSIGNMENT_LIST.map((a) => {
 
 export const SEED_EVENTS: CalEvent[] = [
   { id: 'e5', title: '시각디자인과 개강총회', category: 'academic', date: '2026-09-10', start: '18:00', end: '20:00', place: '디자인관 세미나실', onCampus: true, meta: '18:00 · 디자인관 세미나실', source: '학과 공지 · 09.03 등록', description: '2학기 학과 개강총회예요. 학기 일정 안내와 학생회 소개가 이어져요.', alarm: '1시간 전' },
-  { id: 'e1', title: '2026 하반기 취업박람회', category: 'academic', date: '2026-10-12', start: '14:00', end: '17:00', place: '학생회관 대강당', onCampus: true, meta: '14:00 · 학생회관 대강당', note: '사전 신청 10.11(일)까지', source: '학사 공지 · 10.03 등록', noticeId: 'n3', apply: true, alarm: '하루 전 18:00 · 1시간 전', description: '지역 기업 32개사가 참여하는 하반기 취업박람회입니다. 현장 면접과 직무 상담이 진행되며, 사전 신청자에게는 이력서·포트폴리오 컨설팅이 제공됩니다.\n\n· 대상: 재학생 및 졸업 예정자\n· 준비물: 학생증, 이력서(선택)' },
+  { id: 'e1', title: '2026 하반기 교내 취업박람회', short: '교내 취업박람회', category: 'academic', date: '2026-10-12', start: '14:00', end: '17:00', place: '학생회관 대강당', onCampus: true, note: '사전 신청 10.11(일)까지', source: '학사 공지 · 10.03 등록', noticeId: 'n3', apply: true, alarm: '하루 전 09:00', description: '40여 개 기업이 참여하는 교내 취업박람회예요. 사전 신청하면 현장 상담을 먼저 받을 수 있어요.\n\n· 대상: 재학생·졸업 예정자\n· 준비물: 이력서 1부(선택)' },
   { id: 'e2', title: '중간고사 기간', category: 'academic', date: '2026-10-19', span: ['2026-10-19', '2026-10-23'], allDay: true, meta: '10.19 – 10.23 · 학사 공지', note: '시험 시간표는 과목별 공지 확인', source: '학사 공지 · 10.08 등록', noticeId: 'n1', alarm: '하루 전 18:00', description: '2학기 중간고사 기간이에요. 과목별 시험 시간과 장소는 각 과목 공지에서 확인해 주세요. 시험을 대체하는 과제·발표가 있는 과목도 있어요.' },
-  { id: 'e7', title: '포트폴리오 스터디', category: 'personal', date: '2026-10-20', start: '19:00', end: '21:00', place: '중앙도서관 그룹스터디룸 3', onCampus: true, meta: '19:00 · 중앙도서관', alarm: '30분 전', repeat: '매주', user: true },
+  { id: 'e7', title: '포트폴리오 스터디', category: 'personal', date: '2026-10-20', start: '19:00', end: '21:00', place: '중앙도서관 스터디룸 3', onCampus: true, alarm: '30분 전', repeat: '매주', user: true, description: '졸업전시 포트폴리오 서로 봐주는 모임이에요. 각자 작업 3개씩 준비해 오기.' },
   { id: 'e8', title: '추석 연휴', category: 'academic', date: '2026-09-24', span: ['2026-09-24', '2026-09-26'], allDay: true, holiday: true, meta: '공휴일 · 9.24 – 9.26', source: '학사 일정', description: '추석 연휴예요. 연휴 중 수업 운영은 각 과목 공지를 확인해 주세요.' },
   ...ASSIGNMENT_EVENTS,
 ];
+
+/** 일정 일시 한 줄 (Figma 697:7572 '10월 14일 (수) 18:00 – 19:30' · 686:6658 '10.12 (월) 14:00–17:00')
+ *  두 프레임 표기가 달라 한 가지로 통일: '10월 14일 (수) 18:00–19:30' · 여러 날 '10월 19일 (월) – 10월 23일 (금)' */
+export function eventWhen(e: Pick<CalEvent, 'date' | 'span' | 'start' | 'end' | 'allDay' | 'deadline'>) {
+  if (e.span) return `${longDate(e.span[0])} – ${longDate(e.span[1])}`;
+  const d = longDate(e.date);
+  if (e.allDay) return `${d} 하루 종일`;
+  if (e.deadline) return `${d} ${e.start ?? e.end} 마감`;
+  if (e.start && e.end) return `${d} ${e.start}–${e.end}`;
+  return e.start ? `${d} ${e.start}` : d;
+}
 
 /** 수업이 열리는 기간 (학기 시작 ~ 연말) */
 export const SEMESTER_START = '2026-09-01';
@@ -239,7 +255,6 @@ export const MONTHS = ['2026-08', '2026-09', '2026-10', '2026-11', '2026-12'];
 
 /** 일정 추가 폼 선택지 */
 export const ALARM_OPTIONS = ['없음', '정시', '10분 전', '30분 전', '1시간 전', '하루 전'];
-export const REPEAT_OPTIONS = ['반복 안 함', '매일', '매주', '매월'];
 export const TIME_OPTIONS = Array.from({ length: 31 }, (_, i) => {
   const m = 8 * 60 + i * 30; // 08:00 ~ 23:00
   return `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
