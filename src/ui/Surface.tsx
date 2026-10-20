@@ -1,7 +1,7 @@
 import type { CSSProperties, HTMLAttributes, ReactNode } from 'react';
 import { Icon, type IconName } from './Icon';
 import { DotBadge } from './Display';
-import { Text, type TextColor } from './primitives';
+import { Text, type TypeVariant, type TextColor } from './primitives';
 import s from './Surface.module.css';
 
 /* ── Card ─────────────────────────────────────────────────────
@@ -68,7 +68,7 @@ export function Tile({ icon, label, sub, subColor = 'tertiary', variant = 'fille
       ) : (
         <Icon name={icon} size={20} color="primary" />
       )}
-      <Text variant="label">{label}</Text>
+      <Text variant="body-3-strong">{label}</Text>
       {sub && (
         <Text variant="caption-2" color={subColor}>
           {sub}
@@ -80,7 +80,7 @@ export function Tile({ icon, label, sub, subColor = 'tertiary', variant = 'fille
 }
 
 /* ── Section ──────────────────────────────────────────────────
- * 제목(Title 2, x=20) + 오른쪽 '전체 N ›' 링크(x=372 정렬) + 본문(x=16) */
+ * v5 Section Header (Figma 666:4936): 제목 Title 3 + 오른쪽 '전체보기' Caption 1 tertiary(화살표 없음) */
 type SectionProps = {
   title: ReactNode;
   /** '전체 3' 등 더보기 링크 */
@@ -97,7 +97,7 @@ export function Section({ title, more, onMore, aside, padded = true, children, s
   return (
     <section className={s.section} style={style}>
       <div className={s.sectionHeader}>
-        <Text variant="title-2" as="h2">
+        <Text variant="title-3" as="h2">
           {title}
         </Text>
         {more ? <MoreLink label={more} onPress={onMore} /> : aside ? <Text variant="caption-1" color="tertiary">{aside}</Text> : null}
@@ -111,7 +111,6 @@ export function MoreLink({ label, onPress }: { label: string; onPress?: () => vo
   return (
     <button type="button" className={`${s.moreLink} t-caption-1`} onClick={onPress}>
       {label}
-      <Icon name="chevron-right" size={16} />
     </button>
   );
 }
@@ -128,7 +127,7 @@ export function ListGroup({ children, plain, style }: { children: ReactNode; pla
 
 type ListRowProps = {
   title: ReactNode;
-  titleVariant?: 'subhead' | 'label' | 'headline' | 'body';
+  titleVariant?: TypeVariant;
   meta?: ReactNode;
   leading?: ReactNode;
   trailing?: ReactNode;
@@ -137,7 +136,7 @@ type ListRowProps = {
   titleAddon?: ReactNode;
   style?: CSSProperties;
 };
-export function ListRow({ title, titleVariant = 'subhead', meta, leading, trailing, chevron, onPress, titleAddon, style }: ListRowProps) {
+export function ListRow({ title, titleVariant = 'body-1', meta, leading, trailing, chevron, onPress, titleAddon, style }: ListRowProps) {
   const content = (
     <>
       {leading}
@@ -148,7 +147,7 @@ export function ListRow({ title, titleVariant = 'subhead', meta, leading, traili
           </Text>
           {titleAddon}
         </span>
-        {meta && (typeof meta === 'string' ? <Text variant="caption-2" color="tertiary" className="truncate">{meta}</Text> : meta)}
+        {meta && (typeof meta === 'string' ? <Text variant="caption-1" color="tertiary" className="truncate">{meta}</Text> : meta)}
       </span>
       {(trailing || chevron) && (
         <span className={s.rowTrailing}>
@@ -173,7 +172,7 @@ export function ListRow({ title, titleVariant = 'subhead', meta, leading, traili
 }
 
 export function LeadingIcon({ icon, tone = 'brand' }: { icon: IconName; tone?: 'brand' | 'subtle' | 'pulse' }) {
-  const bg = { brand: 'var(--wivu-color-bg-brand-soft)', subtle: 'var(--wivu-color-bg-subtle)', pulse: 'var(--wivu-color-bg-pulse-soft)' }[tone];
+  const bg = { brand: 'var(--wivu-color-bg-brand-tint)', subtle: 'var(--wivu-color-bg-subtle)', pulse: 'var(--wivu-color-bg-pulse-soft)' }[tone];
   const fg = { brand: 'var(--wivu-color-icon-brand)', subtle: 'var(--wivu-color-icon-primary)', pulse: 'var(--wivu-color-icon-pulse)' }[tone];
   return (
     <span className={s.leadingBox} style={{ background: bg, color: fg }}>

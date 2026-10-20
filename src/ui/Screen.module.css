@@ -146,7 +146,7 @@
 .tabBg {
   position: absolute;
   inset: 21px 0 0 0;
-  background: var(--wivu-color-border-default);
+  background: var(--wivu-color-bg-tab-bar);
 }
 .tabBump {
   position: absolute;
@@ -156,7 +156,7 @@
   height: 93px;
   margin-left: -46.5px;
   border-radius: 50%;
-  background: var(--wivu-color-border-default);
+  background: var(--wivu-color-bg-tab-bar);
 }
 .tabRow {
   position: relative;
@@ -191,9 +191,11 @@
   transform: translateY(-6px);
 }
 .tabLabel {
-  font-size: 11px;
-  line-height: 14px;
-  font-weight: 500;
+  /* v5: Caption 2 (활성 Caption 2 Strong) — 클래스로 지정 */
+}
+.tabHome {
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 
 /* ── Bottom CTA bar (탭바 없는 하위 화면) ─────────────────── */

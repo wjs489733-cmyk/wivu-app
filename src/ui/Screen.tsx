@@ -168,7 +168,7 @@ export function TopNav({ title, leading = 'back', onLeading, fallback, trailing,
 
 export function TextAction({ children, onPress, disabled }: { children: ReactNode; onPress?: () => void; disabled?: boolean }) {
   return (
-    <button type="button" className={`${s.textAction} t-headline`} onClick={onPress} disabled={disabled}>
+    <button type="button" className={`${s.textAction} t-body-3-strong`} onClick={onPress} disabled={disabled}>
       {children}
     </button>
   );
@@ -180,7 +180,7 @@ export function LargeHeader({ title, actions, below }: { title: ReactNode; actio
     <>
       <div className={s.largeHeader}>
         {typeof title === 'string' ? (
-          <Text variant="title-1" as="h1">
+          <Text variant="title-2" as="h1">
             {title}
           </Text>
         ) : (

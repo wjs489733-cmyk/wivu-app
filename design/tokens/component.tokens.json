@@ -60,8 +60,13 @@
       "height": {
         "$type": "dimension",
         "$value": {
-          "value": 32,
+          "value": 36,
           "unit": "px"
+        },
+        "$extensions": {
+          "com.wivu": {
+            "note": "v5 Button S 36 (10-21, Figma 666:4860)"
+          }
         }
       },
       "padding-x": {

@@ -24,16 +24,53 @@ type TabBarProps = {
   onActivePress?: () => void;
   /** 탭바(하단 영역)에서 위로 밀었을 때 — 홈 퀵메뉴 */
   onSwipeUp?: () => void;
+  /** 홈 탭을 길게 눌렀을 때(0.5초) — v5: 레이디얼 퀵메뉴. 없으면 홈으로 가서 퀵메뉴를 연다(`/home?menu=1`) */
+  onHomeLongPress?: () => void;
 };
 
-/** 하단 탭바 — 출석 / 수강과목 / 홈(가운데 범프) / 시간표 / 게시판 */
-export function TabBar({ active, onActivePress, onSwipeUp }: TabBarProps) {
+/** 길게 누르기 판정 시간 (ms) — Figma 프로토타입 MOUSE_DOWN 0.5초와 같게 */
+const LONG_PRESS = 500;
+
+/** 하단 탭바 v5 (Figma 666:5059) — 출석 / 수강과목 / 홈(가운데 혹) / 시간표 / 게시판. 홈 탭을 길게 누르면 레이디얼 퀵메뉴 */
+export function TabBar({ active, onActivePress, onSwipeUp, onHomeLongPress }: TabBarProps) {
   const nav = useNav();
   const screen = useScreen();
   const gesture = useRef<{ x: number; y: number; done: boolean } | null>(null);
   const suppressClick = useRef(false);
   const cleanup = useRef<() => void>(() => {});
   useEffect(() => () => cleanup.current(), []);
+  const pressTimer = useRef<number | null>(null);
+  const clearPress = () => {
+    if (pressTimer.current !== null) window.clearTimeout(pressTimer.current);
+    pressTimer.current = null;
+  };
+  useEffect(() => clearPress, []);
+  const startHomePress = (e: ReactPointerEvent) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    clearPress();
+    const x = e.clientX;
+    const y = e.clientY;
+    const cancelOnMove = (ev: PointerEvent) => {
+      if (Math.hypot(ev.clientX - x, ev.clientY - y) > 10) stop();
+    };
+    const stop = () => {
+      clearPress();
+      window.removeEventListener('pointermove', cancelOnMove);
+      window.removeEventListener('pointerup', stop);
+      window.removeEventListener('pointercancel', stop);
+    };
+    window.addEventListener('pointermove', cancelOnMove);
+    window.addEventListener('pointerup', stop);
+    window.addEventListener('pointercancel', stop);
+    pressTimer.current = window.setTimeout(() => {
+      pressTimer.current = null;
+      suppressClick.current = true; // 손을 뗄 때 이어지는 click(홈 이동)을 막는다
+      window.setTimeout(() => (suppressClick.current = false), 600);
+      navigator.vibrate?.(10);
+      if (onHomeLongPress) onHomeLongPress();
+      else nav.tab(`${P.home}?menu=1`);
+    }, LONG_PRESS);
+  };
 
   const onPointerDown = (e: ReactPointerEvent) => {
     if (!onSwipeUp || (e.pointerType === 'mouse' && e.button !== 0)) return;
@@ -91,10 +128,13 @@ export function TabBar({ active, onActivePress, onSwipeUp }: TabBarProps) {
               type="button"
               className={`${s.tab} ${t.key === 'home' ? s.tabHome : ''}`}
               aria-current={isActive ? 'page' : undefined}
+              aria-description={t.key === 'home' ? '길게 누르면 내 메뉴' : undefined}
+              onPointerDown={t.key === 'home' ? startHomePress : undefined}
+              onContextMenu={t.key === 'home' ? (e) => e.preventDefault() : undefined}
               onClick={() => (isActive ? (onActivePress ?? screen?.scrollToTop)?.() : nav.tab(t.path))}
             >
               <Icon name={t.icon} size={24} />
-              <span className={s.tabLabel}>{t.label}</span>
+              <span className={`${s.tabLabel} ${isActive ? 't-caption-2-strong' : 't-caption-2'}`}>{t.label}</span>
             </button>
           );
         })}

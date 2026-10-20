@@ -8,7 +8,7 @@
   --wivu-button-l-icon: 20px;
   --wivu-button-m-height: 44px;
   --wivu-button-m-icon: 16px;
-  --wivu-button-s-height: 32px;
+  --wivu-button-s-height: 36px;
   --wivu-button-s-icon: 16px;
   --wivu-chip-height: 24px;
   --wivu-elevation-card: 0px 2px 8px 0px rgba(16, 24, 40, 0.08); /** Subtle depth for actionable cards */
@@ -71,6 +71,12 @@
   --wivu-color-bg-scrim: rgba(19, 19, 19, 0.4);
   --wivu-color-bg-on-brand-ghost: rgba(255, 255, 255, 0.2);
   --wivu-color-bg-on-brand-chip: rgba(255, 255, 255, 0.18);
+  --wivu-color-bg-brand-tint: rgba(76, 128, 240, 0.1);
+  --wivu-color-bg-error-tint: rgba(229, 72, 77, 0.1);
+  --wivu-color-bg-warning-tint: rgba(224, 149, 43, 0.14);
+  --wivu-color-bg-tab-bar: #E5E8EF;
+  --wivu-color-bg-brand-strong: #2F63D6;
+  --wivu-color-bg-on-brand-tint: rgba(255, 255, 255, 0.2);
   --wivu-color-text-on-brand-muted: rgba(255, 255, 255, 0.85);
   --wivu-font-family-base: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --wivu-button-l-padding-x: var(--wivu-space-20);
@@ -114,20 +120,26 @@
   --wivu-color-border-pulse: var(--wivu-color-primitive-ink-950);
   --wivu-color-status-error: var(--wivu-color-primitive-error-500);
   --wivu-color-status-warning: var(--wivu-color-primitive-warning-500);
-  --wivu-type-display: 700 28px/1.2857 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --wivu-type-title-1: 700 24px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-  --wivu-type-title-2: 700 18px/1.4444 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-title-2: 700 20px/1.4 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --wivu-type-title-3: 600 17px/1.4118 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-body-1: 400 16px/1.5 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-body-1-strong: 600 16px/1.5 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-body-2: 400 15px/1.4667 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-body-2-strong: 600 15px/1.4667 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-body-3: 400 14px/1.4286 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-body-3-strong: 600 14px/1.4286 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-caption-1: 400 13px/1.3846 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-caption-1-strong: 600 13px/1.3846 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-caption-2: 400 12px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-caption-2-strong: 600 12px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-display: 700 24px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --wivu-type-headline: 600 16px/1.5 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --wivu-type-subhead: 600 15px/1.4667 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-  --wivu-type-body: 400 15px/1.6 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-body: 400 15px/1.4667 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --wivu-type-label: 600 14px/1.4286 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --wivu-type-callout: 400 14px/1.4286 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-  --wivu-type-caption-1-strong: 600 13px/1.3846 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-  --wivu-type-caption-1: 400 13px/1.3846 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-  --wivu-type-caption-2-strong: 600 12px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-  --wivu-type-caption-2: 400 12px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-  --wivu-type-micro: 600 11px/1.2727 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-  --wivu-type-number: 700 24px/1.25 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-micro: 600 12px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --wivu-type-number: 700 20px/1.4 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --wivu-card-border: var(--wivu-color-border-default);
 }

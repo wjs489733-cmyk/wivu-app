@@ -1,4 +1,4 @@
-/* Button v4 (Figma 474:3714) — L h52 r14 Headline / M h44 r12 Label / S h32 pill Caption 1 Strong */
+/* Button v5 (Figma 666:4860) — L h52 r14 Body 1 Strong / M h44 r12 Body 2 Strong / S h36 pill Caption 1 Strong */
 .button {
   position: relative;
   display: inline-flex;
@@ -52,6 +52,20 @@
 .primary {
   background: var(--wivu-color-bg-brand);
   color: var(--wivu-color-text-on-brand);
+}
+.secondary {
+  /* Figma는 bg/subtle(#FAFAFA) — 흰 바탕에서 거의 안 보여 한 단계 진한 회색(#F2F2F2) 사용 */
+  background: var(--wivu-color-bg-brand-soft);
+  color: var(--wivu-color-text-primary);
+}
+.secondary:active:not(:disabled) {
+  background: var(--wivu-color-bg-brand-soft-pressed);
+  filter: none;
+}
+.tertiary {
+  background: transparent;
+  color: var(--wivu-color-text-secondary);
+  padding-inline: var(--wivu-space-8);
 }
 .soft {
   background: var(--wivu-color-bg-brand-soft);

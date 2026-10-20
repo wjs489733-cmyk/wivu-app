@@ -1,31 +1,101 @@
 /* 자동 생성 — 수정 금지. 원본: design/tokens/typography.tokens.json (Figma 'WivU Type') */
-.t-display {
-  font-family: var(--wivu-font-family-base);
-  font-size: 28px;
-  line-height: 1.2857;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
 .t-title-1 {
   font-family: var(--wivu-font-family-base);
   font-size: 24px;
   line-height: 1.3333;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.0167em;
 }
 .t-title-2 {
   font-family: var(--wivu-font-family-base);
-  font-size: 18px;
-  line-height: 1.4444;
+  font-size: 20px;
+  line-height: 1.4;
   font-weight: 700;
-  letter-spacing: 0em;
+  letter-spacing: -0.015em;
 }
 .t-title-3 {
   font-family: var(--wivu-font-family-base);
   font-size: 17px;
   line-height: 1.4118;
   font-weight: 600;
+  letter-spacing: -0.0118em;
+}
+.t-body-1 {
+  font-family: var(--wivu-font-family-base);
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 400;
   letter-spacing: 0em;
+}
+.t-body-1-strong {
+  font-family: var(--wivu-font-family-base);
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 600;
+  letter-spacing: 0em;
+}
+.t-body-2 {
+  font-family: var(--wivu-font-family-base);
+  font-size: 15px;
+  line-height: 1.4667;
+  font-weight: 400;
+  letter-spacing: 0em;
+}
+.t-body-2-strong {
+  font-family: var(--wivu-font-family-base);
+  font-size: 15px;
+  line-height: 1.4667;
+  font-weight: 600;
+  letter-spacing: 0em;
+}
+.t-body-3 {
+  font-family: var(--wivu-font-family-base);
+  font-size: 14px;
+  line-height: 1.4286;
+  font-weight: 400;
+  letter-spacing: 0em;
+}
+.t-body-3-strong {
+  font-family: var(--wivu-font-family-base);
+  font-size: 14px;
+  line-height: 1.4286;
+  font-weight: 600;
+  letter-spacing: 0em;
+}
+.t-caption-1 {
+  font-family: var(--wivu-font-family-base);
+  font-size: 13px;
+  line-height: 1.3846;
+  font-weight: 400;
+  letter-spacing: 0em;
+}
+.t-caption-1-strong {
+  font-family: var(--wivu-font-family-base);
+  font-size: 13px;
+  line-height: 1.3846;
+  font-weight: 600;
+  letter-spacing: 0em;
+}
+.t-caption-2 {
+  font-family: var(--wivu-font-family-base);
+  font-size: 12px;
+  line-height: 1.3333;
+  font-weight: 400;
+  letter-spacing: 0em;
+}
+.t-caption-2-strong {
+  font-family: var(--wivu-font-family-base);
+  font-size: 12px;
+  line-height: 1.3333;
+  font-weight: 600;
+  letter-spacing: 0em;
+}
+.t-display {
+  font-family: var(--wivu-font-family-base);
+  font-size: 24px;
+  line-height: 1.3333;
+  font-weight: 700;
+  letter-spacing: -0.0167em;
 }
 .t-headline {
   font-family: var(--wivu-font-family-base);
@@ -44,7 +114,7 @@
 .t-body {
   font-family: var(--wivu-font-family-base);
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.4667;
   font-weight: 400;
   letter-spacing: 0em;
 }
@@ -62,45 +132,17 @@
   font-weight: 400;
   letter-spacing: 0em;
 }
-.t-caption-1-strong {
-  font-family: var(--wivu-font-family-base);
-  font-size: 13px;
-  line-height: 1.3846;
-  font-weight: 600;
-  letter-spacing: 0em;
-}
-.t-caption-1 {
-  font-family: var(--wivu-font-family-base);
-  font-size: 13px;
-  line-height: 1.3846;
-  font-weight: 400;
-  letter-spacing: 0em;
-}
-.t-caption-2-strong {
-  font-family: var(--wivu-font-family-base);
-  font-size: 12px;
-  line-height: 1.3333;
-  font-weight: 600;
-  letter-spacing: 0em;
-}
-.t-caption-2 {
-  font-family: var(--wivu-font-family-base);
-  font-size: 12px;
-  line-height: 1.3333;
-  font-weight: 400;
-  letter-spacing: 0em;
-}
 .t-micro {
   font-family: var(--wivu-font-family-base);
-  font-size: 11px;
-  line-height: 1.2727;
+  font-size: 12px;
+  line-height: 1.3333;
   font-weight: 600;
   letter-spacing: 0em;
 }
 .t-number {
   font-family: var(--wivu-font-family-base);
-  font-size: 24px;
-  line-height: 1.25;
+  font-size: 20px;
+  line-height: 1.4;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
 }

@@ -17,7 +17,8 @@ export const P = {
 
   // 홈
   home: '/home', // 308:11640 출석 전 · 308:11881 출석 완료 · 308:11745 레디얼(오버레이)
-  homeFreeDay: '/home/free-day', // 433:9519 공강 홈 (목 10/8)
+  homeFreeDay: '/home/free-day', // 433:9519 공강 홈 (목 10/8) · v5 692:6804
+  homeEdit: '/home/edit', // v5 676:5225 홈 편집 · 블록 (블록 켜기/끄기·순서)
   notifications: '/notifications', // 428:8938
   meal: '/meal', // 429:8987
   notices: '/notices', // (코드 추가) 학사 공지 목록
@@ -64,16 +65,17 @@ export const P = {
   designSystem: '/design-system',
 } as const;
 
-/** Figma Flow starting points (전시 데스크톱 패널에서 바로가기) */
+/** Figma Flow starting points (전시 데스크톱 패널에서 바로가기) — v5 페이지 'UXUI 디자인 (v5 · 피드백 반영)' 기준 */
 export const FLOWS = [
-  { id: 'start', label: '시작부터 홈까지', path: P.splash, figma: '553:3075' },
-  { id: 'attendance', label: '출석', path: P.attendance, figma: '392:7302' },
-  { id: 'courses', label: '수강과목 → 과제 제출', path: P.courses, figma: '392:7404' },
-  { id: 'timetable', label: '시간표', path: P.timetable, figma: '392:7472' },
-  { id: 'calendar', label: '시간표 › 캘린더', path: P.calendar, figma: '392:7540' },
-  { id: 'board', label: '게시판', path: P.board, figma: '418:8600' },
-  { id: 'err-login', label: '예외 · 로그인 오류', path: `${P.login}?error=1`, figma: '411:8258' },
-  { id: 'err-pin', label: '예외 · PIN 오류', path: `${P.attendancePin}?error=1`, figma: '432:9371' },
-  { id: 'pin-2', label: '예외 · 자릿수 지정 수업(2자리)', path: `${P.attendancePin}?digits=2`, figma: '508:3568' }, // 수업이 자릿수를 알려준 경우 (Figma 508:3117 섹션)
-  { id: 'free-day', label: '예외 · 공강 홈', path: P.homeFreeDay, figma: '433:9519' },
+  { id: 'start', label: '시작부터 홈까지', path: P.splash, figma: '667:4454' },
+  { id: 'home', label: '홈', path: P.home, figma: '674:4748' },
+  { id: 'attendance', label: '출석', path: P.attendance, figma: '683:5844' },
+  { id: 'courses', label: '수강과목 → 과제 제출', path: P.courses, figma: '684:5962' },
+  { id: 'timetable', label: '시간표', path: P.timetable, figma: '685:6192' },
+  { id: 'calendar', label: '캘린더', path: P.calendar, figma: '686:6385' },
+  { id: 'board', label: '게시판', path: P.board, figma: '687:6491' },
+  { id: 'err-login', label: '예외 · 로그인 오류', path: `${P.login}?error=1`, figma: '669:4725' },
+  { id: 'err-pin', label: '예외 · PIN 오류', path: `${P.attendancePin}?error=1`, figma: '679:5633' },
+  { id: 'free-day', label: '예외 · 공강 홈', path: P.homeFreeDay, figma: '692:6804' },
+  { id: 'pin-2', label: '예외 · 자릿수 지정 PIN', path: `${P.attendancePin}?digits=2`, figma: '692:6987' },
 ] as const;

@@ -195,6 +195,124 @@
             "note": "히어로 카드 상태 칩 (Figma RAW #FFFFFF@18)"
           }
         }
+      },
+      "brand-tint": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.298,
+            0.502,
+            0.9412
+          ],
+          "alpha": 0.1,
+          "hex": "#4C80F0"
+        },
+        "$extensions": {
+          "com.figma": {
+            "source": "figma",
+            "file": "v4-codex · v5 페이지",
+            "note": "bg/brand-tint — 연한 파랑 면(뱃지·선택 칩·선택 옵션)"
+          }
+        }
+      },
+      "error-tint": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.898,
+            0.2824,
+            0.302
+          ],
+          "alpha": 0.1,
+          "hex": "#E5484D"
+        },
+        "$extensions": {
+          "com.figma": {
+            "source": "figma",
+            "file": "v4-codex · v5 페이지",
+            "note": "bg/error-tint — 오류 뱃지 면"
+          }
+        }
+      },
+      "warning-tint": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.8784,
+            0.5843,
+            0.1686
+          ],
+          "alpha": 0.14,
+          "hex": "#E0952B"
+        },
+        "$extensions": {
+          "com.figma": {
+            "source": "figma",
+            "file": "v4-codex · v5 페이지",
+            "note": "bg/warning-tint — 경고(마감 임박·지각) 뱃지 면"
+          }
+        }
+      },
+      "tab-bar": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.898,
+            0.9098,
+            0.9373
+          ],
+          "hex": "#E5E8EF"
+        },
+        "$extensions": {
+          "com.figma": {
+            "source": "figma",
+            "file": "v4-codex · v5 페이지",
+            "note": "bg/tab-bar — 하단 탭바(홈 혹 실루엣) 10-20"
+          }
+        }
+      },
+      "brand-strong": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            0.1843,
+            0.3882,
+            0.8392
+          ],
+          "hex": "#2F63D6"
+        },
+        "$extensions": {
+          "com.figma": {
+            "source": "figma",
+            "file": "v4-codex · v5 페이지",
+            "note": "bg/brand-strong — 반전 카드(출석 완료) 면, 흰 글자 대비 5.4:1"
+          }
+        }
+      },
+      "on-brand-tint": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "srgb",
+          "components": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "alpha": 0.2,
+          "hex": "#FFFFFF"
+        },
+        "$extensions": {
+          "com.figma": {
+            "source": "figma",
+            "file": "v4-codex · v5 페이지",
+            "note": "bg/on-brand-tint — 파란 면 위 흰 반투명(칩·보조 버튼)"
+          }
+        }
       }
     },
     "text": {

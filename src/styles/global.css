@@ -126,3 +126,8 @@ svg {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* v5 폰트 규칙: 국문 Pretendard(기본) · 영문 전용 텍스트는 SF Pro (애플 기기는 시스템 글꼴, 그 외는 비슷한 산세리프) */
+.font-en {
+  font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, var(--wivu-font-family-base);
+}

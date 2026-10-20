@@ -9,20 +9,28 @@ import { createElement, forwardRef, type CSSProperties, type ElementType, type H
 export type Space = 0 | 2 | 4 | 8 | 12 | 16 | 20 | 24 | 32;
 export type Radius = 4 | 6 | 8 | 12 | 14 | 16 | 24 | 'full';
 
+/** v5 타입 스케일 13종 (Figma 'WivU v5/*'). 아래쪽 v4 이름은 같은 값의 호환 별칭 — 새 코드는 v5 이름만 */
 export type TypeVariant =
-  | 'display'
   | 'title-1'
   | 'title-2'
   | 'title-3'
+  | 'body-1'
+  | 'body-1-strong'
+  | 'body-2'
+  | 'body-2-strong'
+  | 'body-3'
+  | 'body-3-strong'
+  | 'caption-1'
+  | 'caption-1-strong'
+  | 'caption-2'
+  | 'caption-2-strong'
+  /** @deprecated v4 별칭 */
+  | 'display'
   | 'headline'
   | 'subhead'
   | 'body'
   | 'label'
   | 'callout'
-  | 'caption-1-strong'
-  | 'caption-1'
-  | 'caption-2-strong'
-  | 'caption-2'
   | 'micro'
   | 'number';
 
@@ -69,7 +77,7 @@ type TextProps = HTMLAttributes<HTMLElement> & {
   children?: ReactNode;
 };
 
-export function Text({ variant = 'body', color = 'primary', as = 'span', truncate, lines, tnum, align, className, style, ...rest }: TextProps) {
+export function Text({ variant = 'body-2', color = 'primary', as = 'span', truncate, lines, tnum, align, className, style, ...rest }: TextProps) {
   const cls = [`t-${variant}`, truncate && 'truncate', tnum && 'tnum', className].filter(Boolean).join(' ');
   const clamp: CSSProperties | undefined = lines
     ? { display: '-webkit-box', WebkitLineClamp: lines, WebkitBoxOrient: 'vertical', overflow: 'hidden' }

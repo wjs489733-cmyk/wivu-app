@@ -12,7 +12,7 @@ export const wivuButtonMPaddingX = "16px";
 export const wivuButtonMGap = "8px";
 export const wivuButtonMRadius = "12px";
 export const wivuButtonMIcon = "16px";
-export const wivuButtonSHeight = "32px";
+export const wivuButtonSHeight = "36px";
 export const wivuButtonSPaddingX = "12px";
 export const wivuButtonSGap = "4px";
 export const wivuButtonSRadius = "999px";
@@ -93,6 +93,12 @@ export const wivuColorBgQrDark = "#0F121A";
 export const wivuColorBgScrim = "rgba(19, 19, 19, 0.4)";
 export const wivuColorBgOnBrandGhost = "rgba(255, 255, 255, 0.2)";
 export const wivuColorBgOnBrandChip = "rgba(255, 255, 255, 0.18)";
+export const wivuColorBgBrandTint = "rgba(76, 128, 240, 0.1)";
+export const wivuColorBgErrorTint = "rgba(229, 72, 77, 0.1)";
+export const wivuColorBgWarningTint = "rgba(224, 149, 43, 0.14)";
+export const wivuColorBgTabBar = "#E5E8EF";
+export const wivuColorBgBrandStrong = "#2F63D6";
+export const wivuColorBgOnBrandTint = "rgba(255, 255, 255, 0.2)";
 export const wivuColorTextPrimary = "#131313";
 export const wivuColorTextSecondary = "#474747";
 export const wivuColorTextTertiary = "#767676";
@@ -114,33 +120,45 @@ export const wivuColorStatusError = "#E5484D";
 export const wivuColorStatusWarning = "#E0952B";
 export const wivuFontFamilyBase =
   '"Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
-export const wivuTypeDisplay =
-  '700 28px/1.2857 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
 export const wivuTypeTitle1 =
   '700 24px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
 export const wivuTypeTitle2 =
-  '700 18px/1.4444 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+  '700 20px/1.4 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
 export const wivuTypeTitle3 =
   '600 17px/1.4118 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+export const wivuTypeBody1 =
+  '400 16px/1.5 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+export const wivuTypeBody1Strong =
+  '600 16px/1.5 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+export const wivuTypeBody2 =
+  '400 15px/1.4667 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+export const wivuTypeBody2Strong =
+  '600 15px/1.4667 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+export const wivuTypeBody3 =
+  '400 14px/1.4286 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+export const wivuTypeBody3Strong =
+  '600 14px/1.4286 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+export const wivuTypeCaption1 =
+  '400 13px/1.3846 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+export const wivuTypeCaption1Strong =
+  '600 13px/1.3846 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+export const wivuTypeCaption2 =
+  '400 12px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+export const wivuTypeCaption2Strong =
+  '600 12px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+export const wivuTypeDisplay =
+  '700 24px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
 export const wivuTypeHeadline =
   '600 16px/1.5 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
 export const wivuTypeSubhead =
   '600 15px/1.4667 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
 export const wivuTypeBody =
-  '400 15px/1.6 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+  '400 15px/1.4667 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
 export const wivuTypeLabel =
   '600 14px/1.4286 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
 export const wivuTypeCallout =
   '400 14px/1.4286 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
-export const wivuTypeCaption1Strong =
-  '600 13px/1.3846 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
-export const wivuTypeCaption1 =
-  '400 13px/1.3846 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
-export const wivuTypeCaption2Strong =
-  '600 12px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
-export const wivuTypeCaption2 =
-  '400 12px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
 export const wivuTypeMicro =
-  '600 11px/1.2727 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+  '600 12px/1.3333 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
 export const wivuTypeNumber =
-  '700 24px/1.25 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';
+  '700 20px/1.4 "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif';

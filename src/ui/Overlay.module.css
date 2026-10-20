@@ -150,6 +150,40 @@
   background: var(--wivu-color-status-error);
 }
 .dialogCancel {
-  background: var(--wivu-color-bg-subtle);
+  background: var(--wivu-color-bg-brand-soft);
   color: var(--wivu-color-text-secondary);
+}
+
+/* ── v5 Sheet Head · Sheet Action ───────────── */
+.sheetHead {
+  padding-bottom: var(--wivu-space-16);
+}
+.sheetTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-8);
+  min-height: 24px;
+}
+.sheetClose {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: -10px -10px -10px 0;
+  color: var(--wivu-color-icon-primary);
+}
+.sheetAction {
+  display: flex;
+  align-items: center;
+  gap: var(--wivu-space-12);
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 0;
+  color: var(--wivu-color-icon-primary);
+}
+.sheetAction[data-danger] {
+  color: var(--wivu-color-status-error);
+}
+.sheetAction:active {
+  opacity: 0.6;
 }

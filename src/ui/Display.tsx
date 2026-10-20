@@ -6,7 +6,7 @@ import s from './Display.module.css';
 /* ── Chip / Tag ───────────────────────────────────────────────
  * 색 매핑(디자인 노트): 학사·전공·중식 → brand / 장학·UX리서치 → pulse /
  * 행사·석식·학점 → neutral / D-DAY → danger / 히어로 상태 → onBrand */
-export type ChipTone = 'brand' | 'pulse' | 'neutral' | 'outline' | 'danger' | 'dangerSoft' | 'warningSoft' | 'onBrand' | 'white';
+export type ChipTone = 'brand' | 'solid' | 'pulse' | 'neutral' | 'outline' | 'danger' | 'dangerSoft' | 'warningSoft' | 'onBrand' | 'white';
 
 type ChipProps = HTMLAttributes<HTMLSpanElement> & {
   tone?: ChipTone;

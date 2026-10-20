@@ -24,28 +24,6 @@
   },
   "type": {
     "$type": "typography",
-    "display": {
-      "$value": {
-        "fontFamily": "{font.family.base}",
-        "fontWeight": 700,
-        "fontSize": {
-          "value": 28,
-          "unit": "px"
-        },
-        "lineHeight": 1.2857,
-        "letterSpacing": {
-          "value": -0.01,
-          "unit": "em"
-        }
-      },
-      "$extensions": {
-        "com.figma": {
-          "source": "figma",
-          "style": "WivU Type/Display",
-          "lineHeightPx": 36
-        }
-      }
-    },
     "title-1": {
       "$value": {
         "fontFamily": "{font.family.base}",
@@ -56,14 +34,14 @@
         },
         "lineHeight": 1.3333,
         "letterSpacing": {
-          "value": -0.01,
+          "value": -0.0167,
           "unit": "em"
         }
       },
       "$extensions": {
         "com.figma": {
           "source": "figma",
-          "style": "WivU Type/Title 1",
+          "style": "WivU v5/Title 1",
           "lineHeightPx": 32
         }
       }
@@ -73,20 +51,20 @@
         "fontFamily": "{font.family.base}",
         "fontWeight": 700,
         "fontSize": {
-          "value": 18,
+          "value": 20,
           "unit": "px"
         },
-        "lineHeight": 1.4444,
+        "lineHeight": 1.4,
         "letterSpacing": {
-          "value": 0,
+          "value": -0.015,
           "unit": "em"
         }
       },
       "$extensions": {
         "com.figma": {
           "source": "figma",
-          "style": "WivU Type/Title 2",
-          "lineHeightPx": 26
+          "style": "WivU v5/Title 2",
+          "lineHeightPx": 28
         }
       }
     },
@@ -100,6 +78,28 @@
         },
         "lineHeight": 1.4118,
         "letterSpacing": {
+          "value": -0.0118,
+          "unit": "em"
+        }
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma",
+          "style": "WivU v5/Title 3",
+          "lineHeightPx": 24
+        }
+      }
+    },
+    "body-1": {
+      "$value": {
+        "fontFamily": "{font.family.base}",
+        "fontWeight": 400,
+        "fontSize": {
+          "value": 16,
+          "unit": "px"
+        },
+        "lineHeight": 1.5,
+        "letterSpacing": {
           "value": 0,
           "unit": "em"
         }
@@ -107,12 +107,12 @@
       "$extensions": {
         "com.figma": {
           "source": "figma",
-          "style": "WivU Type/Title 3",
+          "style": "WivU v5/Body 1",
           "lineHeightPx": 24
         }
       }
     },
-    "headline": {
+    "body-1-strong": {
       "$value": {
         "fontFamily": "{font.family.base}",
         "fontWeight": 600,
@@ -129,12 +129,34 @@
       "$extensions": {
         "com.figma": {
           "source": "figma",
-          "style": "WivU Type/Headline",
+          "style": "WivU v5/Body 1 Strong",
           "lineHeightPx": 24
         }
       }
     },
-    "subhead": {
+    "body-2": {
+      "$value": {
+        "fontFamily": "{font.family.base}",
+        "fontWeight": 400,
+        "fontSize": {
+          "value": 15,
+          "unit": "px"
+        },
+        "lineHeight": 1.4667,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma",
+          "style": "WivU v5/Body 2",
+          "lineHeightPx": 22
+        }
+      }
+    },
+    "body-2-strong": {
       "$value": {
         "fontFamily": "{font.family.base}",
         "fontWeight": 600,
@@ -151,56 +173,12 @@
       "$extensions": {
         "com.figma": {
           "source": "figma",
-          "style": "WivU Type/Subhead",
+          "style": "WivU v5/Body 2 Strong",
           "lineHeightPx": 22
         }
       }
     },
-    "body": {
-      "$value": {
-        "fontFamily": "{font.family.base}",
-        "fontWeight": 400,
-        "fontSize": {
-          "value": 15,
-          "unit": "px"
-        },
-        "lineHeight": 1.6,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "em"
-        }
-      },
-      "$extensions": {
-        "com.figma": {
-          "source": "figma",
-          "style": "WivU Type/Body",
-          "lineHeightPx": 24
-        }
-      }
-    },
-    "label": {
-      "$value": {
-        "fontFamily": "{font.family.base}",
-        "fontWeight": 600,
-        "fontSize": {
-          "value": 14,
-          "unit": "px"
-        },
-        "lineHeight": 1.4286,
-        "letterSpacing": {
-          "value": 0,
-          "unit": "em"
-        }
-      },
-      "$extensions": {
-        "com.figma": {
-          "source": "figma",
-          "style": "WivU Type/Label",
-          "lineHeightPx": 20
-        }
-      }
-    },
-    "callout": {
+    "body-3": {
       "$value": {
         "fontFamily": "{font.family.base}",
         "fontWeight": 400,
@@ -217,20 +195,20 @@
       "$extensions": {
         "com.figma": {
           "source": "figma",
-          "style": "WivU Type/Callout",
+          "style": "WivU v5/Body 3",
           "lineHeightPx": 20
         }
       }
     },
-    "caption-1-strong": {
+    "body-3-strong": {
       "$value": {
         "fontFamily": "{font.family.base}",
         "fontWeight": 600,
         "fontSize": {
-          "value": 13,
+          "value": 14,
           "unit": "px"
         },
-        "lineHeight": 1.3846,
+        "lineHeight": 1.4286,
         "letterSpacing": {
           "value": 0,
           "unit": "em"
@@ -239,8 +217,8 @@
       "$extensions": {
         "com.figma": {
           "source": "figma",
-          "style": "WivU Type/Caption 1 Strong",
-          "lineHeightPx": 18
+          "style": "WivU v5/Body 3 Strong",
+          "lineHeightPx": 20
         }
       }
     },
@@ -261,20 +239,20 @@
       "$extensions": {
         "com.figma": {
           "source": "figma",
-          "style": "WivU Type/Caption 1",
+          "style": "WivU v5/Caption 1",
           "lineHeightPx": 18
         }
       }
     },
-    "caption-2-strong": {
+    "caption-1-strong": {
       "$value": {
         "fontFamily": "{font.family.base}",
         "fontWeight": 600,
         "fontSize": {
-          "value": 12,
+          "value": 13,
           "unit": "px"
         },
-        "lineHeight": 1.3333,
+        "lineHeight": 1.3846,
         "letterSpacing": {
           "value": 0,
           "unit": "em"
@@ -283,8 +261,8 @@
       "$extensions": {
         "com.figma": {
           "source": "figma",
-          "style": "WivU Type/Caption 2 Strong",
-          "lineHeightPx": 16
+          "style": "WivU v5/Caption 1 Strong",
+          "lineHeightPx": 18
         }
       }
     },
@@ -305,20 +283,20 @@
       "$extensions": {
         "com.figma": {
           "source": "figma",
-          "style": "WivU Type/Caption 2",
+          "style": "WivU v5/Caption 2",
           "lineHeightPx": 16
         }
       }
     },
-    "micro": {
+    "caption-2-strong": {
       "$value": {
         "fontFamily": "{font.family.base}",
         "fontWeight": 600,
         "fontSize": {
-          "value": 11,
+          "value": 12,
           "unit": "px"
         },
-        "lineHeight": 1.2727,
+        "lineHeight": 1.3333,
         "letterSpacing": {
           "value": 0,
           "unit": "em"
@@ -327,8 +305,183 @@
       "$extensions": {
         "com.figma": {
           "source": "figma",
-          "style": "WivU Type/Micro",
-          "lineHeightPx": 14
+          "style": "WivU v5/Caption 2 Strong",
+          "lineHeightPx": 16
+        }
+      }
+    },
+    "display": {
+      "$value": {
+        "fontFamily": "{font.family.base}",
+        "fontWeight": 700,
+        "fontSize": {
+          "value": 24,
+          "unit": "px"
+        },
+        "lineHeight": 1.3333,
+        "letterSpacing": {
+          "value": -0.0167,
+          "unit": "em"
+        }
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma",
+          "style": "WivU v5/Title 1",
+          "lineHeightPx": 32
+        },
+        "com.wivu": {
+          "note": "v4 이름 호환 — v5 title-1와 같은 값 (10-21 이식). 새 코드는 v5 이름 사용"
+        }
+      }
+    },
+    "headline": {
+      "$value": {
+        "fontFamily": "{font.family.base}",
+        "fontWeight": 600,
+        "fontSize": {
+          "value": 16,
+          "unit": "px"
+        },
+        "lineHeight": 1.5,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma",
+          "style": "WivU v5/Body 1 Strong",
+          "lineHeightPx": 24
+        },
+        "com.wivu": {
+          "note": "v4 이름 호환 — v5 body-1-strong와 같은 값 (10-21 이식). 새 코드는 v5 이름 사용"
+        }
+      }
+    },
+    "subhead": {
+      "$value": {
+        "fontFamily": "{font.family.base}",
+        "fontWeight": 600,
+        "fontSize": {
+          "value": 15,
+          "unit": "px"
+        },
+        "lineHeight": 1.4667,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma",
+          "style": "WivU v5/Body 2 Strong",
+          "lineHeightPx": 22
+        },
+        "com.wivu": {
+          "note": "v4 이름 호환 — v5 body-2-strong와 같은 값 (10-21 이식). 새 코드는 v5 이름 사용"
+        }
+      }
+    },
+    "body": {
+      "$value": {
+        "fontFamily": "{font.family.base}",
+        "fontWeight": 400,
+        "fontSize": {
+          "value": 15,
+          "unit": "px"
+        },
+        "lineHeight": 1.4667,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma",
+          "style": "WivU v5/Body 2",
+          "lineHeightPx": 22
+        },
+        "com.wivu": {
+          "note": "v4 이름 호환 — v5 body-2와 같은 값 (10-21 이식). 새 코드는 v5 이름 사용"
+        }
+      }
+    },
+    "label": {
+      "$value": {
+        "fontFamily": "{font.family.base}",
+        "fontWeight": 600,
+        "fontSize": {
+          "value": 14,
+          "unit": "px"
+        },
+        "lineHeight": 1.4286,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma",
+          "style": "WivU v5/Body 3 Strong",
+          "lineHeightPx": 20
+        },
+        "com.wivu": {
+          "note": "v4 이름 호환 — v5 body-3-strong와 같은 값 (10-21 이식). 새 코드는 v5 이름 사용"
+        }
+      }
+    },
+    "callout": {
+      "$value": {
+        "fontFamily": "{font.family.base}",
+        "fontWeight": 400,
+        "fontSize": {
+          "value": 14,
+          "unit": "px"
+        },
+        "lineHeight": 1.4286,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma",
+          "style": "WivU v5/Body 3",
+          "lineHeightPx": 20
+        },
+        "com.wivu": {
+          "note": "v4 이름 호환 — v5 body-3와 같은 값 (10-21 이식). 새 코드는 v5 이름 사용"
+        }
+      }
+    },
+    "micro": {
+      "$value": {
+        "fontFamily": "{font.family.base}",
+        "fontWeight": 600,
+        "fontSize": {
+          "value": 12,
+          "unit": "px"
+        },
+        "lineHeight": 1.3333,
+        "letterSpacing": {
+          "value": 0,
+          "unit": "em"
+        }
+      },
+      "$extensions": {
+        "com.figma": {
+          "source": "figma",
+          "style": "WivU v5/Caption 2 Strong",
+          "lineHeightPx": 16
+        },
+        "com.wivu": {
+          "note": "v4 이름 호환 — v5 caption-2-strong와 같은 값 (10-21 이식). 새 코드는 v5 이름 사용"
         }
       }
     },
@@ -337,20 +490,23 @@
         "fontFamily": "{font.family.base}",
         "fontWeight": 700,
         "fontSize": {
-          "value": 24,
+          "value": 20,
           "unit": "px"
         },
-        "lineHeight": 1.25,
+        "lineHeight": 1.4,
         "letterSpacing": {
-          "value": -0.01,
+          "value": -0.015,
           "unit": "em"
         }
       },
       "$extensions": {
         "com.figma": {
           "source": "figma",
-          "style": "WivU Type/Number",
-          "lineHeightPx": 30
+          "style": "WivU v5/Title 2",
+          "lineHeightPx": 28
+        },
+        "com.wivu": {
+          "note": "v4 이름 호환 — v5 title-2와 같은 값 (10-21 이식). 새 코드는 v5 이름 사용"
         }
       }
     }

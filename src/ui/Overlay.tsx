@@ -170,7 +170,7 @@ export function ToastHost() {
             transition={{ duration: 0.22, ease: EASE }}
           >
             {t.icon && <Icon name={t.icon} size={20} />}
-            <Text variant="label" color="on-brand">
+            <Text variant="body-3-strong" color="on-brand">
               {t.message}
             </Text>
           </motion.div>
@@ -241,19 +241,19 @@ export function Dialog({ open, title, message, confirmLabel, cancelLabel = '취�
         <DialogLayer role="alertdialog" labelledBy={titleId} initialFocus="first">
           <motion.div className={s.scrim} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onCancel} />
           <motion.div className={s.dialog} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }} transition={{ duration: 0.22, ease: EASE }}>
-            <Text variant="headline" as="h2" id={titleId}>
+            <Text variant="title-3" as="h2" id={titleId}>
               {title}
             </Text>
             {message && (
-              <Text variant="callout" color="secondary" as="p" style={{ marginTop: 8 }}>
+              <Text variant="body-3" color="secondary" as="p" style={{ marginTop: 8 }}>
                 {message}
               </Text>
             )}
             <div className={s.dialogActions}>
-              <button type="button" className={`${s.dialogBtn} ${s.dialogCancel} t-label`} onClick={onCancel}>
+              <button type="button" className={`${s.dialogBtn} ${s.dialogCancel} t-body-2-strong`} onClick={onCancel}>
                 {cancelLabel}
               </button>
-              <button type="button" className={`${s.dialogBtn} t-label`} data-destructive={destructive} onClick={onConfirm}>
+              <button type="button" className={`${s.dialogBtn} t-body-2-strong`} data-destructive={destructive} onClick={onConfirm}>
                 {confirmLabel}
               </button>
             </div>
@@ -261,5 +261,48 @@ export function Dialog({ open, title, message, confirmLabel, cancelLabel = '취�
         </DialogLayer>
       )}
     </AnimatePresence>
+  );
+}
+
+/* ── v5 시트 구성 요소 (Figma 617:3513 Sheet Head · 617:3553 Sheet Action) ─────────
+ * BottomSheet 안에서 쓴다. 핸들은 BottomSheet가 이미 그린다. */
+export function SheetHead({ title, subtitle, onClose }: { title: ReactNode; subtitle?: ReactNode; onClose?: () => void }) {
+  return (
+    <div className={s.sheetHead}>
+      <div className={s.sheetTitleRow}>
+        <Text variant="title-3" as="h2" style={{ flex: 1, minWidth: 0 }}>
+          {title}
+        </Text>
+        {onClose && (
+          <button type="button" className={s.sheetClose} onClick={onClose} aria-label="닫기">
+            <Icon name="close" size={24} />
+          </button>
+        )}
+      </div>
+      {subtitle && (
+        <Text variant="caption-1" color="secondary" as="p" style={{ marginTop: 2 }}>
+          {subtitle}
+        </Text>
+      )}
+    </div>
+  );
+}
+
+export function SheetAction({ label, description, icon, danger, chevron, onPress }: { label: ReactNode; description?: ReactNode; icon?: IconName; danger?: boolean; chevron?: boolean; onPress: () => void }) {
+  return (
+    <button type="button" className={s.sheetAction} data-danger={danger || undefined} onClick={onPress}>
+      {icon && <Icon name={icon} size={20} />}
+      <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+        <Text variant="body-2" color={danger ? 'error' : 'primary'} as="span" style={{ display: 'block' }}>
+          {label}
+        </Text>
+        {description && (
+          <Text variant="caption-2" color="tertiary" as="span" style={{ display: 'block' }}>
+            {description}
+          </Text>
+        )}
+      </span>
+      {chevron && <Icon name="chevron-right" size={20} color="secondary" />}
+    </button>
   );
 }

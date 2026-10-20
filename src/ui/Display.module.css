@@ -19,16 +19,21 @@
 .pill {
   border-radius: var(--wivu-radius-full);
 }
+/* v5 Badge (Figma 666:4926): Brand · Solid · Neutral · Error · Warning */
 .tone_brand {
-  background: var(--wivu-color-bg-brand-soft);
+  background: var(--wivu-color-bg-brand-tint);
   color: var(--wivu-color-text-brand);
+}
+.tone_solid {
+  background: var(--wivu-color-bg-brand);
+  color: var(--wivu-color-text-on-brand);
 }
 .tone_pulse {
   background: var(--wivu-color-bg-pulse-soft);
   color: var(--wivu-color-icon-pulse);
 }
 .tone_neutral {
-  background: var(--wivu-color-bg-subtle);
+  background: var(--wivu-color-bg-brand-soft);
   color: var(--wivu-color-text-secondary);
 }
 .tone_outline {
@@ -41,15 +46,15 @@
   color: var(--wivu-color-text-on-brand);
 }
 .tone_dangerSoft {
-  background: color-mix(in srgb, var(--wivu-color-status-error) 10%, white);
+  background: var(--wivu-color-bg-error-tint);
   color: var(--wivu-color-text-error);
 }
 .tone_warningSoft {
-  background: color-mix(in srgb, var(--wivu-color-status-warning) 12%, white);
+  background: var(--wivu-color-bg-warning-tint);
   color: var(--wivu-color-status-warning);
 }
 .tone_onBrand {
-  background: var(--wivu-color-bg-on-brand-chip);
+  background: var(--wivu-color-bg-on-brand-tint);
   color: var(--wivu-color-text-on-brand);
 }
 .tone_white {
@@ -60,10 +65,11 @@
   cursor: pointer;
   transition: background-color var(--wivu-duration-press) ease;
 }
+/* v5 Choice Chip 선택: 연한 파랑 면 + 파란 1.5 보더 + 파란 글자 */
 .selected {
-  background: var(--wivu-color-bg-brand);
-  color: var(--wivu-color-text-on-brand);
-  box-shadow: none;
+  background: var(--wivu-color-bg-brand-tint);
+  color: var(--wivu-color-text-brand);
+  box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-brand);
 }
 .dotMark {
   width: 6px;
