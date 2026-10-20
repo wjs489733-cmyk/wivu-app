@@ -158,16 +158,18 @@
   border-radius: 50%;
   background: var(--wivu-color-bg-tab-bar);
 }
+/* v5 (Figma 666:5059): 바 83 = 위 6 + 탭 47 + 아래 30(홈 인디케이터 영역) · 혹은 그 위로 21 */
 .tabRow {
   position: relative;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  height: 62px;
+  height: 53px;
+  padding-top: 6px;
   pointer-events: auto;
 }
 .tabSafe {
   position: relative;
-  height: max(var(--safe-bottom), 12px);
+  height: max(calc(var(--safe-bottom) - 4px), 12px);
   pointer-events: auto;
 }
 /* 홈: 탭바에서 위로 밀어 퀵메뉴 — 브라우저 제스처(스크롤·당겨서 새로고침)가 가로채지 않게 */
@@ -179,16 +181,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  justify-content: flex-start;
+  padding-top: 4px;
+  gap: 3px;
   color: var(--wivu-color-text-tertiary);
   transition: color 0.15s ease;
 }
 .tab[aria-current='page'] {
   color: var(--wivu-color-text-brand);
-}
-.tabHome {
-  transform: translateY(-6px);
 }
 .tabLabel {
   /* v5: Caption 2 (활성 Caption 2 Strong) — 클래스로 지정 */

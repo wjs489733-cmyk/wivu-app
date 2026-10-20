@@ -158,7 +158,7 @@
 
 /* ── v5 Sheet Head · Sheet Action ───────────── */
 .sheetHead {
-  padding-bottom: var(--wivu-space-16);
+  padding-bottom: var(--wivu-space-12);
 }
 .sheetTitleRow {
   display: flex;
