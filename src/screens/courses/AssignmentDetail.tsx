@@ -36,7 +36,7 @@ export function AssignmentDetail() {
     { label: '마감', value: dueDetail(a.due) },
     { label: '제출 형식', value: a.format },
     submission
-      ? { label: '제출 상태', value: `제출 완료 · ${atDetail(submission.at)}`, color: 'brand' as const }
+      ? { label: '제출 상태', value: `제출 완료 · ${atDetail(submission.at)}` }
       : { label: '제출 상태', value: a.closed ? '제출하지 않았어요' : '아직 제출하지 않았어요', color: a.closed ? ('secondary' as const) : ('error' as const) },
     ...(submission ? [{ label: '제출 파일', value: <span className="truncate" style={{ display: 'block' }}>{fileLine}</span> }] : []),
     ...(submission?.memo ? [{ label: '메모', value: submission.memo }] : []),
