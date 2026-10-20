@@ -52,7 +52,7 @@ export function ChoiceChip({ label, selected, onSelect }: { label: string; selec
 
 /** 출석 완료 본문 — v5 679:5848 (시트 안: 체크 원 · '출석 완료' · 과목·시각·방법 · [확인]) */
 export function AttendDoneBody({ onConfirm }: { onConfirm: () => void }) {
-  const time = useApp((st) => st.attendanceTime) ?? '10:01';
+  const time = useApp((st) => st.attendanceTime) ?? '09:52';
   const method = useApp((st) => st.attendanceMethod) ?? 'PIN';
   return (
     <div className={s.done} role="status">

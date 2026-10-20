@@ -107,7 +107,7 @@ export function QrAttend() {
             {already ? '오늘 출석은 이미 끝났어요' : phase === 'recognized' ? 'QR을 인식했어요' : '강의실 QR을 화면 안에 맞춰 주세요'}
           </Text>
           <Text variant="body-3" color="on-brand-muted" as="p" align="center" tnum>
-            {already ? `서비스디자인 · ${doneTime ?? '10:01'} ${doneMethod ?? 'PIN'} 인증` : '서비스디자인 · 디자인관 302호'}
+            {already ? `서비스디자인 · ${doneTime ?? '09:52'} ${doneMethod ?? 'PIN'} 인증` : '서비스디자인 · 디자인관 302호'}
           </Text>
         </div>
       </div>

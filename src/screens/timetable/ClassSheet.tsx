@@ -32,7 +32,7 @@ function SheetBody({ course: c, onClose, onAttend, onRemove }: { course: TTCours
 
   // 상단 배지
   let badge: { text: string; tone: 'brand' | 'neutral' };
-  if (isAttendCourse && attended) badge = { text: `출석 완료 · ${attendTime ?? '10:01'} 인증`, tone: 'neutral' };
+  if (isAttendCourse && attended) badge = { text: `출석 완료 · ${attendTime ?? '09:52'} 인증`, tone: 'neutral' };
   else if (isAttendCourse) badge = { text: `곧 시작 · ${ATTENDANCE_WINDOW.opens}`, tone: 'brand' };
   else if (next && isToday) badge = { text: `오늘 ${next.slot.start} 시작`, tone: 'brand' };
   else if (next) badge = { text: `다음 수업 ${longDate(next.date)} ${next.slot.start}`, tone: 'neutral' };

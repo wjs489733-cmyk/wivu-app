@@ -70,7 +70,7 @@ export const useApp = create<AppState>((set) => ({
   finishOnboarding: () => set({ onboarded: true }),
   setPinDigits: (n) => set({ pinDigits: n }),
   logout: () => set({ ...INITIAL, loggedOut: true }),
-  completeAttendance: (method) => set({ attendanceComplete: true, attendanceMethod: method, attendanceTime: '10:01' }),
+  completeAttendance: (method) => set({ attendanceComplete: true, attendanceMethod: method, attendanceTime: '09:52' }),
   submitAssignment: (fileName) => set({ assignmentSubmitted: true, submittedFile: fileName }),
   setQuickMenu: (ids) => set({ quickMenu: ids }),
   markRead: (id) => set((st) => ({ readNotifications: st.readNotifications.includes(id) ? st.readNotifications : [...st.readNotifications, id] })),

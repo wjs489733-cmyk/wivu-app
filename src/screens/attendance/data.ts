@@ -126,7 +126,7 @@ export type TodayState = { complete: boolean; method: AttendMethod | null; time:
 /** 오늘 서비스디자인 출석 완료 시 기록으로 승격 */
 function todayRecord(t: TodayState): Session | null {
   if (!t.complete) return null;
-  return sess('service-design', 6, TODAY_MD, '금', '10:00', '11:50', '출석', { time: t.time ?? '10:01', method: t.method ?? 'PIN' });
+  return sess('service-design', 6, TODAY_MD, '금', '10:00', '11:50', '출석', { time: t.time ?? '09:52', method: t.method ?? 'PIN' });
 }
 
 /** 모든 출석 기록 (최신순) */

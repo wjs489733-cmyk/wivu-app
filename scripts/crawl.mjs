@@ -2,14 +2,27 @@
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 const ROUTES = [
-  '/splash', '/intro/1', '/intro/2', '/intro/3', '/school', '/school?sheet=1', '/school/search', '/login', '/login?error=1', '/login/linking',
-  '/setup/notifications', '/setup/quick-menu', '/home', '/home/free-day', '/attendance/pin', '/attendance/pin?error=1', '/attendance/done',
-  '/attendance', '/attendance/course/service-design', '/attendance/course/motion-graphics', '/student-id', '/attendance/qr',
-  '/courses', '/courses/service-design', '/courses/ux-research', '/courses/service-design/assignments/a1', '/courses/service-design/assignments/a1/submit',
-  '/courses/service-design/assignments/a1/done', '/courses/service-design/notices/c1', '/courses/service-design/materials',
-  '/timetable', '/timetable?sheet=service-design', '/timetable/add', '/timetable/calendar', '/calendar/events/e1', '/calendar/new',
-  '/board', '/board/course/service-design', '/board/course/free', '/board/posts/p1', '/board/write',
-  '/my', '/my/quick-menu', '/my/notifications', '/my/school', '/notifications', '/meal', '/notices/n1', '/notices/n3', '/map', '/design-system',
+  // 01 진입 (v5) — 옛 경로(intro/2·3, school, setup)는 리디렉트 확인용
+  '/splash', '/intro/1', '/intro/2', '/school', '/setup/notifications', '/login', '/login?school=1', '/login?error=1', '/login/linking',
+  // 02 홈
+  '/home', '/home?menu=1', '/home/free-day', '/home/edit',
+  // 03 출석 인증 · 학생증
+  '/attendance/pin', '/attendance/pin?error=1', '/attendance/pin?digits=2', '/attendance/done', '/student-id', '/student-id?tab=library', '/student-id?sheet=nfc',
+  // 04 학식 · 알림 · 마이
+  '/meal', '/notifications', '/my', '/my/school', '/my/notifications', '/my/quick-menu', '/my/quick-menu?tab=order',
+  // 05 출석
+  '/attendance', '/attendance/course/motion-graphics', '/attendance/course/motion-graphics?sheet=appeal', '/attendance/course/service-design', '/attendance/qr',
+  // 06 수강과목
+  '/courses', '/courses/service-design', '/courses/service-design?sheet=menu', '/courses/ux-research', '/courses/service-design/assignments/a1',
+  '/courses/service-design/assignments/a1/submit', '/courses/service-design/assignments/a1/submit?dialog=leave', '/courses/service-design/assignments/a1/done',
+  '/courses/service-design/notices/c1', '/courses/service-design/materials',
+  // 07 시간표 · 08 캘린더
+  '/timetable', '/timetable?sheet=service-design', '/timetable?edit=1', '/timetable/add', '/timetable/add?q=UX', '/timetable/calendar', '/calendar/events/e1', '/calendar/new',
+  // 09 게시판
+  '/board', '/board?sheet=apply', '/board?search=1', '/board/course/service-design', '/board/course/free', '/board/posts/p1', '/board/posts/p1?sheet=menu',
+  '/board/posts/p2', '/board/posts/p2?sheet=report', '/board/write', '/board/write?sheet=board', '/board/write?sheet=assignment',
+  // 10 지도 · 공지
+  '/map', '/notices', '/notices/n1', '/notices/n3', '/design-system',
 ];
 mkdirSync('shots/crawl', { recursive: true });
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
@@ -20,7 +33,7 @@ let i = 0;
 for (const r of ROUTES) {
   errs = [];
   const [path, q] = r.split('?');
-  await p.goto(`http://localhost:5173/?frame=0${q ? '&' + q : ''}#${path}${q ? '?' + q : ''}`);
+  await p.goto(`http://127.0.0.1:5173/?frame=0${q ? '&' + q : ''}#${path}${q ? '?' + q : ''}`);
   await p.waitForTimeout(r.startsWith('/splash') ? 400 : 900);
   const final = new URL(p.url()).hash.slice(1);
   const slug = String(++i).padStart(2, '0') + '_' + r.replace(/[/?=]/g, '-').replace(/^-/, '');
