@@ -207,7 +207,7 @@ function ClassCarousel({ onAttend }: { onAttend: () => void }) {
                       출석 완료
                     </Chip>
                   }
-                  status={`${time ?? '10:01'} ${method ?? 'PIN'} 인증`}
+                  status={`${time ?? '09:52'} ${method ?? 'PIN'} 인증`}
                   statusColor="on-brand"
                   onMore={() => openMore(c)}
                   name={c.name}
