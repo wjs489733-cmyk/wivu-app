@@ -74,7 +74,8 @@ export default function DesignSystemPage() {
   const navigate = useNavigate();
   const prims = flatten(primitive as never);
   const sems = flatten(semantic as never);
-  const types = flatten(typography as never).filter((t) => t.tok.$type === 'typography' || t.path[0] === 'type');
+  // v4 이름 별칭(com.wivu note '호환')은 목록에서 뺀다 — v5 13종만
+  const types = flatten(typography as never).filter((t) => (t.tok.$type === 'typography' || t.path[0] === 'type') && !String(t.tok.$extensions?.['com.wivu']?.note ?? '').includes('호환'));
   const spaces = flatten(layout as never).filter((t) => t.path[0] === 'space');
   const radii = flatten(layout as never).filter((t) => t.path[0] === 'radius');
   const shadows = flatten(elevation as never);
@@ -86,9 +87,9 @@ export default function DesignSystemPage() {
         <div className={s.headerMain}>
           <Logo name="logo-wu-blue" height={40} />
           <div>
-            <h1 className={`t-display ${s.h1}`}>WivU Design System v4</h1>
+            <h1 className={`t-title-1 ${s.h1}`}>WivU Design System v5</h1>
             <p className="t-body" style={{ color: 'var(--wivu-color-text-secondary)' }}>
-              Figma 변수·텍스트 스타일·Button v4를 W3C DTCG 토큰으로 추출 → Style Dictionary로 CSS 변수 생성 → React 컴포넌트가 토큰만 참조
+              Figma 변수·텍스트 스타일(WivU v5 13종)·Button v5를 W3C DTCG 토큰으로 추출 → Style Dictionary로 CSS 변수 생성 → React 컴포넌트가 토큰만 참조
             </p>
           </div>
         </div>
