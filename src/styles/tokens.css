@@ -9,6 +9,7 @@
   --wivu-button-m-height: 44px;
   --wivu-button-m-icon: 16px;
   --wivu-button-s-height: 36px;
+  --wivu-button-s-padding-x: 14px;
   --wivu-button-s-icon: 16px;
   --wivu-chip-height: 24px;
   --wivu-elevation-card: 0px 2px 8px 0px rgba(16, 24, 40, 0.08); /** Subtle depth for actionable cards */
@@ -85,7 +86,6 @@
   --wivu-button-m-padding-x: var(--wivu-space-16);
   --wivu-button-m-gap: var(--wivu-space-8);
   --wivu-button-m-radius: var(--wivu-radius-12);
-  --wivu-button-s-padding-x: var(--wivu-space-12);
   --wivu-button-s-gap: var(--wivu-space-4);
   --wivu-button-s-radius: var(--wivu-radius-full);
   --wivu-card-radius: var(--wivu-radius-16);

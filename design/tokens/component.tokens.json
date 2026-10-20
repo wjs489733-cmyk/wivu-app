@@ -71,7 +71,15 @@
       },
       "padding-x": {
         "$type": "dimension",
-        "$value": "{space.12}"
+        "$value": {
+          "value": 14,
+          "unit": "px"
+        },
+        "$extensions": {
+          "com.wivu": {
+            "note": "v5 Button S 좌우 14 (Figma 666:4860)"
+          }
+        }
       },
       "gap": {
         "$type": "dimension",
