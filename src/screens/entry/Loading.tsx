@@ -43,7 +43,7 @@ export function Loading() {
     <Screen figma="669:4806" scroll={false}>
       <div className={s.loadPage}>
         <Text variant="title-2" as="h1" className={s.preLine}>
-          <Text variant="title-2" color="brand">
+          <Text variant="title-2" as="span">
             {USER.name}님
           </Text>
           {'의 정보를\n불러오는 중이에요'}

@@ -112,7 +112,7 @@ export function Login() {
           <Text variant="title-2" as="h2" className={s.preLine}>
             {picked ? (
               <>
-                <Text variant="title-2" color="brand">
+                <Text variant="title-2" as="span">
                   {school}
                 </Text>
                 {'\n학번으로 로그인해 주세요'}
