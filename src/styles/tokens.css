@@ -63,7 +63,7 @@
   --wivu-color-primitive-brand-100: #E8F0FF;
   --wivu-color-primitive-brand-200: #D5E0FD;
   --wivu-color-primitive-brand-500: #4C80F0;
-  --wivu-color-primitive-error-500: #E5484D;
+  --wivu-color-primitive-error-500: #FF7E75;
   --wivu-color-primitive-warning-500: #E0952B;
   --wivu-color-primitive-accent-lime-100: #EFFFF0;
   --wivu-color-primitive-accent-lime-500: #B7F34D;
@@ -73,7 +73,7 @@
   --wivu-color-bg-on-brand-ghost: rgba(255, 255, 255, 0.2);
   --wivu-color-bg-on-brand-chip: rgba(255, 255, 255, 0.18);
   --wivu-color-bg-brand-tint: rgba(76, 128, 240, 0.1);
-  --wivu-color-bg-error-tint: rgba(229, 72, 77, 0.1);
+  --wivu-color-bg-error-tint: rgba(255, 126, 117, 0.1);
   --wivu-color-bg-warning-tint: rgba(224, 149, 43, 0.14);
   --wivu-color-bg-tab-bar: #E5E8EF;
   --wivu-color-bg-brand-strong: #2F63D6;

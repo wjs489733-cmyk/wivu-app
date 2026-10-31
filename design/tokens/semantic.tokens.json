@@ -221,12 +221,12 @@
         "$value": {
           "colorSpace": "srgb",
           "components": [
-            0.898,
-            0.2824,
-            0.302
+            1,
+            0.4941,
+            0.4588
           ],
           "alpha": 0.1,
-          "hex": "#E5484D"
+          "hex": "#FF7E75"
         },
         "$extensions": {
           "com.figma": {

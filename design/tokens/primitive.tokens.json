@@ -344,20 +344,20 @@
           "$value": {
             "colorSpace": "srgb",
             "components": [
-              0.898,
-              0.2824,
-              0.302
+              1,
+              0.4941,
+              0.4588
             ],
             "alpha": 1,
-            "hex": "#E5484D"
+            "hex": "#FF7E75"
           },
           "$extensions": {
             "com.figma": {
               "source": "figma"
             },
             "com.wivu": {
-              "previous": "#F04C64",
-              "note": "2026-10-15 이사벨식 배색 (파랑 1색 + 차콜 + 순회색)"
+              "previous": "#E5484D",
+              "note": "2026-11-01 에러 색 #FF7E75로 변경 (이전 #E5484D · 2026-10-15 이사벨식 배색)"
             }
           }
         }
