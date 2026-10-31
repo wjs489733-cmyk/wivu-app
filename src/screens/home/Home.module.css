@@ -1,6 +1,6 @@
 /* 홈 v5 (Figma 674:4748 · 675:4839 · 692:6804) — 좌우 20 · 블록 사이 32 · 블록 안 12 */
 
-/* ── 헤더: WivU(EN Title 2) · QR · 알림 · 마이 28 ── */
+/* ── 헤더: WU 심볼(높이 22) · QR · 알림 · 마이 28 ── */
 .header {
   display: flex;
   align-items: center;
@@ -372,4 +372,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+/* 헤더 WU 심볼 — Figma 'Brand / WU mark · Header'(높이 22) */
+.brand {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  line-height: 0;
 }

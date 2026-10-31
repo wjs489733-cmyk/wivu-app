@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { useLocation } from 'react-router';
-import { BottomSheet, Button, Chip, Icon, IconButton, Screen, Section, SheetAction, SheetHead, TabBar, Text, toast, type IconName } from '@/ui';
+import { BottomSheet, Button, Chip, Icon, IconButton, Logo, Screen, Section, SheetAction, SheetHead, TabBar, Text, toast, type IconName } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
@@ -109,15 +109,15 @@ function Block({ id, freeDay }: { id: BlockId; freeDay: boolean }) {
   }
 }
 
-/* ── 헤더: WivU 워드마크 · QR(학생증) · 알림 · 마이 ───────────── */
+/* ── 헤더: WU 심볼(22) · QR(학생증) · 알림 · 마이 ───────────── */
 function HomeHeader() {
   const nav = useNav();
   const unread = useHasUnread();
   return (
     <div className={s.header}>
-      <Text variant="title-2" color="brand" as="h1" className="font-en">
-        WivU
-      </Text>
+      <h1 className={s.brand}>
+        <Logo height={22} />
+      </h1>
       <div className={s.headerActions}>
         <IconButton icon="qr" label="모바일 학생증" onPress={() => nav.modal(P.studentId)} />
         <IconButton icon="bell" label={unread ? '알림함 · 읽지 않은 알림 있음' : '알림함'} dot={unread} onPress={() => nav.push(P.notifications)} />
