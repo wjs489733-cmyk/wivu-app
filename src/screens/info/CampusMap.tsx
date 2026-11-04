@@ -4,7 +4,7 @@ import { AnimatePresence, animate, motion, useMotionValue } from 'motion/react';
 import { Button, Chip, Icon, Screen, StatusBar, Text, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { arrivePoint, BUILDINGS, guideTitle, MAP_SHORTCUTS, ME, NEXT_BUILDING, routeLength, type Building, type Pt } from './data';
+import { arrivePoint, BUILDINGS, guideMinutes, guideTitle, MAP_SHORTCUTS, ME, NEXT_BUILDING, routeLength, type Building, type Pt } from './data';
 import s from './CampusMap.module.css';
 
 /* 캔버스 = Figma 좌표(392×852) + 여백. 드래그로 둘러볼 수 있게 조금 더 넓게 */
@@ -66,7 +66,8 @@ export function CampusMap() {
   const b = BUILDINGS.find((it) => it.id === sel)!;
   const walk = useMemo(() => walkPath(b), [b]);
   const me: Pt = guide === 'idle' ? ME : guide === 'arrived' ? walk[walk.length - 1] : pointAt(walk, t);
-  const left = Math.max(1, Math.ceil(b.walk * (1 - t)));
+  // 안내 중 배지 'N분 남음' — 건물 입구까지 남은 시간(Figma 702:8726 디자인관 = 2분)에서 줄어듦
+  const left = Math.max(1, Math.ceil(guideMinutes(b) * (1 - t)));
 
   // 뷰포트 크기 → 드래그 범위 · 첫 위치(Figma 화면과 같은 구도, 폭이 다르면 가운데 정렬)
   useLayoutEffect(() => {
@@ -217,7 +218,7 @@ export function CampusMap() {
                 <motion.div key="search" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
                   <div className={s.searchBar}>
                     <button type="button" className={s.barButton} aria-label={searching ? '검색 닫기' : '뒤로'} onClick={() => (searching ? closeSearch() : nav.back(P.home))}>
-                      <Icon name="back" size={24} />
+                      <Icon name="back" size={24} className={s.i22} />
                     </button>
                     <input
                       ref={inputRef}
@@ -266,7 +267,7 @@ export function CampusMap() {
                 </motion.div>
               ) : guide === 'navigating' ? (
                 <motion.div key="guide" className={s.banner} data-tone="brand" role="status" initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
-                  <Icon name="map" size={24} />
+                  <Icon name="map" size={24} className={s.i22} />
                   <span className={s.bannerText}>
                     <Text variant="body-1-strong" color="on-brand" className="truncate">
                       {guideTitle(b)}
@@ -289,7 +290,7 @@ export function CampusMap() {
                   exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Icon name="check" size={24} color="brand" />
+                  <Icon name="check" size={24} color="brand" className={s.i22} />
                   <span className={s.bannerText}>
                     <Text variant="body-1-strong" className="truncate">
                       {b.name}에 도착했어요
@@ -314,7 +315,7 @@ export function CampusMap() {
                 toast(guide === 'arrived' ? `지금 ${b.name} 앞이에요` : guide === 'navigating' ? `${b.name}로 가는 중이에요` : '지금 학생회관 앞이에요');
               }}
             >
-              <Icon name="locate" size={24} />
+              <Icon name="locate" size={24} className={s.i22} />
             </button>
             <motion.section className={s.sheet} layout transition={{ duration: 0.26, ease: [0.32, 0.72, 0, 1] }} aria-label="경로 안내">
               <motion.button layout="position" type="button" className={s.grabber} aria-label={expanded ? '건물 정보 접기' : '건물 정보 펼치기'} aria-expanded={expanded} onClick={() => setExpanded((v) => !v)} />

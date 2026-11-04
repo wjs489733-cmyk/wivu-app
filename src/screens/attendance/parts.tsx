@@ -30,7 +30,7 @@ export function SessionRow({ r, note }: { r: Session; note?: string }) {
     <div className={s.sessionRow}>
       <span className={s.rowText}>
         <Text variant="body-2" as="span" className="truncate" tnum>
-          {r.week}주차 · {when}
+          {r.makeup ? '보강' : `${r.week}주차`} · {when}
         </Text>
         <Text variant="caption-1" color="tertiary" as="span" className="truncate" tnum>
           {note ? `${recordMeta(r, true)} · ${note}` : recordMeta(r, true)}
@@ -57,8 +57,8 @@ export function AttendDoneBody({ onConfirm }: { onConfirm: () => void }) {
   return (
     <div className={s.done} role="status">
       <motion.span className={s.doneCheck} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 320, damping: 20 }}>
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-          <motion.path d="M5 12.5l4.5 4.5L19 7.5" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.4, delay: 0.15 }} />
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <motion.path vectorEffect="non-scaling-stroke" d="M5 12.5l4.5 4.5L19 7.5" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.4, delay: 0.15 }} />
         </svg>
       </motion.span>
       <Text variant="title-2" as="h2" align="center" className={s.doneTitle}>

@@ -32,7 +32,7 @@ export function NoticeDetail() {
         <Text variant="title-2" as="h1" style={{ marginTop: wasNew ? 8 : 0 }}>
           {n.title}
         </Text>
-        <Text variant="caption-1" color="tertiary" as="p" className="tnum" style={{ marginTop: 4 }}>
+        <Text variant="caption-1" color="tertiary" as="p" style={{ marginTop: 4 }}>
           {course.name} · {professorOf(course)} 교수 · {n.dateFull} · 조회 {n.views}
         </Text>
         <div style={{ marginTop: 20 }}>

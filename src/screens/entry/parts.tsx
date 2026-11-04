@@ -24,7 +24,7 @@ export function ChevronLink({ children, onPress }: { children: ReactNode; onPres
 
 /**
  * 진행 단계 — Figma 'v5/Progress Step' 666:5078 (State=Done · Active · Pending)
- * 표시 22 원: 완료 = 브랜드 면 + 체크 · 진행 중 = 브랜드 2px 링 + 8 점 · 대기 = border-strong 1.5 링
+ * 표시 22 원: 완료 = 브랜드 면 + 체크 14(선 1.7) · 진행 중 = 브랜드 2px 링 + 8 점 · 대기 = border-strong 1.5 링
  * 제목 Body 2 (진행 중 Body 2 Strong, 대기 tertiary) · 보조 문구 Caption 1 brand는 진행 중에만.
  */
 export type StepState = 'done' | 'active' | 'pending';
@@ -32,7 +32,7 @@ export function ProgressStep({ state, title, sub }: { state: StepState; title: R
   return (
     <li className={s.pStep} aria-current={state === 'active' ? 'step' : undefined}>
       <span className={s.pMark} data-state={state} aria-hidden>
-        {state === 'done' && <Icon name="check" size={16} color="on-brand" />}
+        {state === 'done' && <Icon name="check" size={16} color="on-brand" className={s.pCheck} />}
       </span>
       <span className={s.pText}>
         <Text variant={state === 'active' ? 'body-2-strong' : 'body-2'} color={state === 'pending' ? 'tertiary' : 'primary'} as="span" style={{ display: 'block' }}>

@@ -25,7 +25,7 @@ export function Materials() {
           {info.materials.map((g) => (
             <section key={g.label} className={s.group}>
               <div className={s.groupHead}>
-                <Text variant="body-2-strong" as="h2" className="tnum">
+                <Text variant="body-2-strong" as="h2">
                   {g.label}
                 </Text>
                 {g.today && <Chip tone="brand">오늘</Chip>}

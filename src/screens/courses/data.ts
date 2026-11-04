@@ -287,7 +287,7 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
         date: '09.03',
         dateFull: '09.03 (목) 15:00',
         views: 77,
-        body: '디자인관 B103호 실습실 PC에 모션 작업용 소프트웨어가 설치되어 있습니다. 개인 노트북을 쓰는 학생은 수업 전에 설치와 실행을 확인해 주세요.',
+        body: '디자인관 B103 실습실 PC에 모션 작업용 소프트웨어가 설치되어 있습니다. 개인 노트북을 쓰는 학생은 수업 전에 설치와 실행을 확인해 주세요.',
       },
     ],
     assignments: [

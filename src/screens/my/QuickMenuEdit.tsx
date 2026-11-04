@@ -148,7 +148,7 @@ export function QuickMenuEdit() {
                   <Text variant={on ? 'body-2-strong' : 'body-2'} color="inherit" className="truncate">
                     {m.label}
                   </Text>
-                  {on && <Icon name="check" size={20} />}
+                  {on && <Icon name="check" size={18} />}
                 </button>
               );
             })}

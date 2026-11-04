@@ -72,7 +72,7 @@ export function CourseAttendance() {
 
         {notice && (
           <div className={s.notice} data-tone={notice.tone} role="note">
-            <Icon name="warning" size={20} color={notice.tone === 'error' ? 'error' : 'warning'} />
+            <Icon name="warning" size={18} color={notice.tone === 'error' ? 'error' : 'warning'} />
             <Text variant="caption-1" color={notice.tone === 'error' ? 'error' : 'warning'} as="p">
               {notice.text}
             </Text>
@@ -192,7 +192,7 @@ function AppealForm({ onClose, courseId, sessions }: { onClose: () => void; cour
         </div>
       </div>
 
-      <Button block disabled={!target || !reason} loading={sending} onClick={submit} className={s.sheetCta}>
+      <Button block disabled={!target || !reason} loading={sending} onClick={submit} className={`${s.sheetCta} ${s.disabledLabel}`}>
         신청하기
       </Button>
     </>

@@ -78,7 +78,7 @@ export function AssignmentDetail() {
       </div>
 
       <div className={s.sections}>
-        <Section title="과제 내용" padded={false} style={{ gap: 2 }}>
+        <Section title="과제 내용" padded={false} style={{ gap: 4 }}>
           <div className={s.inset}>
             <BodyText>{a.desc}</BodyText>
             {a.attachments.length > 0 && (

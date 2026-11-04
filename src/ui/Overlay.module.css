@@ -22,7 +22,7 @@
   overflow-y: auto;
   background: var(--wivu-color-bg-surface);
   border-radius: var(--wivu-radius-24) var(--wivu-radius-24) 0 0;
-  padding: 0 var(--wivu-layout-inset) calc(max(var(--safe-bottom), 12px) + 12px);
+  padding: 0 var(--wivu-layout-inset) calc(max(var(--safe-bottom), 12px) + 8px); /* v5 Figma: 기기 하단 여백 42 */
   box-shadow: var(--wivu-elevation-overlay);
   /* 끌어서 닫기는 핸들에서만(dragListener=false) — 시트 본문은 세로 스크롤 허용 */
   touch-action: pan-y;
@@ -47,7 +47,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: calc(max(var(--safe-bottom), 12px) + 108px);
+  bottom: calc(max(var(--safe-bottom), 12px) + 86px); /* v5 Figma: 기기 하단에서 120 */
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -158,7 +158,7 @@
 
 /* ── v5 Sheet Head · Sheet Action ───────────── */
 .sheetHead {
-  padding-bottom: var(--wivu-space-12);
+  padding-bottom: var(--wivu-space-8); /* v5 Figma Sheet Head 아래 gap 8 */
 }
 .sheetTitleRow {
   display: flex;

@@ -31,7 +31,7 @@ export function Meal() {
                   {w.dow}
                 </Text>
                 <span className={s.date}>
-                  <Text variant={on ? 'body-2-strong' : 'body-2'} color={on ? 'on-brand' : 'primary'} tnum>
+                  <Text variant={on ? 'body-2-strong' : 'body-2'} color={on ? 'on-brand' : 'primary'}>
                     {w.d}
                   </Text>
                 </span>
@@ -59,13 +59,13 @@ function MealBlock({ meal, place }: { meal: MealT; place: string }) {
   const peak = meal.crowd.indexOf(Math.max(...meal.crowd));
   return (
     <section className={s.meal} aria-label={meal.kind}>
-      <Text variant="caption-1" color="tertiary" as="p" className="tnum">
+      <Text variant="caption-1" color="tertiary" as="p">
         {meal.kind} | {t.range} · {place}
       </Text>
       <div className={s.menu}>
         <div className={s.menuText}>
           <Text variant="title-3" as="h2">
-            {meal.main} <span className="tnum">({meal.price})</span>
+            {meal.main} <span>({meal.price})</span>
           </Text>
           <Text variant="body-3" color="secondary" as="p">
             {meal.sides}
@@ -82,7 +82,7 @@ function MealBlock({ meal, place }: { meal: MealT; place: string }) {
           <Text variant="caption-1-strong" color="secondary">
             시간대별 혼잡도
           </Text>
-          <Text variant="caption-1-strong" color="error" tnum>
+          <Text variant="caption-1-strong" color="error">
             {meal.peak} 가장 붐벼요
           </Text>
         </div>
@@ -101,7 +101,7 @@ function MealBlock({ meal, place }: { meal: MealT; place: string }) {
         </div>
         <div className={s.axis}>
           {t.axis.map((a) => (
-            <Text key={a} variant="caption-2" color="tertiary" tnum>
+            <Text key={a} variant="caption-2" color="tertiary">
               {a}
             </Text>
           ))}

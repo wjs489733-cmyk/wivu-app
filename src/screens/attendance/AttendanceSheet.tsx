@@ -187,7 +187,7 @@ export function AttendanceSheet({
                 </Text>
               )}
             </div>
-            <Button block disabled={!canConfirm} loading={status === 'checking'} onClick={onConfirm}>
+            <Button block disabled={!canConfirm} loading={status === 'checking'} onClick={onConfirm} className={s.disabledLabel}>
               인증하기
             </Button>
           </div>

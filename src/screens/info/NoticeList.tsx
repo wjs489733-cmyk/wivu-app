@@ -29,7 +29,7 @@ export function NoticeList() {
                   {n.short}
                 </Text>
               </span>
-              <Text variant="caption-1" color="tertiary" className="tnum">
+              <Text variant="caption-1" color="tertiary">
                 {n.date} · {n.author}
               </Text>
             </button>

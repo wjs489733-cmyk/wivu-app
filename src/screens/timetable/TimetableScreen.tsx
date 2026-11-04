@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Button, Chip, CtaBar, Dialog, Icon, LargeHeader, Screen, TabBar, Text, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
@@ -15,6 +15,11 @@ import s from './Timetable.module.css';
 /** 수강신청 과목의 '−'를 눌렀을 때 (프로토타입에선 뺄 수 없음 — 실제 정정은 학교 포털) */
 const ENROLLED_TOAST = '수강신청한 과목은 학교 포털에서 바꿀 수 있어요';
 
+/** Figma 697:7142 · 697:7306 시나리오 — 수업 추가 완료(685:6621: UX/UI 프로토타이핑) 뒤 편집.
+ *  앱을 '/timetable?edit=1'로 바로 열었을 때(첫 마운트)만, 직접 추가한 수업이 없으면 이 과목을 넣어 둔다. 앱 안 흐름엔 영향 없음 */
+const EDIT_DEMO_COURSE = 'uxui-prototyping';
+let firstMount = true;
+
 /**
  * 시간표 탭 루트 — Figma v5 685:6192 (+ 수업 상세 시트 685:6329)
  * 편집 모드(같은 라우트의 상태) — 697:7142 시간표 편집 · 697:7306 수업 빼기 확인
@@ -30,6 +35,13 @@ export function TimetableScreen() {
   const lastAdded = useSchedule((st) => st.lastAdded);
   const clearLastAdded = useSchedule((st) => st.clearLastAdded);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (!firstMount) return;
+    firstMount = false;
+    if (params.get('edit') === '1' && !useSchedule.getState().added.length) useSchedule.setState({ added: [EDIT_DEMO_COURSE] });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const sheetParam = params.get('sheet');
   const [sheetCourse, setSheetCourse] = useState<TTCourse | null>(() => courses.find((c) => c.id === sheetParam) ?? null);
@@ -130,7 +142,7 @@ export function TimetableScreen() {
       <div className={s.body}>
         {editing && (
           <div className={s.hint} role="status">
-            <Icon name="info" size={20} />
+            <Icon name="info" size={18} color="brand" />
             <Text variant="caption-1" color="brand">
               − 를 눌러 수업을 빼요. 직접 추가한 수업은 점선으로 보여요.
             </Text>
@@ -158,7 +170,7 @@ export function TimetableScreen() {
                     {c.onlineNote}
                   </Text>
                 </span>
-                {!(editing && !c.core) && <Icon name="chevron-right" size={20} />}
+                {!(editing && !c.core) && <Icon name="chevron-right" size={18} color="tertiary" />}
               </button>
               {editing && !c.core && (
                 <span className={s.onlineRemove}>

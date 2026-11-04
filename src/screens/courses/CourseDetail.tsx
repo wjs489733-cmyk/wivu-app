@@ -88,7 +88,7 @@ export function CourseDetail() {
 
       <div className={s.sections}>
         {main && (
-          <Section title={ddayCount(main.due) <= 3 ? '마감 임박 과제' : '진행 중인 과제'} padded={false} style={{ gap: 2 }}>
+          <Section title={ddayCount(main.due) <= 3 ? '마감 임박 과제' : '진행 중인 과제'} padded={false} style={{ gap: 4 }}>
             <div className={s.inset}>
               <AssignmentCard courseId={course.id} a={main} done={!!submissionOf(main)} />
               {others.map((a) => {
@@ -97,7 +97,7 @@ export function CourseDetail() {
                   <ItemRow
                     key={a.id}
                     title={a.title}
-                    badge={<Chip tone={done ? 'brand' : 'neutral'} className={done ? undefined : 'font-en'}>{done ? '제출 완료' : dday(a.due)}</Chip>}
+                    badge={<Chip tone={done ? 'brand' : 'neutral'}>{done ? '제출 완료' : dday(a.due)}</Chip>}
                     meta={`${dueShort(a.due)} 마감 · ${done ? '제출 완료' : '미제출'}`}
                     chevron
                     onPress={() => nav.push(P.assignment(course.id, a.id))}
@@ -108,7 +108,7 @@ export function CourseDetail() {
           </Section>
         )}
 
-        <Section title="공지사항" more={info.notices.length > 2 ? (expanded ? '접기' : `전체 ${info.notices.length}`) : undefined} onMore={() => setExpanded((v) => !v)} padded={false} style={{ gap: 2 }}>
+        <Section title="공지사항" more={info.notices.length > 2 ? (expanded ? '접기' : `전체 ${info.notices.length}`) : undefined} onMore={() => setExpanded((v) => !v)} padded={false} style={{ gap: 4 }}>
           <div className={s.inset}>
             {notices.map((n) => (
               <ItemRow
@@ -116,9 +116,7 @@ export function CourseDetail() {
                 title={n.title}
                 badge={
                   isNew(n) ? (
-                    <Chip tone="brand" className="font-en">
-                      NEW
-                    </Chip>
+                    <Chip tone="brand">NEW</Chip>
                   ) : undefined
                 }
                 meta={`${n.date} · 조회 ${n.views}`}
@@ -129,7 +127,7 @@ export function CourseDetail() {
           </div>
         </Section>
 
-        <Section title="강의자료" more={`전체 ${files.length}`} onMore={() => nav.push(P.courseMaterials(course.id))} padded={false} style={{ gap: 2 }}>
+        <Section title="강의자료" more={`전체 ${files.length}`} onMore={() => nav.push(P.courseMaterials(course.id))} padded={false} style={{ gap: 4 }}>
           <div className={s.inset}>
             {files.slice(0, 2).map((f) => (
               <FileRow key={f.id} file={f} withDate />
@@ -145,7 +143,7 @@ export function CourseDetail() {
 function Stat({ value, label, color = 'primary', onPress }: { value: number | string; label: string; color?: 'primary' | 'brand' | 'error'; onPress: () => void }) {
   return (
     <button type="button" className={s.stat} onClick={onPress} aria-label={`${label} ${value}`}>
-      <Text variant="title-3" color={color} className="tnum">
+      <Text variant="title-3" color={color}>
         {value}
       </Text>
       <Text variant="caption-1" color="secondary">
@@ -167,14 +165,14 @@ function AssignmentCard({ courseId, a, done }: { courseId: string; a: Assignment
           <Text variant="body-1-strong" as="h3" className="truncate">
             {a.title}
           </Text>
-          <Text variant="caption-1" color="tertiary" as="p" className="truncate tnum">
+          <Text variant="caption-1" color="tertiary" as="p" className="truncate">
             {dueShort(a.due)} 마감 · {done ? '제출 완료' : '미제출'} · PDF
           </Text>
         </div>
         {done ? (
           <Chip tone="brand">제출 완료</Chip>
         ) : (
-          <Chip tone={n === 0 ? 'dangerSoft' : 'neutral'} className="font-en">
+          <Chip tone={n === 0 ? 'dangerSoft' : 'neutral'}>
             {dday(a.due)}
           </Chip>
         )}

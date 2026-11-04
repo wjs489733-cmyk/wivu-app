@@ -70,7 +70,7 @@ function NotiRow({ n, unread, onPress }: { n: Noti; unread: boolean; onPress: ()
           <Text variant="caption-2-strong" color={n.highlight ? 'brand' : 'tertiary'}>
             {n.category}
           </Text>
-          <Text variant="caption-2" color="tertiary" tnum>
+          <Text variant="caption-2" color="tertiary">
             {n.time}
           </Text>
         </span>

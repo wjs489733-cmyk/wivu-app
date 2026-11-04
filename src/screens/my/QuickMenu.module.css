@@ -7,7 +7,7 @@
 .head {
   display: flex;
   align-items: center;
-  gap: var(--wivu-space-8);
+  gap: 6px; /* v5 head 간격 6 (토큰 없음) */
   min-height: 24px;
 }
 .helper {
@@ -21,8 +21,8 @@
   margin-top: var(--wivu-space-16);
   padding: var(--wivu-space-4);
   border-radius: var(--wivu-radius-12);
-  /* Figma bg/subtle(#FAFAFA)는 흰 바탕에서 안 보여 Secondary 버튼과 같은 한 단계 진한 회색 사용 */
-  background: var(--wivu-color-bg-brand-soft);
+  /* v5 동기화: Figma 값 bg/subtle(#FAFAFA) 그대로 — 선택 칸은 흰 면 + 카드 그림자로 구분 */
+  background: var(--wivu-color-bg-subtle);
 }
 .tab {
   flex: 1 1 0;

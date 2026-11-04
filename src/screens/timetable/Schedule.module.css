@@ -22,6 +22,14 @@
   flex: 1 1 auto;
   min-width: 0;
 }
+.infoBox[data-compact] {
+  padding: 14px var(--wivu-space-16);
+  border-radius: var(--wivu-radius-12);
+}
+.infoBox[data-compact] .infoLabel {
+  flex-basis: 44px;
+  color: var(--wivu-color-text-secondary);
+}
 .mapLink {
   flex-shrink: 0;
   color: var(--wivu-color-text-brand);

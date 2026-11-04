@@ -24,12 +24,12 @@ const PATHS: Partial<Record<LocalIconName, ReactElement>> = {
   reply: <path d="M7 5v6a3 3 0 0 0 3 3h8m0 0-3.5-3.5M18 14l-3.5 3.5" {...line} />,
 };
 
-export function LocalIcon({ name, size = 16, style }: { name: LocalIconName; size?: 16 | 20 | 24; style?: CSSProperties }) {
+export function LocalIcon({ name, size = 16, style }: { name: LocalIconName; size?: 16 | 18 | 20 | 24; style?: CSSProperties }) {
   const set = FROM_SET[name];
   if (set) return <Icon name={set} size={size} style={style} />;
   const filled = FILLED[name];
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden style={{ flexShrink: 0, ...style }}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden className="wivu-icon" style={{ flexShrink: 0, ...style }}>
       {filled ? <g fill="currentColor" dangerouslySetInnerHTML={{ __html: icons[filled].body }} /> : PATHS[name]}
     </svg>
   );

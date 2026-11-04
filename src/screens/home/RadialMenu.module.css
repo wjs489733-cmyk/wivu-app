@@ -28,6 +28,8 @@
   height: 500px;
   border-radius: 50%;
   background: var(--wivu-color-bg-surface);
+  /* Figma 'Fan / plane' 그림자 0 −8 32 #131313 16% (맞는 elevation 토큰 없음) */
+  box-shadow: 0 -8px 32px rgba(19, 19, 19, 0.16);
 }
 .item {
   position: absolute;
@@ -43,6 +45,11 @@
   background: var(--wivu-color-bg-brand-soft);
   color: var(--wivu-color-icon-primary);
   transition: background-color 0.12s ease, color 0.12s ease;
+}
+/* 아이콘 21 (Figma icon/* 21) — 공용 Icon 크기 단계에 없어 CSS로 크기만 (선은 공용에서 1.7 고정) */
+.item > svg {
+  width: 21px;
+  height: 21px;
 }
 .label {
   white-space: nowrap;

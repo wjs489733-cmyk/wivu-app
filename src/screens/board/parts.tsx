@@ -21,7 +21,7 @@ export function Fab({ onPress, aboveTabBar, hidden, slotRef }: { onPress: () => 
   );
 }
 
-/** FAB가 [data-fab-avoid] 요소(팀플 카드 '참여 신청' 줄)와 겹치는 동안만 잠깐 숨긴다 */
+/** FAB가 [data-fab-avoid] 요소(팀플 카드 '참여 신청' 버튼)를 가리는 동안만 잠깐 숨긴다 — 카드 제목 위에 떠 있는 건 v5 그대로 둔다 */
 export function useFabVisible(scrollRef: RefObject<HTMLDivElement | null>, slotRef: RefObject<HTMLDivElement | null>) {
   const [shown, setShown] = useState(true);
   useEffect(() => {
@@ -33,7 +33,7 @@ export function useFabVisible(scrollRef: RefObject<HTMLDivElement | null>, slotR
       const f = slotRef.current?.getBoundingClientRect();
       if (!f) return;
       const rr = root.getBoundingClientRect();
-      const M = 8;
+      const M = 0;
       const hit = Array.from(root.querySelectorAll('[data-fab-avoid]')).some((el) => {
         const r = el.getBoundingClientRect();
         // 탭바 뒤로 가려진 부분은 겹침으로 치지 않는다
@@ -58,9 +58,10 @@ export function useFabVisible(scrollRef: RefObject<HTMLDivElement | null>, slotR
   return shown;
 }
 
-/** 말머리 배지 (v5 Badge) */
-export function TagChip({ tag }: { tag: string }) {
-  return <Chip tone={tagTone(tag)}>{tag}</Chip>;
+/** 말머리 배지 (v5 Badge) — 상세(687:6783 · 698:7597)는 '팀플'도 Neutral(plain) */
+export function TagChip({ tag, plain }: { tag: string; plain?: boolean }) {
+  const tone = tagTone(tag);
+  return <Chip tone={plain && tone === 'warningSoft' ? 'neutral' : tone}>{tag}</Chip>;
 }
 
 const excerptOf = (p: Post) => p.excerpt ?? p.body.split('\n').find(Boolean) ?? '';
@@ -72,7 +73,7 @@ export function PostRow({ post, showBoard, fresh, highlight, onOpen }: { post: P
   const { likeCount, commentCount } = usePostStats(post);
   const { current, max } = useRecruit(post);
   const tail = post.recruit ? [`모집 ${current}/${max}`, post.recruit.deadline] : [`공감 ${likeCount}`, `댓글 ${commentCount}`];
-  const meta = [showBoard && boardLabel(post.boardId), post.author, post.time, ...tail].filter(Boolean).join(' · ');
+  const meta = [showBoard && boardLabel(post.boardId), post.author, post.feedTime ?? post.time, ...tail].filter(Boolean).join(' · ');
   return (
     <button
       type="button"
@@ -86,7 +87,7 @@ export function PostRow({ post, showBoard, fresh, highlight, onOpen }: { post: P
       <span className={s.postTitle}>
         <TagChip tag={post.tag} />
         <Text variant="body-1-strong" className="truncate">
-          <Highlight text={post.title} q={highlight} />
+          <Highlight text={post.feedTitle ?? post.title} q={highlight} />
         </Text>
       </span>
       <Text variant="body-3" color="secondary" className="truncate" as="span" style={{ display: 'block' }}>
@@ -192,7 +193,7 @@ function SearchPanel({ onClose, scope }: { onClose: () => void; scope?: BoardId 
               recent.map((r) => (
                 <div key={r} className={s.recentRow}>
                   <button type="button" onClick={() => setQ(r)}>
-                    <Icon name="clock" size={20} />
+                    <Icon name="clock" size={18} />
                     <Text variant="body-2" className="truncate">
                       {r}
                     </Text>
@@ -238,16 +239,16 @@ export function RecruitRow({ post, onApply }: { post: Post; onApply: (p: Post) =
     onApply(post);
   };
   return (
-    <div className={s.recruitRow} data-fab-avoid>
+    <div className={s.recruitRow}>
       <Text variant="caption-1" color="secondary" className="truncate" tnum>
         현재 {current} / {max}명{when ? ` · ${when}` : ''}
       </Text>
       {applied ? (
-        <Button variant="secondary" size="s" leadingIcon="check" onClick={press}>
+        <Button variant="secondary" size="s" leadingIcon="check" onClick={press} data-fab-avoid>
           신청 완료
         </Button>
       ) : (
-        <Button size="s" disabled={full} onClick={press}>
+        <Button size="s" disabled={full} onClick={press} data-fab-avoid>
           {full ? '모집 완료' : '참여 신청'}
         </Button>
       )}

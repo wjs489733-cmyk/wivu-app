@@ -33,7 +33,7 @@
   color: var(--wivu-color-icon-pulse);
 }
 .tone_neutral {
-  background: var(--wivu-color-bg-brand-soft);
+  background: var(--wivu-color-bg-subtle); /* v5/Badge Neutral = bg/subtle */
   color: var(--wivu-color-text-secondary);
 }
 .tone_outline {

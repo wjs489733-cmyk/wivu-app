@@ -131,3 +131,8 @@ svg {
 .font-en {
   font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, var(--wivu-font-family-base);
 }
+
+/* v5 Figma: 아이콘 선은 크기와 상관없이 1.7 고정 */
+.wivu-icon * {
+  vector-effect: non-scaling-stroke;
+}

@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router';
 import { Chip, IconButton, LargeHeader, ListRow, Screen, Section, TabBar, Text } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { useHasUnread } from '@/app/useUnread';
 import { courseById } from '@/data/core';
 import { CAMPUS_BOARDS, COURSE_ROWS_FOLDED, MY_COURSE_ROWS, TEAM_FEATURED, courseHeadcount } from './data';
 import { useAllPosts, useBoard } from './store';
@@ -24,7 +23,6 @@ export function BoardRoot() {
   const seen = useBoard((st) => st.seen);
   const posts = useAllPosts();
   const apply = useApplyFlow();
-  const unread = useHasUnread();
   const [search, setSearch] = useState(() => params.get('search') === '1');
   const [expanded, setExpanded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -50,10 +48,11 @@ export function BoardRoot() {
         <LargeHeader
           title="게시판"
           actions={
-            <>
+            // v5: 아이콘 간격 16 · 알림 점 없음
+            <span className={s.headerActions}>
               <IconButton icon="search" label="게시판 검색" onPress={() => setSearch(true)} />
-              <IconButton icon="bell" label="알림함" dot={unread} onPress={() => nav.push(P.notifications)} />
-            </>
+              <IconButton icon="bell" label="알림함" onPress={() => nav.push(P.notifications)} />
+            </span>
           }
         />
       }
@@ -76,7 +75,7 @@ export function BoardRoot() {
                 <ListRow
                   key={c.id}
                   title={course.name}
-                  titleAddon={fresh ? <Chip tone="brand">NEW</Chip> : undefined}
+                  titleAddon={fresh ? <Chip tone="brand" className={s.newBadge}>NEW</Chip> : undefined}
                   meta={`수강생 ${courseHeadcount(c.id)}명${c.newToday > 0 ? ` · 오늘 새 글 ${c.newToday}` : ''}`}
                   chevron
                   onPress={() => nav.push(P.boardCourse(c.id))}

@@ -116,6 +116,9 @@ export type Post = {
   title: string;
   /** 피드 미리보기 (없으면 본문 첫 줄) */
   excerpt?: string;
+  /** 피드 행에서만 다른 제목·시간 (v5 피드 687:6661과 상세 698:7597 문구가 달라 화면별로 그대로 맞춤) */
+  feedTitle?: string;
+  feedTime?: string;
   body: string;
   author: string;
   time: string;
@@ -171,11 +174,14 @@ export const POSTS: Post[] = [
     id: 'p2',
     boardId: 'service-design',
     tag: '팀플',
-    // 피드(687:6661)와 상세(698:7597)의 제목·본문·시간이 서로 달라 상세 기준으로 통일 — 인원은 피드 메타 '모집 2/4'로 이미 보여서 제목의 (2/4)는 뺐다
+    // v5 피드(687:6661)와 상세(698:7597)의 제목·미리보기·시간이 서로 달라 화면마다 Figma 그대로 (피드: feedTitle·excerpt·feedTime)
     title: '블루프린트 워크숍 같이 할 팀 구해요',
+    feedTitle: '블루프린트 워크숍 같이 할 팀 구해요 (2/4)',
+    excerpt: '오늘 후반부 워크숍 팀 미정이신 분! 카페 서비스로 진행하려고 해요.',
     body: '다음 주 수업 블루프린트 워크숍 같이 할 팀 구해요. 지금 2명이고 2명 더 구해요. 화요일 저녁에 오프라인으로 모일 수 있는 분이면 좋겠어요.',
     author: '익명',
-    time: '38분 전',
+    time: '1시간 전',
+    feedTime: '38분 전',
     views: 88,
     likes: 7,
     comments: 3,
@@ -207,20 +213,6 @@ export const POSTS: Post[] = [
     likes: 2,
     comments: 5,
     isNew: true,
-  },
-  {
-    id: 'p5',
-    boardId: 'service-design',
-    tag: '후기',
-    title: '1주차 오리엔테이션 정리',
-    excerpt: '평가 비율이랑 과제 일정 정리해뒀어요',
-    body: '평가 비율이랑 과제 일정 정리해뒀어요\n\n결석하신 분들 참고하세요. 정확한 내용은 강의계획서랑 교수님 공지를 꼭 다시 확인해주세요!',
-    author: '익명',
-    time: '09.04',
-    views: 210,
-    likes: 25,
-    comments: 4,
-    files: [{ name: '서비스디자인_1주차_OT정리.pdf', size: '0.8MB', kind: 'pdf' }],
   },
 
   /* UX 리서치 — 새 글 5 · 팀플 모집 2 */
@@ -748,9 +740,6 @@ const EXPLICIT: Comment[] = [
   C('p4', 2, '익명2', '어제', 'Miro는 포스트잇 정리할 때 좋긴 한데 최종 정리는 결국 Figma로 옮기게 되더라고요', 2),
   C('p4', 3, '작성자', '어제', '추천 감사해요! 수업 양식부터 써볼게요', 0, { parent: 'p4-c1', isAuthor: true }),
 
-  C('p5', 1, '익명1', '09.04', '결석해서 몰랐는데 감사합니다 🙏', 2),
-  C('p5', 2, '익명2', '09.05', '과제 일정 표로 정리해주셔서 보기 편해요', 1),
-
   C('u1', 1, '익명1', '50분 전', '섭외 경험은 없는데 인터뷰 진행은 해봤어요! 괜찮을까요?', 1),
   C('u1', 2, '작성자', '45분 전', '좋아요! 참여 신청 눌러주세요 :)', 0, { parent: 'u1-c1', isAuthor: true }),
   C('u1', 3, '익명2', '20분 전', '혹시 인터뷰는 대면인가요?', 0),
@@ -816,6 +805,15 @@ export function seedComments(post: Post): Comment[] {
   seedCache.set(post.id, list);
   return list;
 }
+
+/* ── 글쓰기 데모 초안 (687:6877 · ?draft=1) — 서비스디자인 · 질문 · 과제 연결 ── */
+export const DEMO_DRAFT = {
+  boardId: 'service-design' as BoardId,
+  tag: '질문',
+  title: '서비스 분석 리포트, 분석 대상 겹쳐도 되나요?',
+  body: '배달앱으로 분석 대상을 정했는데, 다른 분들도 많이 고르셨을 것 같아서요.\n\n관점(예: 라이더 vs 주문자)만 다르면 겹쳐도 괜찮을까요?',
+  linked: A1,
+};
 
 /* ── 검색 ───────────────────────────────────────────────────── */
 export const RECENT_SEARCHES = ['서비스 분석 리포트', '스터디룸', '팀플', '관찰 노트'];

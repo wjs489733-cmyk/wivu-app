@@ -1,6 +1,6 @@
 /* ────────────────────────────────────────────────────────────
  * 게시판 (v5 · Figma '09 게시판') — 텍스트 좌우 20(inset), 묶음 안 4~12 · 묶음 사이 24~28
- * 색은 semantic 토큰만. Secondary 버튼·입력 면은 코드 규칙대로 bg-brand-soft(@/ui 기본값).
+ * 색은 semantic 토큰만. 입력 면(한마디·댓글)은 v5대로 bg/subtle(#FAFAFA).
  * ──────────────────────────────────────────────────────────── */
 
 /* ── 탭 루트 (687:6491) ─────────────────────────────────────── */
@@ -10,6 +10,24 @@
   gap: 28px;
   padding-top: 28px;
 }
+/* 헤더 아이콘: v5 = 24 아이콘 간격 16 · 오른쪽 정렬선(폭−20) — 공통 LargeHeader(간격 20 · 오른쪽 18) 국소 보정 */
+.headerActions {
+  display: flex;
+  align-items: center;
+  margin-right: 2px;
+}
+.headerActions > button + button {
+  margin-left: -4px;
+}
+/* v5 목록 행 'NEW' 배지: 20 높이 · 좌우 6 · 제목과 간격 6 (공통 Chip S는 22 · 8) */
+.newBadge {
+  height: 20px;
+  padding-inline: 6px;
+}
+.plainRows span:has(> .newBadge) {
+  gap: 6px;
+}
+
 /* 섹션 본문: v5는 카드·행 모두 텍스트 정렬선(20)에 맞춘다 */
 .inset {
   padding-inline: var(--wivu-layout-inset);
@@ -46,8 +64,9 @@
   background: var(--wivu-color-bg-brand-soft);
 }
 
-/* 팀플 카드 (687:6491 '팀플 · 사용자 인터뷰') */
+/* 팀플 카드 (687:6491 '팀플 · 사용자 인터뷰') — v5는 1px 테두리가 레이아웃에 포함돼 안쪽 17 (132 높이) */
 .teamCard {
+  padding: 17px;
   display: flex;
   flex-direction: column;
   gap: var(--wivu-space-8);
@@ -69,16 +88,16 @@
   min-width: 0;
 }
 
-/* 글쓰기 FAB — v5 Button Primary M + 떠 있는 요소 그림자 */
+/* 글쓰기 FAB — v5 'FAB · 글쓰기' = Button Primary M 95×44 · 그림자 0 8 24 #101828/14%(= elevation-overlay) · x 274(오른쪽 23) */
 .fabSlot {
   position: absolute;
-  right: var(--wivu-layout-inset);
+  right: 23px;
   z-index: 5;
   pointer-events: none;
 }
 .fabSlot > button {
   pointer-events: auto;
-  box-shadow: var(--wivu-elevation-fab);
+  box-shadow: var(--wivu-elevation-overlay);
   transition: transform 0.22s var(--wivu-easing-out), opacity 0.18s ease;
 }
 .fabSlot[data-hidden='true'] > button {
@@ -87,7 +106,10 @@
   pointer-events: none;
 }
 .fabTab {
-  bottom: calc(62px + max(var(--safe-bottom), 12px) + 16px);
+  /* v5: 화면 아래에서 99(탭바 83 + 16) — 홈 인디케이터(34) 있는 기기·프레임에서 그대로.
+   * 인디케이터 없는 화면(상태바 없이 콘텐츠가 44 위로 붙음)에선 팀플 카드 '참여 신청' 버튼(위 끝 749)을 가리지 않게 105 —
+   * 둘 다 FAB이 카드 제목 위에 떠 있는 v5 모습 */
+  bottom: calc(105px - var(--safe-bottom) * 0.1765);
 }
 .fabPlain {
   bottom: calc(max(var(--safe-bottom), 12px) + 16px);
@@ -238,7 +260,7 @@ mark.hit {
   place-items: center;
   width: 44px;
   height: 44px;
-  margin-right: 8px;
+  margin-right: 6px;
   color: var(--wivu-color-icon-secondary);
 }
 .resultCount {
@@ -277,12 +299,13 @@ mark.hit {
   flex: 1 1 auto;
   min-width: 0;
 }
+
 .linkClose {
   display: grid;
   place-items: center;
   width: 32px;
   height: 32px;
-  margin: -6px -6px -6px 0;
+  margin: -6px -7px -6px 0;
   color: var(--wivu-color-icon-secondary);
 }
 .imageGrid {
@@ -310,8 +333,9 @@ mark.hit {
   gap: var(--wivu-space-4);
   min-height: 32px;
   margin-block: -7px;
-  color: var(--wivu-color-icon-secondary);
+  color: var(--wivu-color-text-secondary);
 }
+
 .action[aria-pressed='true'] {
   color: var(--wivu-color-text-brand);
 }
@@ -400,11 +424,12 @@ mark.hit {
   height: 32px;
   color: var(--wivu-color-icon-secondary);
 }
+/* v5 bottom: 입력칸 300 · 간격 8 · 보내기 24 (오른쪽 40 비움) */
 .inputRow {
   display: flex;
   align-items: center;
   gap: var(--wivu-space-8);
-  padding: var(--wivu-space-8) var(--wivu-space-12) calc(max(var(--safe-bottom), 8px) + 8px) var(--wivu-layout-inset);
+  padding: var(--wivu-space-8) 30px calc(max(var(--safe-bottom), 8px) + 8px) var(--wivu-layout-inset);
 }
 .commentField {
   flex: 1 1 auto;
@@ -414,7 +439,7 @@ mark.hit {
   border: 0;
   outline: 0;
   border-radius: var(--wivu-radius-full);
-  background: var(--wivu-color-bg-brand-soft);
+  background: var(--wivu-color-bg-subtle);
   color: var(--wivu-color-text-primary);
   caret-color: var(--wivu-color-text-brand);
   transition: box-shadow 0.15s ease, background-color 0.15s ease;
@@ -432,7 +457,7 @@ mark.hit {
   width: 44px;
   height: 44px;
   flex-shrink: 0;
-  margin-left: -6px;
+  margin-left: -10px; /* 터치 영역 44 — 보이는 아이콘은 입력칸에서 8 */
   color: var(--wivu-color-icon-brand);
 }
 
@@ -445,6 +470,17 @@ mark.hit {
   display: flex;
   flex-direction: column;
   gap: var(--wivu-space-8);
+}
+/* v5 Option: 테두리가 레이아웃에 포함(좌우 17 · 위아래 15) → 52 / 보조 줄 있으면 68 — 공통 OptionRow(50 · 16) 국소 보정 */
+.optionList > button {
+  padding: 15px 17px;
+}
+/* v5 시트 머리 + 설명(신고 698:7691 · 과제 연결 699:8424): 제목 바로 아래 설명(간격 0) · 설명 아래 16 */
+.headWithSub p {
+  margin-top: 0 !important;
+}
+.headWithSub > div {
+  padding-bottom: var(--wivu-space-16);
 }
 .sheetCta {
   display: flex;
@@ -468,8 +504,9 @@ mark.hit {
   opacity: 0.6;
 }
 
-/* 팀플 참여 신청 시트 (699:7758) */
+/* 팀플 참여 신청 시트 (699:7758) — 시트 머리 아래 12 */
 .applySummary {
+  margin-top: var(--wivu-space-4);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -512,7 +549,7 @@ mark.hit {
   outline: 0;
   resize: none;
   border-radius: var(--wivu-radius-12);
-  background: var(--wivu-color-bg-brand-soft);
+  background: var(--wivu-color-bg-subtle);
   color: var(--wivu-color-text-primary);
   caret-color: var(--wivu-color-text-brand);
   transition: box-shadow 0.15s ease, background-color 0.15s ease;
@@ -540,12 +577,13 @@ mark.hit {
   gap: 6px;
   width: 100%;
   padding: 10px 0;
-  color: var(--wivu-color-icon-primary);
+  color: var(--wivu-color-text-secondary);
   text-align: left;
 }
 .boardSelect > :first-child {
   flex: 1 1 auto;
   min-width: 0;
+  color: var(--wivu-color-text-primary);
 }
 .write .filters {
   margin-top: var(--wivu-space-4);
@@ -642,7 +680,7 @@ mark.hit {
   gap: var(--wivu-space-4);
   min-height: 32px;
   margin-block: -6px;
-  color: var(--wivu-color-icon-secondary);
+  color: var(--wivu-color-text-secondary);
 }
 .tool:active {
   opacity: 0.6;

@@ -6,9 +6,11 @@ import type { AttendMethod } from '@/store/app';
  * 학기: 2026-09-01(화) 개강, 오늘 = 10.09(금) 6주차 (core NOW · TODAY_MD)
  *   4주차 추석 연휴(9.24–9.26) → 금요일 수업 휴강 · 6주차 10.05(월) 개천절 대체공휴일 → 월요일 수업 휴강
  * 출석률 = (출석 + 지각) / 진행된 수업 — 모션그래픽스 83%(4+1 / 6)
- * 출석 합계 23 · 지각 3 · 결석 2 (5과목, 오늘 출석 전 기준) — v5 요약 타일과 같음
- *   ※ v5 과목별 행의 서비스디자인 '출석 6' · 브랜드디자인 '출석 5' · 디자인경영 '출석 10'은 요약(23)과 합이 안 맞음
- *     → 이 파일 기록(4 · 3 · 9) 기준으로 표시 (Figma 갱신 필요)
+ * 과목별 행 = v5 683:5844 그대로: 서비스디자인 출석 6 · 브랜드디자인 출석 5 · 지각 1 · UX 리서치 출석 3 · 결석 1 ·
+ *   디자인경영 출석 10 · 지각 1 · 모션그래픽스 출석 4 · 지각 1 · 결석 1
+ *   → 휴강(추석 9.25 · 대체공휴일 10.5) 보강 회차(makeup)를 넣어 과목 상세 기록과 숫자가 맞게 함
+ * 상단 요약 23 · 3 · 2 (v5 요약 타일) = 정규 회차 기준 — 보강 회차는 요약에서 뺀다 (totals)
+ *   ※ v5 요약(23)은 v5 과목별 행 합(28)과 다름 → 요약은 '정규 회차' 규칙으로 맞춤 (Figma 정리 시 확인 필요)
  * ※ 출석 숫자의 단일 기준: 수강과목(과목 상세 '출석' 타일·출석 현황 카드)도 courseStats()를 그대로 읽는다.
  * 사이버 강의(글쓰기와 소통): 주차별 강의는 월요일 09:00에 열리고 그 주 일요일까지 들으면 출석.
  *   1–6주차 수강 완료(6주차 ~10.11, 10.07에 수강) → 7주차는 10.12(월) 오픈 · 10.18(일)까지.
@@ -34,6 +36,8 @@ export type Session = {
   doneDate?: string;
   /** 사이버 강의: 강의가 열리는 날짜 'MM.DD' */
   opens?: string;
+  /** 휴강 보강 회차 — 기록 행에 '보강'으로 보이고, 출석 탭 상단 요약(정규 회차)에서는 빠진다 */
+  makeup?: boolean;
   /** 정렬용 (MMDD + 시작 시각) */
   key: string;
 };
@@ -86,6 +90,12 @@ export const PAST: Session[] = [
   // 6주차 (10.05(월) 대체공휴일 휴강)
   sess('motion-graphics', 6, '10.06', '화', '14:00', '16:50', '출석', { time: '13:56', method: 'PIN' }),
   sess('design-management', 6, '10.07', '수', '10:30', '11:45', '출석', { time: '10:27', method: 'PIN' }),
+  // 보강 (v5 과목별 숫자에 맞춤) — 추석 휴강 금요일 과목은 5주차 수·목에 2회 나눠 보강, 디자인경영은 대체공휴일(10.5) 보강
+  sess('brand-design', 4, '09.30', '수', '13:00', '14:50', '출석', { time: '12:55', method: 'NFC', makeup: true }),
+  sess('service-design', 4, '09.30', '수', '15:00', '16:50', '출석', { time: '14:56', method: 'PIN', makeup: true }),
+  sess('brand-design', 4, '10.01', '목', '13:00', '14:50', '출석', { time: '12:58', method: 'PIN', makeup: true }),
+  sess('service-design', 4, '10.01', '목', '15:00', '16:50', '출석', { time: '14:57', method: 'NFC', makeup: true }),
+  sess('design-management', 6, '10.08', '목', '10:30', '11:45', '출석', { time: '10:26', method: 'PIN', makeup: true }),
   // 사이버 강의(글쓰기와 소통) — 출석 탭 목록엔 없음(Figma), 상세 라우트용 (date = 수강 마감일)
   sess('writing', 1, '09.06', '일', '00:00', '23:59', '출석', { time: '21:40', doneDate: '09.06', opens: '09.01' }),
   sess('writing', 2, '09.13', '일', '00:00', '23:59', '출석', { time: '22:10', doneDate: '09.09', opens: '09.07' }),
@@ -148,11 +158,14 @@ export function courseStats(id: CourseId, t: TodayState): CourseStats {
   return { present, late, absent, held, remaining: TOTAL_SESSIONS[id] - held, rate };
 }
 
+/** 출석 탭 상단 요약 — 정규 회차만 (보강 제외) · v5 23 · 3 · 2 */
 export function totals(t: TodayState) {
-  return ATTENDANCE_COURSES.map((id) => courseStats(id, t)).reduce(
-    (a, s) => ({ present: a.present + s.present, late: a.late + s.late, absent: a.absent + s.absent }),
-    { present: 0, late: 0, absent: 0 },
-  );
+  const recs = allRecords(t).filter((r) => !r.makeup && ATTENDANCE_COURSES.includes(r.courseId));
+  return {
+    present: recs.filter((r) => r.status === '출석').length,
+    late: recs.filter((r) => r.status === '지각').length,
+    absent: recs.filter((r) => r.status === '결석').length,
+  };
 }
 
 /** 과목 상세 '회차별 기록' — 지난 회차 + 오늘 + 다음 1회 */

@@ -28,7 +28,8 @@ export function AttendanceRoot() {
   return (
     <Screen
       figma="683:5844"
-      header={<LargeHeader title="출석" actions={<IconButton icon="bell" label="알림함" dot={unread} onPress={() => nav.push(P.notifications)} />} />}
+      // v5 683:5844 헤더 종 아이콘엔 안 읽음 점이 없다 → 점은 aria-label로만 알림
+      header={<LargeHeader title="출석" actions={<IconButton icon="bell" label={unread ? '알림함 · 새 알림 있음' : '알림함'} onPress={() => nav.push(P.notifications)} />} />}
       footer={<TabBar active="attendance" />}
       overlay={<AttendanceSheetHost open={pin} onClose={() => setPin(false)} />}
     >
@@ -103,7 +104,7 @@ export function AttendanceRoot() {
                   <Text variant="body-2-strong" color={warn ? 'error' : 'primary'} tnum>
                     {st.rate}%
                   </Text>
-                  <Icon name="chevron-right" size={20} color="tertiary" />
+                  <Icon name="chevron-right" size={18} color="tertiary" />
                 </button>
               );
             })}

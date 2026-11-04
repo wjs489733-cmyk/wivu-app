@@ -67,13 +67,13 @@ export function SchoolLink() {
       <div className={s.page}>
         <div className={s.schoolCard}>
           <span className={s.emblem}>
-            <Icon name="student" size={24} />
+            <Icon name="student" size={24} className={s.i22} />
           </span>
           <span className={s.profileText}>
             <Text variant="title-3" className="truncate">
               {school}
             </Text>
-            <Text variant="caption-1" color="secondary" className="truncate tnum">
+            <Text variant="caption-1" color="secondary" className="truncate">
               {USER.department} {USER.year}학년 · {USER.studentId}
             </Text>
           </span>
@@ -87,11 +87,11 @@ export function SchoolLink() {
         <ul aria-live="polite">
           {SYNC_ITEMS.map((label) => (
             <li key={label} className={s.dataRow}>
-              <Icon name={syncing ? 'refresh' : 'check'} size={20} color={syncing ? 'tertiary' : 'brand'} className={syncing ? s.syncSpin : undefined} />
+              <Icon name={syncing ? 'refresh' : 'check'} size={20} color={syncing ? 'tertiary' : 'brand'} className={`${s.i18} ${syncing ? s.syncSpin : ''}`} />
               <Text variant="body-2" className="truncate">
                 {label}
               </Text>
-              <Text variant="caption-1" color="tertiary" tnum>
+              <Text variant="caption-1" color="tertiary">
                 {syncing ? '가져오는 중' : `오늘 ${lastSync}`}
               </Text>
             </li>

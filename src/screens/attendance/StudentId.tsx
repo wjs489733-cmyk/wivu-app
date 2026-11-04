@@ -50,6 +50,14 @@ export function StudentId() {
 
   const refresh = () => setQr((x) => ({ gen: x.gen + 1, left: TTL }));
 
+  // ?tab=library로 바로 열면 v5 692:7237처럼 전환 토스트도 함께 (한 번만)
+  const libToast = useRef(false);
+  useEffect(() => {
+    if (libToast.current || q.get('tab') !== 'library') return;
+    libToast.current = true;
+    toast('도서관 출입용 QR로 바꿨어요', 'library');
+  }, [q]);
+
   // 1초마다 감소, 0이 되면 새 회차(새 토큰). 회차가 바뀌면 박자를 다시 맞춘다(새로고침 직후 00:30이 온전히 1초).
   useEffect(() => {
     const t = window.setInterval(() => setQr((x) => (x.left > 1 ? { ...x, left: x.left - 1 } : { gen: x.gen + 1, left: TTL })), 1000);
@@ -122,7 +130,7 @@ export function StudentId() {
             남은 시간 {mmss}
           </Text>
           <button type="button" className={s.refresh} onClick={refresh} aria-label="QR 새로고침">
-            <Icon name="refresh" size={20} />
+            <Icon name="refresh" size={18} />
           </button>
         </div>
 
@@ -201,7 +209,7 @@ function NfcBody({ onClose }: { onClose: () => void }) {
       <div className={s.nfcBody}>
         <span className={s.nfcRing} data-done={done}>
           {!done && <span className={s.nfcPulse} />}
-          <Icon name={done ? 'check' : 'nfc'} size={24} color={done ? 'on-brand' : 'brand'} />
+          <Icon name={done ? 'check' : 'nfc'} size={24} color={done ? 'on-brand' : 'brand'} className={s.icon28} />
         </span>
         <Text variant="title-3" as="p" align="center" role="status">
           {done ? '태그됐어요' : '리더기에 휴대폰을 대주세요'}

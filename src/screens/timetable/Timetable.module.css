@@ -8,10 +8,10 @@
   padding: 12px var(--wivu-layout-inset) 0;
 }
 
-/* 편집 안내 (Figma 697:7142: bg/brand-tint r12 p12/14 · 아이콘 + Caption 1 brand) */
+/* 편집 안내 (Figma 697:7142: bg/brand-tint r12 p12/14 · 아이콘 18 세로 가운데 + Caption 1 brand) */
 .hint {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--wivu-space-8);
   padding: 12px 14px;
   margin-bottom: var(--wivu-space-12);
@@ -21,7 +21,6 @@
 }
 .hint > svg {
   flex-shrink: 0;
-  margin-top: -1px;
 }
 
 /* ── 시간표 그리드 (352×442 · 시간 열 28 · 머리 28 · 1시간 46 · 세로선·바깥 보더 없음) ── */
@@ -204,8 +203,20 @@
 .result > :last-child {
   flex-shrink: 0;
 }
+/* '추가됨' · '겹침' · 시트 CTA 비활성 (Figma 685:6485 · 697:7430: 글자 text/tertiary) */
+button.stateBtn:disabled {
+  color: var(--wivu-color-text-tertiary);
+}
+/* 작은 상태 버튼은 바탕도 옆 '전체·전공' 버튼과 같은 bg/subtle (Figma 685:6485) */
+button.statePill:disabled {
+  background: var(--wivu-color-bg-subtle);
+}
 
 /* ── 수업 정보 시트 (697:7430) ── */
+/* 부제 아래 정보 박스까지 16 (공용 SheetHead 아래 8 + 8) */
+.checkInfo {
+  margin-top: var(--wivu-space-8);
+}
 .mini {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -258,9 +269,11 @@
   background: var(--wivu-color-bg-subtle);
   color: var(--wivu-color-icon-primary);
 }
+.banner {
+  align-items: center;
+}
 .banner > svg {
   flex-shrink: 0;
-  margin-top: 1px;
 }
 .bannerText {
   display: flex;

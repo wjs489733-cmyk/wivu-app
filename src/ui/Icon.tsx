@@ -3,8 +3,9 @@ import { icons, logos, type IconName, type LogoName } from '@/icons/icons.genera
 
 export type { IconName, LogoName };
 
-/** 아이콘 규격 (WivU Icons v2): 24 그리드 · 선 1.7 · 사용 크기 16/20/24 — 선 두께는 크기에 비례(24→1.7, 20→1.42, 16→1.13) */
-export type IconSize = 16 | 20 | 24;
+/** 아이콘 규격 (WivU Icons v2): 24 그리드 · 선 1.7 · 사용 크기 16/18/20/22/24.
+ *  v5 Figma처럼 선 두께는 크기와 상관없이 화면 기준 1.7 고정(global.css `.wivu-icon` → non-scaling-stroke) */
+export type IconSize = 16 | 18 | 20 | 22 | 24;
 
 type IconProps = {
   name: IconName;
@@ -36,7 +37,7 @@ export function Icon({ name, size = 24, color = 'inherit', className, style, lab
       height={size}
       viewBox={icon.viewBox}
       fill="none"
-      className={className}
+      className={className ? `wivu-icon ${className}` : 'wivu-icon'}
       style={{ color: TOKEN[color] ?? color, flexShrink: 0, ...style }}
       role={label ? 'img' : undefined}
       aria-label={label}

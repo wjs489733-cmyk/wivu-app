@@ -74,6 +74,11 @@
   place-items: center;
   border-radius: var(--wivu-radius-14);
   color: var(--wivu-color-text-primary);
+  /* v5 System Number Pad 숫자: SF Pro Semibold 20/24 (iOS 시스템 키패드) — 없는 기기는 기본 글꼴 */
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro', var(--wivu-font-family-base);
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 600;
   transition: background-color 0.1s ease;
 }
 .key:active:not(:disabled) {

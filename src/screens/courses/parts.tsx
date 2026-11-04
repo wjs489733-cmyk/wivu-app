@@ -9,10 +9,10 @@ import s from './Courses.module.css';
  * (공통화 후보: ItemRow · FileRow · InfoTable · StatStrip · LinkIcon/PlayIcon)
  * ──────────────────────────────────────────────────────────── */
 
-/* ── 세트에 없는 아이콘 (WivU Icons v2 규격: 24 · 선 1.7 · round · currentColor) ── */
+/* ── 세트에 없는 아이콘 (WivU Icons v2 규격: 24 · 선 1.7 · round · currentColor · 공용 .wivu-icon = 선 1.7 고정) ── */
 export function LinkIcon({ size = 20 }: { size?: 16 | 20 | 24 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="wivu-icon" aria-hidden>
       <path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2" />
       <path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2" />
     </svg>
@@ -20,7 +20,7 @@ export function LinkIcon({ size = 20 }: { size?: 16 | 20 | 24 }) {
 }
 export function PlayIcon({ size = 20 }: { size?: 16 | 20 | 24 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" className="wivu-icon" aria-hidden>
       <path d="M7.5 5.5v13l11-6.5-11-6.5Z" />
     </svg>
   );
@@ -72,7 +72,7 @@ export function ItemRow({ title, titleVariant = 'body-1', badge, meta, metaColor
           {badge}
         </span>
         {meta != null && (
-          <Text variant="caption-1" color={metaColor} className="truncate tnum" as="span" style={{ display: 'block' }}>
+          <Text variant="caption-1" color={metaColor} className="truncate" as="span" style={{ display: 'block' }}>
             {meta}
           </Text>
         )}
@@ -82,7 +82,7 @@ export function ItemRow({ title, titleVariant = 'body-1', badge, meta, metaColor
           {trailing}
         </span>
       )}
-      {chevron && <Icon name="chevron-right" size={20} color="secondary" />}
+      {chevron && <Icon name="chevron-right" size={18} color="tertiary" />}
     </>
   );
   if (!onPress) return <div className={s.itemRow}>{body}</div>;
@@ -108,10 +108,11 @@ export function FileRow({ file, variant = 'list', withDate }: FileRowProps) {
   const base = fileMeta(file, withDate);
   const meta = dl.status === 'loading' ? `다운로드 중 · ${Math.round(dl.progress)}%` : dl.status === 'done' ? `${base} · 받음` : base;
   const metaColor: TextColor = dl.status === 'loading' ? 'brand' : 'tertiary';
+  const metaNode = dl.status === 'loading' ? <span className="tnum">{meta}</span> : meta;
   const glyph = <DownloadGlyph file={file} status={dl.status} progress={dl.progress} />;
 
   if (variant === 'list') {
-    return <ItemRow title={file.name} titleVariant="body-2" meta={meta} metaColor={metaColor} trailing={glyph} onPress={dl.start} ariaLabel={`${file.name} ${action}`} />;
+    return <ItemRow title={file.name} titleVariant="body-2" meta={metaNode} metaColor={metaColor} trailing={glyph} onPress={dl.start} ariaLabel={`${file.name} ${action}`} />;
   }
   return (
     <button type="button" className={s.fileBox} onClick={dl.start} aria-label={`${file.name} ${action}`}>
@@ -120,8 +121,8 @@ export function FileRow({ file, variant = 'list', withDate }: FileRowProps) {
         <Text variant="body-3-strong" className="truncate" as="span" style={{ display: 'block' }}>
           {file.name}
         </Text>
-        <Text variant="caption-2" color={metaColor} className="truncate tnum" as="span" style={{ display: 'block' }}>
-          {meta}
+        <Text variant="caption-2" color={metaColor} className="truncate" as="span" style={{ display: 'block' }}>
+          {metaNode}
         </Text>
       </span>
       <span className={s.fileAction} aria-hidden>
@@ -141,7 +142,7 @@ export function InfoTable({ rows }: { rows: { label: string; value: ReactNode; c
           <Text variant="body-3" color="tertiary" as="dt" className={s.infoLabel}>
             {r.label}
           </Text>
-          <Text variant="body-3-strong" color={r.color ?? 'primary'} as="dd" className={`${s.infoValue} tnum`}>
+          <Text variant="body-3-strong" color={r.color ?? 'primary'} as="dd" className={s.infoValue}>
             {r.value}
           </Text>
         </div>

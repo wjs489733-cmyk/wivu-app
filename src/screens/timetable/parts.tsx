@@ -36,9 +36,13 @@ export function BellButton() {
 }
 
 /* ── 정보 박스 v5 (bg/subtle r16 p16 · 행 간격 10 · 라벨 Body 3 tertiary 36 / 값 Body 3 Strong) ──
- * Figma 685:6329 · 686:6658 · 697:7572 기준. 697:7430(r12 · 라벨 secondary 44)만 달라 이쪽으로 통일 */
-export function InfoBox({ children }: { children: ReactNode }) {
-  return <div className={s.infoBox}>{children}</div>;
+ * Figma 685:6329 · 686:6658 · 697:7572 기준. compact = 697:7430 수업 정보 시트(r12 · p14/16 · 라벨 secondary 44) */
+export function InfoBox({ children, compact }: { children: ReactNode; compact?: boolean }) {
+  return (
+    <div className={s.infoBox} data-compact={compact || undefined}>
+      {children}
+    </div>
+  );
 }
 export function InfoRow({ label, value, trailing }: { label: string; value: ReactNode; trailing?: ReactNode }) {
   return (

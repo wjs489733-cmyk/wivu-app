@@ -114,7 +114,7 @@ export function CalendarScreen() {
             <Text variant="body-3" className="truncate" style={{ flex: 1, minWidth: 0 }}>
               {nextEventLabel(next)}
             </Text>
-            <Icon name="chevron-right" size={16} />
+            <Icon name="chevron-right" size={16} color="tertiary" />
           </button>
         )}
       </div>

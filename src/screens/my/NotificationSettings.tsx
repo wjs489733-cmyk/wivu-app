@@ -24,7 +24,7 @@ export function NotificationSettings() {
   return (
     <Screen figma="701:8603" header={<TopNav title="알림 설정" fallback={P.my} />}>
       <div className={s.page}>
-        <Text variant="body-3" color="secondary" as="p" aria-live="polite" className="tnum">
+        <Text variant="body-3" color="secondary" as="p" aria-live="polite">
           켜 둔 알림만 보내요. {onCount > 0 ? `지금 ${onCount}개 켜짐` : '지금은 모두 꺼져 있어요'}
         </Text>
 
@@ -43,7 +43,7 @@ export function NotificationSettings() {
                         {o.title}
                       </Text>
                       {o.meta && (
-                        <Text variant="caption-1" color="tertiary" className="truncate tnum">
+                        <Text variant="caption-1" color="tertiary" className="truncate">
                           {o.meta}
                         </Text>
                       )}

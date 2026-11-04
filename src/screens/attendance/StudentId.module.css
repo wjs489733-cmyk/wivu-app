@@ -6,15 +6,14 @@
   padding: 8px var(--wivu-layout-inset) 0;
 }
 
-/* 탭 '학생증 | 도서관 출입' — h44 r12 p4, 선택 = 흰 면 + Body 3 Strong
- * Figma 트랙은 bg/subtle(#FAFAFA) — 흰 바탕에서 안 보여 입력칸·Secondary와 같은 bg-brand-soft로 (공통 규칙) */
+/* 탭 '학생증 | 도서관 출입' — h44 r12 p4 · 트랙 bg/subtle(#FAFAFA, v5 그대로), 선택 = 흰 면 + Body 3 Strong */
 .tabs {
   display: flex;
   gap: var(--wivu-space-4);
   height: 44px;
   padding: 4px;
   border-radius: var(--wivu-radius-12);
-  background: var(--wivu-color-bg-brand-soft);
+  background: var(--wivu-color-bg-subtle);
 }
 .tab {
   display: grid;
@@ -70,7 +69,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--wivu-color-bg-brand-soft);
+  background: var(--wivu-color-bg-subtle);
   color: var(--wivu-color-icon-primary);
 }
 .refresh::before {
@@ -81,6 +80,12 @@
 }
 .refresh:active {
   background: var(--wivu-color-bg-brand-soft-pressed);
+}
+
+/* v5 NFC 링 아이콘 28 (Icon 크기에 28이 없어 CSS로) */
+.icon28 {
+  width: 28px;
+  height: 28px;
 }
 
 /* 신원 정보 (타이머와 40, 행 사이 14) */
@@ -108,13 +113,13 @@
   margin: 0;
 }
 
-/* ── NFC 태그 시트 본문 (p16/0/24 · gap 12) ── */
+/* ── NFC 태그 시트 본문 (v5 p16/0/24 · gap 12) — 제목 아래 16 = 공용 SheetHead 8 + 8 ── */
 .nfcBody {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--wivu-space-12);
-  padding: 16px 0 24px;
+  padding: 8px 0 24px;
 }
 .nfcRing {
   position: relative;

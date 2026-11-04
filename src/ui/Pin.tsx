@@ -47,12 +47,12 @@ export function Keypad({ onDigit, onDelete, extraKey, disabled }: KeypadProps) {
     // 잠겨도 extraKey(QR 등)는 따로 쓸 수 있어야 하므로 컨테이너에 aria-disabled를 두지 않는다 — 숫자 키 각각이 disabled
     <div className={s.keypad} role="group" aria-label="숫자 키패드">
       {keys.map((k) => (
-        <button key={k} type="button" className={`${s.key} t-title-2`} onClick={() => onDigit(k)} disabled={disabled}>
+        <button key={k} type="button" className={s.key} onClick={() => onDigit(k)} disabled={disabled}>
           {k}
         </button>
       ))}
       <div className={s.extra}>{extraKey}</div>
-      <button type="button" className={`${s.key} t-title-2`} onClick={() => onDigit('0')} disabled={disabled}>
+      <button type="button" className={s.key} onClick={() => onDigit('0')} disabled={disabled}>
         0
       </button>
       <button type="button" className={s.key} onClick={onDelete} disabled={disabled} aria-label="지우기">

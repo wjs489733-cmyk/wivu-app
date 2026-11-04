@@ -37,8 +37,8 @@ function SheetBody({ onPick }: { onPick: (name: string) => void }) {
     <div
       ref={bodyRef}
       className={s.sheetBody}
-      // 시트를 화면 위쪽 끝(상태바 + 12)까지 채우고, 학교 목록만 안에서 스크롤 (시트 머리·검색칸은 고정)
-      style={layerH ? { height: `calc(${layerH}px - var(--status-h) - 12px - 29px - max(var(--safe-bottom), 12px) - 12px)` } : undefined}
+      // 시트를 화면 위쪽 끝(상태바 + 10 · Figma y 64)부터 아래 끝까지 채우고, 학교 목록만 안에서 스크롤 (시트 머리·검색칸은 고정)
+      style={layerH ? { height: `calc(${layerH}px - var(--status-h) - 10px - 29px)` } : undefined}
     >
       <div className={s.sheetTop}>
         <Text variant="title-3" as="h2" align="center">
@@ -52,7 +52,7 @@ function SheetBody({ onPick }: { onPick: (name: string) => void }) {
           aria-label="학교 이름으로 검색"
           enterKeyHint="search"
           autoComplete="off"
-          className={s.sheetSearch}
+          className={`${s.sheetSearch} ${s.v5Field}`}
         />
         <div className={s.locRow}>
           <Text variant="caption-1" color="tertiary" className="truncate" style={{ flex: 1 }}>
@@ -88,7 +88,7 @@ function SheetBody({ onPick }: { onPick: (name: string) => void }) {
             <ListRow
               key={sc.name}
               title={sc.name}
-              titleAddon={sc.name === NEAREST ? <Chip tone="brand">가장 가까움</Chip> : undefined}
+              titleAddon={sc.name === NEAREST ? <Chip tone="brand" className={s.nearBadge}>가장 가까움</Chip> : undefined}
               meta={sc.km !== undefined ? `${sc.location} · ${sc.km}km` : sc.location}
               onPress={() => onPick(sc.name)}
             />

@@ -74,7 +74,7 @@ export function AcademicNotice() {
           <Text variant="title-2" as="h1">
             {n.title}
           </Text>
-          <Text variant="caption-1" color="tertiary" as="p" className="tnum">
+          <Text variant="caption-1" color="tertiary" as="p">
             {n.meta}
           </Text>
         </div>
@@ -85,7 +85,7 @@ export function AcademicNotice() {
               <Text variant="body-3" color="tertiary" as="dt">
                 {k.label}
               </Text>
-              <Text variant="body-3-strong" as="dd" className="tnum">
+              <Text variant="body-3-strong" as="dd">
                 {k.value}
               </Text>
             </div>

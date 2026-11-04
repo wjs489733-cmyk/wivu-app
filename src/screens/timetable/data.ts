@@ -61,7 +61,7 @@ export type TTCourse = {
   credits: number;
   kind: '전공' | '교양';
   online?: boolean;
-  /** 블록 안 두 줄 표기 (Figma: '서비스⏎디자인' / '디자인관⏎302') */
+  /** 블록 안 표기 — 단어 단위 줄바꿈 (Figma 텍스트 폭 52에서 자동 줄바꿈된 '서비스디자⏎인'을 '서비스⏎디자인'으로; '디자인경영'은 한 줄) */
   blockName: string;
   blockRoom: string;
   /** 사이버 강의 카드 보조 문구 */
@@ -74,7 +74,7 @@ const BLOCK: Record<CourseId, { name: string; room: string; note?: string }> = {
   'service-design': { name: '서비스\n디자인', room: '디자인관\n302' },
   'brand-design': { name: '브랜드\n디자인', room: '디자인관\n401' },
   'ux-research': { name: 'UX 리서치', room: '정보관\n210' },
-  'design-management': { name: '디자인\n경영', room: '인문관\n305' },
+  'design-management': { name: '디자인경영', room: '인문관\n305' },
   'motion-graphics': { name: '모션\n그래픽스', room: '디자인관\nB103' },
   writing: { name: '글쓰기와\n소통', room: '', note: '시간 무관 · 7주차 강의 10.12 오픈' },
 };
@@ -236,14 +236,17 @@ export const SEED_EVENTS: CalEvent[] = [
   ...ASSIGNMENT_EVENTS,
 ];
 
-/** 일정 일시 한 줄 (Figma 697:7572 '10월 14일 (수) 18:00 – 19:30' · 686:6658 '10.12 (월) 14:00–17:00')
- *  두 프레임 표기가 달라 한 가지로 통일: '10월 14일 (수) 18:00–19:30' · 여러 날 '10월 19일 (월) – 10월 23일 (금)' */
-export function eventWhen(e: Pick<CalEvent, 'date' | 'span' | 'start' | 'end' | 'allDay' | 'deadline'>) {
-  if (e.span) return `${longDate(e.span[0])} – ${longDate(e.span[1])}`;
-  const d = longDate(e.date);
+/** 일정 일시 한 줄 — Figma 표기를 일정 종류별로 따른다
+ *  학사·과제 등(686:6658): '10.12 (월) 14:00–17:00' · 여러 날 '10.19 (월) – 10.23 (금)'
+ *  내 일정(697:7572, 일정 추가 폼과 같은 표기): '10월 14일 (수) 18:00 – 19:30' */
+export function eventWhen(e: Pick<CalEvent, 'date' | 'span' | 'start' | 'end' | 'allDay' | 'deadline' | 'user'>) {
+  const day = e.user ? longDate : dotDate;
+  const dash = e.user ? ' – ' : '–';
+  if (e.span) return `${day(e.span[0])} – ${day(e.span[1])}`;
+  const d = day(e.date);
   if (e.allDay) return `${d} 하루 종일`;
   if (e.deadline) return `${d} ${e.start ?? e.end} 마감`;
-  if (e.start && e.end) return `${d} ${e.start}–${e.end}`;
+  if (e.start && e.end) return `${d} ${e.start}${dash}${e.end}`;
   return e.start ? `${d} ${e.start}` : d;
 }
 

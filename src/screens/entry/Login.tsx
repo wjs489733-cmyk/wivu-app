@@ -135,6 +135,7 @@ export function Login() {
             inputMode="numeric"
             autoComplete="username"
             aria-label="학번"
+            className={s.v5Field}
           />
           <TextField
             value={pw}
@@ -147,6 +148,7 @@ export function Login() {
             placeholder="비밀번호를 입력해 주세요"
             autoComplete="current-password"
             aria-label="비밀번호"
+            className={s.v5Field}
             error={error ? `학번 또는 비밀번호가 맞지 않아요 (${fails}/5)` : undefined}
           />
         </div>

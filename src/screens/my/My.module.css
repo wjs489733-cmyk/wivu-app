@@ -72,6 +72,15 @@
 }
 
 /* ── 학교 연동 관리 (701:8324) ── */
+/* Figma 아이콘 22(엠블럼) · 18(가져오는 정보) — Icon 규격 24/20을 그대로 축소 */
+.i22 {
+  width: 22px;
+  height: 22px;
+}
+.i18 {
+  width: 18px;
+  height: 18px;
+}
 .schoolCard {
   display: flex;
   align-items: center;
@@ -97,7 +106,7 @@
 .dataRow {
   display: flex;
   align-items: center;
-  gap: var(--wivu-space-12);
+  gap: 10px; /* Figma data 행 gap 10 (아이콘 18) */
   min-height: 48px;
 }
 .dataRow > :nth-child(2) {

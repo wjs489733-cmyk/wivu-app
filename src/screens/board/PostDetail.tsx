@@ -5,8 +5,7 @@ import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { boardById, boardTitle, REPORT_REASONS, verifiedLabel, type Comment, type Post } from './data';
 import { useBoard, usePost, usePostStats, useThread } from './store';
-import { ApplyOverlay, EmptyState, LocalSheetAction, RecruitRow, TagChip } from './parts';
-import { useApplyFlow } from './applyFlow';
+import { EmptyState, LocalSheetAction, TagChip } from './parts';
 import { LocalIcon } from './icons';
 import s from './Board.module.css';
 
@@ -15,7 +14,8 @@ import s from './Board.module.css';
  * 같은 라우트 안 상태
  *  - 내 글: ··· → 글 메뉴 시트 698:7353 (링크 복사 / 수정하기 → 글쓰기 ?edit / 삭제하기 → 삭제 확인 698:7493)
  *  - 다른 사람 글: ··· → 신고 시트 698:7691 (사유 6 + 신고하기 + '이 사용자 차단하기' → 차단 확인 698:7865)
- * 공감·스크랩 토글, 댓글/답글 등록(익명). 데모 진입: ?sheet=menu|report · ?dialog=delete|block
+ * 공감·스크랩 토글, 댓글/답글 등록(익명). 데모 진입: ?sheet=menu|report(698:7691처럼 '광고·홍보성 글' 선택된 상태) · ?dialog=delete|block
+ * 모집 글도 v5 상세(698:7597)처럼 신청 줄 없이 본문 → 공감 줄 (참여 신청은 게시판 탭 '모집 중인 팀플' 카드에서)
  */
 export function PostDetail() {
   const { pid } = useParams();
@@ -55,13 +55,12 @@ function PostView({ post }: { post: Post }) {
   const toggleScrap = useBoard((st) => st.toggleScrap);
   const addComment = useBoard((st) => st.addComment);
   const hide = useBoard((st) => st.hide);
-  const apply = useApplyFlow();
 
   const [sheet, setSheet] = useState<SheetKind>(() => {
     const q = params.get('sheet');
     return q === 'menu' || (q === 'report' && !post.mine && !official) ? q : null;
   });
-  const [reason, setReason] = useState<string | null>(null);
+  const [reason, setReason] = useState<string | null>(() => (params.get('sheet') === 'report' ? REPORT_REASONS[1] : null));
   const [dialog, setDialog] = useState<DialogKind>(() => {
     const q = params.get('dialog');
     return (q === 'delete' && post.mine) || (q === 'block' && !post.mine && !official) ? q : null;
@@ -191,11 +190,10 @@ function PostView({ post }: { post: Post }) {
       }
       overlay={
         <>
-          <ApplyOverlay flow={apply} />
           {/* 글 메뉴 (내 글 698:7353 · 운영 안내 글은 링크 복사만) */}
           <BottomSheet open={sheet === 'menu'} onClose={() => setSheet(null)} label={post.mine ? '내 글 메뉴' : '글 메뉴'}>
             <SheetHead title={post.mine ? '내 글' : '글 메뉴'} onClose={() => setSheet(null)} />
-            <div className={s.sheetList} style={{ marginTop: -8 }}>
+            <div className={s.sheetList}>
               <LocalSheetAction icon={<LocalIcon name="link" size={20} />} label="링크 복사" onPress={copyLink} />
               {post.mine && (
                 <>
@@ -222,7 +220,9 @@ function PostView({ post }: { post: Post }) {
           </BottomSheet>
           {/* 신고 시트 (다른 사람 글 698:7691) */}
           <BottomSheet open={sheet === 'report'} onClose={() => setSheet(null)} label="신고하기">
-            <SheetHead title="신고 사유를 선택해주세요" subtitle="신고한 내용은 작성자에게 알려지지 않아요. 검토 후 운영 원칙에 따라 조치해요." onClose={() => setSheet(null)} />
+            <div className={s.headWithSub}>
+              <SheetHead title="신고 사유를 선택해주세요" subtitle="신고한 내용은 작성자에게 알려지지 않아요. 검토 후 운영 원칙에 따라 조치해요." onClose={() => setSheet(null)} />
+            </div>
             <div className={s.optionList} role="radiogroup" aria-label="신고 사유">
               {REPORT_REASONS.map((r) => (
                 <OptionRow key={r} title={r} selected={reason === r} onPress={() => setReason(r)} />
@@ -274,7 +274,7 @@ function PostView({ post }: { post: Post }) {
     >
       <article className={s.detail}>
         <div className={s.tags}>
-          <TagChip tag={post.tag} />
+          <TagChip tag={post.tag} plain />
           {post.mine && <Chip tone="brand">내 글</Chip>}
         </div>
         <Text variant="title-2" as="h2" className={s.body}>
@@ -286,7 +286,7 @@ function PostView({ post }: { post: Post }) {
 
         {post.linked && (
           <button type="button" className={s.linkRow} style={{ marginTop: 16 }} onClick={() => nav.push(P.assignment(post.linked!.courseId, post.linked!.aid))}>
-            <Icon name="assignment" size={20} />
+            <Icon name="assignment" size={18} />
             <Text variant="body-3" className="truncate">
               {post.linked.title} · {post.linked.due} 마감
             </Text>
@@ -307,7 +307,7 @@ function PostView({ post }: { post: Post }) {
         )}
         {docs.map((f) => (
           <button key={f.name} type="button" className={s.linkRow} style={{ marginTop: 8 }} onClick={() => toast(`${f.name} 저장했어요`, 'download')}>
-            <Icon name="file" size={20} />
+            <Icon name="file" size={18} />
             <Text variant="body-3" className="truncate">
               {f.name} · {f.size}
             </Text>
@@ -315,17 +315,10 @@ function PostView({ post }: { post: Post }) {
           </button>
         ))}
 
-        {/* 모집 글: v5 상세엔 없지만 신청 상태를 상세에서도 보고 바꿀 수 있게 탭 루트 카드와 같은 줄을 둔다 */}
-        {post.recruit && (
-          <div style={{ marginTop: 16 }}>
-            <RecruitRow post={post} onApply={apply.request} />
-          </div>
-        )}
-
         <div className={s.actions} style={{ marginTop: 16 }}>
           <button type="button" className={s.action} aria-pressed={stats.liked} onClick={like}>
             <span key={pop} className={pop ? s.pop : undefined} style={{ display: 'inline-flex' }}>
-              <LocalIcon name={stats.liked ? 'heart-fill' : 'heart'} size={20} />
+              <LocalIcon name={stats.liked ? 'heart-fill' : 'heart'} size={18} />
             </span>
             <Text variant="caption-1" color={stats.liked ? 'brand' : 'secondary'} tnum>
               공감 {stats.likeCount}
@@ -339,13 +332,13 @@ function PostView({ post }: { post: Post }) {
               setTimeout(() => inputRef.current?.focus(), 250);
             }}
           >
-            <Icon name="comment" size={20} />
+            <Icon name="comment" size={18} />
             <Text variant="caption-1" color="secondary" tnum>
               댓글 {stats.commentCount}
             </Text>
           </button>
           <button type="button" className={s.action} aria-pressed={stats.scrapped} onClick={scrap}>
-            {stats.scrapped ? <LocalIcon name="bookmark-fill" size={20} /> : <Icon name="bookmark" size={20} />}
+            {stats.scrapped ? <LocalIcon name="bookmark-fill" size={18} /> : <Icon name="bookmark" size={18} />}
             <Text variant="caption-1" color={stats.scrapped ? 'brand' : 'secondary'}>
               스크랩
             </Text>

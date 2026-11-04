@@ -10,7 +10,7 @@
   height: 52px;
   padding-inline: var(--wivu-space-16);
   border-radius: var(--wivu-radius-12);
-  background: var(--wivu-color-bg-brand-soft);
+  background: var(--wivu-color-bg-subtle); /* v5 Figma Text Field = bg/subtle #FAFAFA */
   transition: box-shadow 0.15s ease, background-color 0.15s ease;
 }
 .control:focus-within {
@@ -128,13 +128,13 @@
   outline-offset: 2px;
 }
 
-/* switch */
+/* switch — v5 Figma Toggle: 44×24 · 손잡이 18 · 꺼짐 #C8CED8 */
 .switch {
   position: relative;
   width: 44px;
-  height: 26px;
+  height: 24px;
   border-radius: var(--wivu-radius-full);
-  background: var(--wivu-color-border-strong);
+  background: #c8ced8;
   transition: background-color 0.2s ease;
   flex-shrink: 0;
 }
@@ -145,15 +145,15 @@
   position: absolute;
   top: 3px;
   left: 3px;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 1px 3px rgba(16, 24, 40, 0.2);
   transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1);
 }
 .switch[data-on='true'] .knob {
-  transform: translateX(18px);
+  transform: translateX(20px);
 }
 
 /* text tabs: '시간표 | 캘린더' (Title 1, 비활성 tertiary) */

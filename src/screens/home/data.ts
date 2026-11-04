@@ -3,10 +3,11 @@ import { COURSES, NOW, SEMESTER_WEEK, TODAY_CLASSES, TODAY_LABEL, type CourseId 
 
 /* ────────────────────────────────────────────────────────────
  * 홈 데이터 — Figma v5 '02 홈 (v5)' 674:4748 · 675:4839 · 692:6804 문구 그대로
- * 기준 core NOW = 10.09(금) 9:41 · 6주차. Figma끼리 어긋난 값은 core 기준으로 맞춤:
- *  · 취업박람회는 10.12(월) 14:00 (core ACADEMIC_SCHEDULE · 공강 프레임 기준) → 오늘 할 일 3번째 줄은 15:00 UX 리서치,
- *    박람회는 '더보기'로 펼치는 다가오는 할 일로 옮김 (오늘 프레임 '14:00 교내 취업박람회'와 다름)
- *  · D-day는 기준 날짜에서 계산 (공강 10/8 기준 인터뷰 계획서 10/16 = D-8 · Figma는 D-7)
+ * 기준 core NOW = 10.09(금) 9:41 · 6주차. 보이는 값은 각 Figma 프레임 그대로 (v5 동기화 11-04):
+ *  · 오늘 프레임(674:4748·675:4839)의 '오늘 할 일'은 10:00 서비스디자인 / 13:00 브랜드디자인 / 14:00 교내 취업박람회(일정) / 23:59 서비스 분석 리포트.
+ *    박람회 줄은 Figma 문구 '학생회관 대강당 · 사전 신청 완료' 고정 (공강 프레임·캘린더 e1은 10.12(월) 14:00 — Figma끼리 다름)
+ *  · '내일 할 일 2개 더보기'(Figma 문구)로 펼치는 2줄은 Figma에 없는 내용 → 내일(토 10/10) 할 일로 채움
+ *  · D-day는 기준 날짜에서 계산 (공강 10/8 기준 인터뷰 계획서 10/16 = D-8 · 프레임 밖이라 안 보임)
  * ──────────────────────────────────────────────────────────── */
 
 const DOW = ['일', '월', '화', '수', '목', '금', '토'] as const;
@@ -102,14 +103,18 @@ const FAIR: TodoItem = { time: '10.12', type: '일정', title: '교내 취업박
 const MOODBOARD: TodoItem = { time: '10.15', type: '제출', title: '브랜드 무드보드', meta: '목 23:59 마감 · 브랜드디자인', to: P.assignment('brand-design', 'a1'), assignment: { courseId: 'brand-design', aid: 'a1', doneMeta: '브랜드디자인 · 제출 완료' } };
 const INTERVIEW: TodoItem = { time: '10.16', type: '제출', title: '인터뷰 계획서', meta: '금 23:59 마감 · UX 리서치 팀 과제', to: P.assignment('ux-research', 'a2'), assignment: { courseId: 'ux-research', aid: 'a2', doneMeta: 'UX 리서치 · 제출 완료' } };
 
-/** 오늘(금 10/9) — 시간순 4건 + '더보기'로 다가오는 할 일 */
+/** 오늘(금 10/9) — Figma 674:4748 4건 그대로 + '내일 할 일 2개 더보기' */
 export const TODO_TODAY: TodoItem[] = [
   { time: '10:00', type: '수업', title: '서비스디자인', meta: '디자인관 302호', to: P.course('service-design'), attendCourse: 'service-design' },
   { time: '13:00', type: '수업', title: '브랜드디자인', meta: '디자인관 401호', to: P.course('brand-design') },
-  { time: '15:00', type: '수업', title: 'UX 리서치', meta: '정보관 210호', to: P.course('ux-research') },
+  { time: '14:00', type: '일정', title: '교내 취업박람회', meta: '학생회관 대강당 · 사전 신청 완료', to: P.calendarEvent('e1') },
   { time: '23:59', type: '제출', title: '서비스 분석 리포트', meta: '서비스디자인 · 아직 제출하지 않았어요', to: P.assignment(), assignment: { courseId: 'service-design', aid: 'a1', doneMeta: '서비스디자인 · 제출 완료' }, urgent: true },
 ];
-export const TODO_TODAY_MORE: TodoItem[] = [FAIR, MOODBOARD];
+/** 펼치면 보이는 내일(토 10/10) 할 일 — Figma에 펼친 상태가 없어 다가오는 과제 준비로 구성 */
+export const TODO_TOMORROW: TodoItem[] = [
+  { time: '내일', type: '일정', title: '인터뷰 계획서 팀 회의', meta: '토 14:00 · UX 리서치 팀 과제', to: P.assignment('ux-research', 'a2') },
+  { time: '내일', type: '일정', title: '브랜드 무드보드 자료 정리', meta: '목 23:59 마감 · 브랜드디자인', to: P.assignment('brand-design', 'a1'), assignment: { courseId: 'brand-design', aid: 'a1', doneMeta: '브랜드디자인 · 제출 완료' } },
+];
 
 /** 공강(목 10/8) — 이번 주 마감·일정 */
 export const TODO_FREE: TodoItem[] = [

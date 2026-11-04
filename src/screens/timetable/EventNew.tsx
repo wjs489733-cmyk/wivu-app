@@ -126,7 +126,7 @@ export function EventNew() {
       header={<TopNav title={editing ? '일정 수정' : '일정 추가'} leading="close" fallback={P.calendar} />}
       footer={
         <CtaBar>
-          <Button block disabled={!title.trim()} loading={saving} onClick={save}>
+          <Button block className={s.ctaMuted} disabled={!title.trim()} loading={saving} onClick={save}>
             저장
           </Button>
         </CtaBar>
@@ -231,7 +231,7 @@ export function EventNew() {
           <Text variant="body-3" color="tertiary">
             {alarm}
           </Text>
-          <Icon name="chevron-right" size={20} />
+          <Icon name="chevron-right" size={18} color="tertiary" />
         </button>
 
         <textarea className={`${s.memo} t-body-1`} value={memo} onChange={(ev) => setMemo(ev.target.value)} placeholder="장소나 메모 (선택)" aria-label="장소나 메모 (첫 줄은 장소)" maxLength={200} />

@@ -6,7 +6,7 @@ import { P } from '@/app/paths';
 import { NOW, USER, courseById } from '@/data/core';
 import { openAssignments, type CourseAssignment } from '@/screens/courses/data';
 import { useIsSubmitted } from '@/screens/courses/store';
-import { boardById, CAMPUS_BOARDS, COURSE_BOARDS, isBoardId, TEAM_ASSIGNMENTS, type Attachment, type Board, type BoardId, type LinkedAssignment } from './data';
+import { boardById, CAMPUS_BOARDS, COURSE_BOARDS, DEMO_DRAFT, isBoardId, TEAM_ASSIGNMENTS, type Attachment, type Board, type BoardId, type LinkedAssignment } from './data';
 import { useBoard, usePost } from './store';
 import { LocalIcon } from './icons';
 import s from './Board.module.css';
@@ -18,6 +18,13 @@ const fmtSize = (bytes: number) => (bytes >= 1024 * 1024 ? `${(bytes / 1024 / 10
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 const pad = (n: number) => String(n).padStart(2, '0');
 const sameDay = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+/** 과제 연결 시트(699:8424)는 다음 주(일요일)까지 마감하는 과제만 — v5: 오늘 · 10.15 · 10.16 */
+const LINK_UNTIL = (() => {
+  const d = new Date(NOW);
+  d.setDate(d.getDate() + (7 - d.getDay()) + 7);
+  d.setHours(23, 59, 59, 999);
+  return d.getTime();
+})();
 /** 699:8424 표기: '오늘 23:59' / '10.15 (목)' */
 const dueLabel = (due: Date) => (sameDay(due, NOW) ? `오늘 ${pad(due.getHours())}:${pad(due.getMinutes())}` : `${due.getMonth() + 1}.${pad(due.getDate())} (${DOW[due.getDay()]})`);
 
@@ -31,7 +38,8 @@ const autoGrow = (el: HTMLTextAreaElement | null) => {
 /**
  * 글쓰기 — Figma v5 687:6877 · 모달
  * 같은 라우트 안 상태: 게시판 선택 시트 699:8284 · 과제 연결 시트 699:8424 · 나가기 확인 699:8550(작성 중일 때 닫기)
- * ?board=<id> 게시판 미리 선택 · ?edit=<pid> 내 글 수정(글 메뉴 '수정하기' → 같은 프레임) · 데모 ?sheet=board|assignment
+ * ?board=<id> 게시판 미리 선택 · ?edit=<pid> 내 글 수정(글 메뉴 '수정하기' → 같은 프레임)
+ * 데모 ?draft=1 (687:6877 작성 중 초안 — 닫기 누르면 나가기 확인 699:8550) · ?sheet=board|assignment(첫 과제 선택된 상태)
  * 제목+본문이 있어야 '등록' 활성 → 새 글은 상세로 DISSOLVE, 수정은 상세로 돌아감
  */
 export function BoardWrite() {
@@ -49,22 +57,23 @@ function WriteForm() {
   const isSubmitted = useIsSubmitted();
   const editing = usePost(params.get('edit') ?? undefined);
   const edit = editing?.mine ? editing : undefined;
+  const draft = !edit && params.get('draft') === '1' ? DEMO_DRAFT : undefined;
+  const init = edit ?? draft;
 
   const from = params.get('board');
-  const initialBoard: BoardId = edit ? edit.boardId : from && isBoardId(from) && from !== 'guide' ? (from as BoardId) : 'service-design';
+  const initialBoard: BoardId = init ? init.boardId : from && isBoardId(from) && from !== 'guide' ? (from as BoardId) : 'service-design';
   const [boardId, setBoardId] = useState<BoardId>(initialBoard);
   const board = boardById(boardId);
-  const [tag, setTag] = useState(edit?.tag ?? board.categories[0]);
-  const [title, setTitle] = useState(edit?.title ?? '');
-  const [body, setBody] = useState(edit?.body ?? '');
+  const [tag, setTag] = useState(init?.tag ?? board.categories[0]);
+  const [title, setTitle] = useState(init?.title ?? '');
+  const [body, setBody] = useState(init?.body ?? '');
   const [anon, setAnon] = useState(edit ? edit.author !== USER.name : true);
   const [files, setFiles] = useState<Attachment[]>(edit?.files ?? []);
-  const [linked, setLinked] = useState<LinkedAssignment | null>(edit?.linked ?? null);
+  const [linked, setLinked] = useState<LinkedAssignment | null>(init?.linked ?? null);
   const [sheet, setSheet] = useState<null | 'board' | 'assignment'>(() => {
     const q = params.get('sheet');
     return q === 'board' || q === 'assignment' ? q : null;
   });
-  const [pick, setPick] = useState<string | null>(null);
   const [leave, setLeave] = useState(false);
   const imageRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -77,12 +86,14 @@ function WriteForm() {
     : !!(title.trim() || body.trim() || files.length || linked);
   const exitTo = edit ? P.boardPost(edit.id) : from && isBoardId(from) ? P.boardCourse(from) : P.board;
 
-  // 과제 목록은 수강과목 데이터가 단일 기준 (진행 중인 과제) — 지금 게시판 과목을 맨 앞에
+  // 과제 목록은 수강과목 데이터가 단일 기준 (진행 중 · 다음 주까지 마감) — 지금 게시판 과목을 맨 앞에
   const assignments = useMemo(() => {
-    const list = openAssignments();
+    const list = openAssignments().filter((a) => a.due.getTime() <= LINK_UNTIL);
     return [...list.filter((a) => a.courseId === boardId), ...list.filter((a) => a.courseId !== boardId)];
   }, [boardId]);
   const keyOf = (a: CourseAssignment) => `${a.courseId}:${a.id}`;
+  // 데모 ?sheet=assignment: v5 699:8424처럼 첫 과제가 골라진 상태로 연다
+  const [pick, setPick] = useState<string | null>(() => (sheet === 'assignment' && assignments[0] ? (linked ? `${linked.courseId}:${linked.aid}` : keyOf(assignments[0])) : null));
 
   // 게시판 선택 목록: 내 수업 6 + 학교 게시판 4 (경로로만 남은 게시판에서 들어왔으면 그것도 함께)
   const campus = CAMPUS_BOARDS.some((b) => b.id === boardId) || board.kind === 'course' ? CAMPUS_BOARDS : [...CAMPUS_BOARDS, board];
@@ -201,7 +212,9 @@ function WriteForm() {
             <BoardOptions label="전체 게시판" boards={campus} value={boardId} onPick={pickBoard} />
           </BottomSheet>
           <BottomSheet open={sheet === 'assignment'} onClose={() => setSheet(null)} label="과제 연결">
-            <SheetHead title="과제 연결" subtitle="연결하면 글 상단에 과제 바로가기가 붙어요." onClose={() => setSheet(null)} />
+            <div className={s.headWithSub}>
+              <SheetHead title="과제 연결" subtitle="연결하면 글 상단에 과제 바로가기가 붙어요." onClose={() => setSheet(null)} />
+            </div>
             <div className={s.optionList} role="radiogroup" aria-label="연결할 과제">
               {assignments.map((a) => {
                 const state = TEAM_ASSIGNMENTS.has(keyOf(a)) ? '팀 과제' : isSubmitted(a.courseId, a.id) ? '제출 완료' : '미제출';
@@ -323,14 +336,14 @@ function WriteForm() {
 
           {linked && (
             <div className={s.linkRow}>
-              <Icon name="assignment" size={20} />
+              <Icon name="assignment" size={18} />
               <button type="button" onClick={openAssignmentSheet} style={{ textAlign: 'left', minWidth: 0 }} aria-label={`연결된 과제 바꾸기: ${linked.title}`}>
                 <Text variant="body-3" className="truncate" style={{ display: 'block' }}>
                   과제 연결 · {linked.title}
                 </Text>
               </button>
               <button type="button" className={s.linkClose} aria-label="과제 연결 해제" onClick={() => setLinked(null)}>
-                <Icon name="close" size={20} />
+                <Icon name="close" size={18} />
               </button>
             </div>
           )}
@@ -344,7 +357,7 @@ function WriteForm() {
 function BoardOptions({ first, label, boards, value, onPick }: { first?: boolean; label: string; boards: Board[]; value: BoardId; onPick: (b: Board) => void }) {
   return (
     <>
-      <Text variant="caption-1-strong" color="tertiary" as="p" className={s.groupLabel} style={first ? { marginTop: -8 } : undefined}>
+      <Text variant="caption-1-strong" color="tertiary" as="p" className={first ? undefined : s.groupLabel}>
         {label}
       </Text>
       <div className={s.sheetList} role="radiogroup" aria-label={label}>

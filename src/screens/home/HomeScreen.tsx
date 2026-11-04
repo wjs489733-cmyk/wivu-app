@@ -8,7 +8,6 @@ import { NOW, USER } from '@/data/core';
 import { AttendanceSheet } from '@/screens/attendance/AttendanceSheet';
 import { useIsSubmitted } from '@/screens/courses/store';
 import { useSchedule } from '@/screens/timetable/store';
-import { useHasUnread } from '@/app/useUnread';
 import { RadialMenu } from './RadialMenu';
 import { useMyMenu, useOpenMenu } from './quick';
 import { useVisibleBlocks, type BlockId } from './store';
@@ -24,7 +23,7 @@ import {
   NOTICE_LINE,
   TODO_FREE,
   TODO_TODAY,
-  TODO_TODAY_MORE,
+  TODO_TOMORROW,
   dueBadge,
   type ClassCard,
   type TodoItem,
@@ -109,10 +108,9 @@ function Block({ id, freeDay }: { id: BlockId; freeDay: boolean }) {
   }
 }
 
-/* ── 헤더: WU 심볼(22) · QR(학생증) · 알림 · 마이 ───────────── */
+/* ── 헤더: WU 심볼(22) · QR(학생증) · 알림 · 마이 — v5: 알림 빨간 점 없음 ───────────── */
 function HomeHeader() {
   const nav = useNav();
-  const unread = useHasUnread();
   return (
     <div className={s.header}>
       <h1 className={s.brand}>
@@ -120,7 +118,7 @@ function HomeHeader() {
       </h1>
       <div className={s.headerActions}>
         <IconButton icon="qr" label="모바일 학생증" onPress={() => nav.modal(P.studentId)} />
-        <IconButton icon="bell" label={unread ? '알림함 · 읽지 않은 알림 있음' : '알림함'} dot={unread} onPress={() => nav.push(P.notifications)} />
+        <IconButton icon="bell" label="알림함" onPress={() => nav.push(P.notifications)} />
         <button type="button" className={s.avatarHit} onClick={() => nav.push(P.my)} aria-label="마이·설정">
           <span className={`${s.avatar} t-caption-2-strong`} aria-hidden>
             {USER.initial}
@@ -371,7 +369,7 @@ function NoticeLine() {
 function TodoBlock({ freeDay }: { freeDay: boolean }) {
   const nav = useNav();
   const [expanded, setExpanded] = useState(false);
-  const items = freeDay ? TODO_FREE : expanded ? [...TODO_TODAY, ...TODO_TODAY_MORE] : TODO_TODAY;
+  const items = freeDay ? TODO_FREE : expanded ? [...TODO_TODAY, ...TODO_TOMORROW] : TODO_TODAY;
   return (
     <Section title="오늘 할 일" more="전체보기" onMore={() => nav.tab(P.calendar)} padded={false}>
       <div className={s.pad}>
@@ -389,7 +387,7 @@ function TodoBlock({ freeDay }: { freeDay: boolean }) {
           ) : (
             <button type="button" className={s.expand} aria-expanded={expanded} onClick={() => setExpanded((v) => !v)}>
               <Text variant="caption-1" color="secondary">
-                {expanded ? '접기' : `다가오는 할 일 ${TODO_TODAY_MORE.length}개 더보기`}
+                {expanded ? '접기' : `내일 할 일 ${TODO_TOMORROW.length}개 더보기`}
               </Text>
               <Icon name={expanded ? 'chevron-up' : 'chevron-down'} size={16} color="secondary" />
             </button>

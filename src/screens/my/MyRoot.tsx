@@ -53,7 +53,7 @@ export function MyRoot() {
             <Text variant="title-2" as="h2" className="truncate">
               {USER.name}
             </Text>
-            <Text variant="body-3" color="secondary" as="p" className="truncate tnum">
+            <Text variant="body-3" color="secondary" as="p" className="truncate">
               {USER.department} {USER.year}학년 · {USER.studentId}
             </Text>
           </div>

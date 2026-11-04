@@ -11,6 +11,11 @@
   --map-building: #d1d9e5;
   background: var(--map-ground);
 }
+/* Figma 지도 화면 아이콘은 22 (Icon 규격 24를 그대로 축소 — 선 두께도 비례) */
+.i22 {
+  width: 22px;
+  height: 22px;
+}
 .statusWrap {
   position: absolute;
   inset: 0 0 auto;

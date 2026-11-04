@@ -137,7 +137,7 @@ export function AssignmentSubmit() {
         <Text variant="title-3" as="p" className="truncate">
           {a.title}
         </Text>
-        <Text variant="caption-1" color="tertiary" as="p" className="truncate tnum" style={{ marginTop: 2 }}>
+        <Text variant="caption-1" color="tertiary" as="p" className="truncate" style={{ marginTop: 2 }}>
           {course.name} · {dueShort(a.due)} 마감
         </Text>
 
@@ -146,7 +146,7 @@ export function AssignmentSubmit() {
           <Text variant="body-2-strong" as="h2">
             제출 파일
           </Text>
-          <Text variant="caption-1" color="tertiary" className="tnum">
+          <Text variant="caption-1" color="tertiary">
             {files.length} / {MAX_FILES}
           </Text>
         </div>
@@ -160,7 +160,7 @@ export function AssignmentSubmit() {
                   <Text variant="body-3-strong" className="truncate" as="span" style={{ display: 'block' }}>
                     {f.name}
                   </Text>
-                  <Text variant="caption-2" color={busy ? 'brand' : 'tertiary'} className="tnum" as="span" style={{ display: 'block' }}>
+                  <Text variant="caption-2" color={busy ? 'brand' : 'tertiary'} className={busy ? 'tnum' : undefined} as="span" style={{ display: 'block' }}>
                     {fmtSize(f.bytes)} · {busy ? `업로드 중 ${Math.round(f.progress)}%` : '업로드 완료'}
                   </Text>
                   {busy && (

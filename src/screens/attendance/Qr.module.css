@@ -95,6 +95,10 @@
   margin-top: 30px;
   padding-inline: var(--wivu-layout-inset);
 }
+/* v5 수업 줄 = 흰 글자 · 불투명도 70% */
+.sub {
+  opacity: 0.7;
+}
 
 /* 하단 [번호로 인증하기] — 어두운 화면이라 CtaBar의 흰 그라데이션 없이 (좌우 20) */
 .footer {

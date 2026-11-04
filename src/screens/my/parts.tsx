@@ -15,7 +15,7 @@ export function SettingRow({ title, meta, value, chevron = true, onPress }: { ti
           {title}
         </Text>
         {meta && (
-          <Text variant="caption-1" color="tertiary" className="truncate tnum">
+          <Text variant="caption-1" color="tertiary" className="truncate">
             {meta}
           </Text>
         )}
@@ -23,7 +23,7 @@ export function SettingRow({ title, meta, value, chevron = true, onPress }: { ti
       {(value || chevron) && (
         <span className={s.rowTrailing}>
           {value && (
-            <Text variant="caption-1" color="tertiary" tnum>
+            <Text variant="caption-1" color="tertiary">
               {value}
             </Text>
           )}

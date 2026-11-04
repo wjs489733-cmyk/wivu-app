@@ -7,7 +7,7 @@ export type ButtonSize = 'l' | 'm' | 's';
 
 /** v5 (Figma 666:4860): L Body 1 Strong · M Body 2 Strong · S Caption 1 Strong */
 const TEXT: Record<ButtonSize, string> = { l: 't-body-1-strong', m: 't-body-2-strong', s: 't-caption-1-strong' };
-const ICON: Record<ButtonSize, 16 | 20> = { l: 20, m: 20, s: 16 };
+const ICON: Record<ButtonSize, 16 | 18> = { l: 18, m: 18, s: 16 }; // v5 Figma: L·M 18 · S 16
 
 type Props = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> & {
   variant?: ButtonVariant;

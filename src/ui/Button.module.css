@@ -23,19 +23,19 @@
 .l {
   height: var(--wivu-button-l-height);
   padding-inline: var(--wivu-button-l-padding-x);
-  gap: var(--wivu-button-l-gap);
+  gap: 6px; /* v5 Figma: 모든 크기 간격 6 */
   border-radius: var(--wivu-button-l-radius);
 }
 .m {
   height: var(--wivu-button-m-height);
   padding-inline: var(--wivu-button-m-padding-x);
-  gap: var(--wivu-button-m-gap);
+  gap: 6px;
   border-radius: var(--wivu-button-m-radius);
 }
 .s {
   height: var(--wivu-button-s-height);
   padding-inline: var(--wivu-button-s-padding-x);
-  gap: var(--wivu-button-s-gap);
+  gap: 6px;
   border-radius: var(--wivu-button-s-radius);
 }
 .block {
@@ -54,8 +54,8 @@
   color: var(--wivu-color-text-on-brand);
 }
 .secondary {
-  /* Figma는 bg/subtle(#FAFAFA) — 흰 바탕에서 거의 안 보여 한 단계 진한 회색(#F2F2F2) 사용 */
-  background: var(--wivu-color-bg-brand-soft);
+  /* v5 Figma 그대로 bg/subtle(#FAFAFA) — 11-04 사용자 결정(Figma 기준 통일) */
+  background: var(--wivu-color-bg-subtle);
   color: var(--wivu-color-text-primary);
 }
 .secondary:active:not(:disabled) {
@@ -94,10 +94,10 @@
   color: var(--wivu-color-text-on-brand);
 }
 
-/* Figma 구멍 보완: Disabled는 bg/disabled 사용(흰 배경에서 보이도록), 모든 타입 공통 */
+/* v5 Figma Disabled: bg/disabled + text/tertiary, 모든 타입 공통 */
 .button:disabled {
   background: var(--wivu-color-bg-disabled);
-  color: var(--wivu-color-text-placeholder);
+  color: var(--wivu-color-text-tertiary);
   box-shadow: none;
 }
 

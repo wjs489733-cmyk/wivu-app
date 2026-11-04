@@ -101,19 +101,19 @@
   justify-content: space-between;
   gap: var(--wivu-space-12);
   padding-inline: var(--wivu-layout-inset);
-  min-height: 26px;
+  min-height: 24px; /* v5 Figma 섹션 머리 24 */
 }
 .sectionBody {
   padding-inline: var(--wivu-layout-gutter);
 }
-/* 터치 영역 44 — 보이는 크기(26)는 그대로, 위아래 음수 여백으로 헤더 높이 유지 */
+/* 터치 영역 44 — 보이는 크기(24)는 그대로, 위아래 음수 여백으로 헤더 높이 유지. 글자 끝은 오른쪽 여백선(20)에 맞춤 */
 .moreLink {
   display: inline-flex;
   align-items: center;
   gap: var(--wivu-space-2);
   color: var(--wivu-color-text-tertiary);
   min-height: 44px;
-  margin: -9px -4px -9px 0;
+  margin: -10px 0;
   padding: 0 0 0 12px;
 }
 .moreLink:active {

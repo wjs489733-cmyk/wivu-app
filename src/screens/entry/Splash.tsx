@@ -50,7 +50,7 @@ export function Splash() {
           </div>
         </div>
         <div className={s.splashFoot}>
-          <Text variant="caption-1" color="on-brand" style={{ opacity: 0.7 }}>
+          <Text variant="caption-1" color="on-brand" as="p" style={{ opacity: 0.7 }}>
             출석 · 과제 · 학교 일정
           </Text>
         </div>

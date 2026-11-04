@@ -79,7 +79,8 @@ export function TimetableAdd() {
       }
     >
       <div className={s.add}>
-        <TextField value={q} onChange={(e) => setQ(e.target.value)} onClear={() => setQ('')} placeholder="과목명이나 교수명으로 검색" enterKeyHint="search" aria-label="수업 검색" />
+        {/* Figma 685:6485: 입력 중(흰 바탕 + 파란 테두리) 상태 · 지우기 버튼 없음 */}
+        <TextField value={q} onChange={(e) => setQ(e.target.value)} placeholder="과목명이나 교수명으로 검색" enterKeyHint="search" aria-label="수업 검색" autoFocus />
 
         <div className={s.filters} role="group" aria-label="과목 구분">
           {FILTERS.map((f) => (
@@ -132,7 +133,7 @@ export function TimetableAdd() {
                       추가
                     </Button>
                   ) : (
-                    <Button size="s" variant="secondary" disabled>
+                    <Button size="s" variant="secondary" className={`${s.stateBtn} ${s.statePill}`} disabled>
                       {st.kind === 'added' ? '추가됨' : '겹침'}
                     </Button>
                   )}
@@ -177,16 +178,18 @@ function CourseCheck({ course: c, status, enrolled, onClose, onAdd }: { course: 
     <>
       <SheetHead title={c.name} subtitle={c.online ? `사이버 · ${c.kind} ${c.credits}학점` : `${c.kind} ${c.credits}학점 · ${prof}`} onClose={onClose} />
 
-      <InfoBox>
-        <InfoRow label="시간" value={slotText(c)} />
-        <InfoRow label="장소" value={c.room} />
-        <InfoRow label="담당" value={prof} />
-      </InfoBox>
+      <div className={s.checkInfo}>
+        <InfoBox compact>
+          <InfoRow label="시간" value={slotText(c, ' – ')} />
+          <InfoRow label="장소" value={c.room} />
+          <InfoRow label="담당" value={prof} />
+        </InfoBox>
+      </div>
 
       {!c.online && <MiniWeek course={c} mine={mine} clashIds={clashIds} />}
 
       <div className={s.banner} data-kind={status.kind} role="status">
-        <Icon name={banner.icon} size={20} />
+        <Icon name={banner.icon} size={18} />
         <span className={s.bannerText}>
           <Text variant="body-3-strong" color={status.kind === 'added' ? 'brand' : status.kind === 'clash' ? 'error' : 'primary'}>
             {banner.title}
@@ -198,7 +201,7 @@ function CourseCheck({ course: c, status, enrolled, onClose, onAdd }: { course: 
       </div>
 
       <div style={{ marginTop: 20 }}>
-        <Button block disabled={status.kind !== 'ok'} onClick={onAdd}>
+        <Button block className={s.stateBtn} disabled={status.kind !== 'ok'} onClick={onAdd}>
           {status.kind === 'ok' ? '시간표에 추가' : status.kind === 'added' ? '추가됨' : '시간이 겹쳐 추가할 수 없어요'}
         </Button>
       </div>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Button, Screen, Text, TopNav } from '@/ui';
@@ -14,6 +14,8 @@ type Phase = 'scanning' | 'recognized' | 'already';
 const ALIGN_MS = 2500;
 /** 강의실 앞 출석 QR(가짜) — 카메라 화면 속 포스터로만 쓰는 데모 값 */
 const CLASS_QR = 'WIVU-DEMO:SD302:W6';
+/** v5 683:6109 카메라 바탕 #141417 (Figma 변수 없음) — bg/qr-dark 토큰(#0F121A)을 이 화면에서만 덮어씀 */
+const QR_BG = { '--wivu-color-bg-qr-dark': '#141417' } as CSSProperties;
 
 /**
  * QR 출석 인증 — Figma v5 683:6109 (어두운 카메라 화면 모달)
@@ -59,6 +61,7 @@ export function QrAttend() {
   return (
     <Screen
       bg="qr-dark"
+      style={QR_BG}
       tone="light"
       scroll={false}
       figma="683:6109"
@@ -94,8 +97,8 @@ export function QrAttend() {
           <AnimatePresence>
             {phase !== 'scanning' && (
               <motion.span className={s.check} initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 320, damping: 20 }}>
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path vectorEffect="non-scaling-stroke" d="M5 12.5l4.5 4.5L19 7.5" />
                 </svg>
               </motion.span>
             )}
@@ -106,7 +109,7 @@ export function QrAttend() {
           <Text variant="title-3" color="on-brand" as="p" align="center">
             {already ? '오늘 출석은 이미 끝났어요' : phase === 'recognized' ? 'QR을 인식했어요' : '강의실 QR을 화면 안에 맞춰 주세요'}
           </Text>
-          <Text variant="body-3" color="on-brand-muted" as="p" align="center" tnum>
+          <Text variant="body-3" color="on-brand" as="p" align="center" tnum className={s.sub}>
             {already ? `서비스디자인 · ${doneTime ?? '09:52'} ${doneMethod ?? 'PIN'} 인증` : '서비스디자인 · 디자인관 302호'}
           </Text>
         </div>

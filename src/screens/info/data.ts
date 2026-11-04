@@ -311,6 +311,8 @@ export type Building = {
   sub: string;
   /** 도보 분 (강의실까지 · Figma 디자인관 401호 = 4분) */
   walk: number;
+  /** 안내 시작 시 건물 입구까지 남은 분 (Figma 702:8726 '안내 중 · 2분 남음'). 없으면 walk의 절반 */
+  guideMin?: number;
   /** 현재 위치 → 건물 입구 경로 (도로를 따라, 마지막 점 = 건물 벽) */
   route: Pt[];
   /** 안내 중 배너 둘째 줄 (첫 줄은 경로 첫 구간 거리로 'Nm 직진 후 ○○ 정문') */
@@ -336,6 +338,7 @@ export const BUILDINGS: Building[] = [
     title: '디자인관 401호',
     sub: '4층 · 엘리베이터에서 오른쪽 세 번째 강의실',
     walk: 4,
+    guideMin: 2,
     // Figma 702:8726 경로 그대로: M 0 60 L 81 60 L 81 0 L 110 0 (원점 80,410)
     route: [ME, [ROAD_X, 470], [ROAD_X, 410], [190, 410]],
     guide: '정문으로 들어가 엘리베이터로 4층',
@@ -442,6 +445,8 @@ export const guideTitle = (b: Building) => {
   const m = Math.max(10, Math.round(Math.hypot(c[0] - a[0], c[1] - a[1]) / 10) * 10);
   return `${m}m 직진 후 ${b.name} 정문`;
 };
+/** 안내 중 '남은 분'의 시작값 */
+export const guideMinutes = (b: Building) => b.guideMin ?? Math.max(1, Math.round(b.walk / 2));
 /** 도착 위치 — 경로 끝(건물 벽)에서 8px 앞 (Figma 702:8831 me 182,410) */
 export const arrivePoint = (pts: Pt[]): Pt => {
   const [x1, y1] = pts[pts.length - 1];

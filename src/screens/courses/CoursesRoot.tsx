@@ -35,14 +35,14 @@ export function CoursesRoot() {
         {SEMESTER} · {COURSES.length}과목 {TOTAL_CREDITS}학점
       </Text>
       <div className={s.sections}>
-        <Section title="오늘 수업" padded={false} style={{ gap: 2 }}>
+        <Section title="오늘 수업" padded={false} style={{ gap: 4 }}>
           <div className={s.inset}>
             {today.map((c) => (
               <CourseRow key={c.id} course={c} />
             ))}
           </div>
         </Section>
-        <Section title="다른 날 수업" padded={false} style={{ gap: 2 }}>
+        <Section title="다른 날 수업" padded={false} style={{ gap: 4 }}>
           <div className={s.inset}>
             {others.map((c) => (
               <CourseRow key={c.id} course={c} />
@@ -74,9 +74,7 @@ function CourseRow({ course }: { course: Course }) {
   else if (doneToday) badge = <Chip tone="brand">제출 완료</Chip>;
   else if (pending)
     badge = (
-      <Chip tone="neutral" className="font-en">
-        {dday(pending.due)}
-      </Chip>
+      <Chip tone="neutral">{dday(pending.due)}</Chip>
     );
   else if (course.online) badge = <Chip tone="neutral">사이버</Chip>;
 
