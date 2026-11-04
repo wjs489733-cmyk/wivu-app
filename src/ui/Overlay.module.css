@@ -54,6 +54,10 @@
   align-items: center;
   pointer-events: none;
 }
+/* 게시판 탭처럼 탭바 위 FAB가 떠 있으면 토스트는 FAB 위로 (v5 Figma 699:7595: 기기 하단에서 155) */
+:global(body:has([data-fab='true'])) .toastHost {
+  bottom: calc(max(var(--safe-bottom), 12px) + 121px);
+}
 .toast {
   display: inline-flex;
   align-items: center;

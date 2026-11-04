@@ -280,7 +280,7 @@ export function SheetHead({ title, subtitle, onClose }: { title: ReactNode; subt
         )}
       </div>
       {subtitle && (
-        <Text variant="caption-1" color="secondary" as="p" style={{ marginTop: 2 }}>
+        <Text variant="caption-1" color="secondary" as="p">
           {subtitle}
         </Text>
       )}

@@ -13,7 +13,7 @@ import s from './Board.module.css';
  * slot(제자리 위치 고정) 안에서 버튼만 숨김/표시 → 겹침 계산은 slot 기준 */
 export function Fab({ onPress, aboveTabBar, hidden, slotRef }: { onPress: () => void; aboveTabBar?: boolean; hidden?: boolean; slotRef?: RefObject<HTMLDivElement | null> }) {
   return (
-    <div ref={slotRef} className={`${s.fabSlot} ${aboveTabBar ? s.fabTab : s.fabPlain}`} data-hidden={!!hidden}>
+    <div ref={slotRef} className={`${s.fabSlot} ${aboveTabBar ? s.fabTab : s.fabPlain}`} data-hidden={!!hidden} data-fab={aboveTabBar && !hidden ? 'true' : undefined}>
       <Button size="m" leadingIcon="edit" onClick={onPress} tabIndex={hidden ? -1 : undefined} aria-hidden={hidden || undefined}>
         글쓰기
       </Button>

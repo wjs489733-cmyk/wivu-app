@@ -134,7 +134,7 @@
   align-items: center;
   justify-content: space-between;
   min-height: 56px;
-  padding: 4px 8px 4px var(--wivu-layout-inset);
+  padding: 4px 10px 4px var(--wivu-layout-inset); /* v5 Figma: 오른쪽 아이콘 끝 = 여백선 20 */
 }
 
 /* ── Tab bar (Compact: 탭 62 + 홈 인디케이터, 가운데 홈 범프) ── */
