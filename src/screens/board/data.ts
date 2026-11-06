@@ -1,6 +1,6 @@
 import { P } from '@/app/paths';
-import { dayDiff, DOW_KO, fmtHM, mdToDate, sameDay, shiftDeep } from '@/data/clock';
-import { COURSES, NOW, courseById, type CourseId } from '@/data/core';
+import { dayDiff, DOW_KO, fmtHM, fmtMD, hmToMin, mdToDate, sameDay, shiftDeep } from '@/data/clock';
+import { COURSES, NOW, SCENARIO_DAY, courseById, type CourseId } from '@/data/core';
 import { ASSIGNMENT_LIST } from '@/screens/courses/data';
 import type { ChipTone, IconName } from '@/ui';
 
@@ -12,9 +12,11 @@ import type { ChipTone, IconName } from '@/ui';
  *
  * 11-06 실시간 전환 (data/clock.ts)
  *  · POSTS의 날짜 글자('10.07' · '10.19(월)' · 모집 마감 until)는 shiftDeep으로 이번 주로 옮김 (요일 유지)
- *  · '12분 전'·'어제' 같은 시드 상대 시각은 그대로 (지금 기준으로 읽힘)
- *  · 모집 마감 D-day · 과제 마감 표기 · 내가 쓴 글/댓글 시각은 실제 오늘·지금 기준으로 계산 (아래 도우미)
- *  · 옮긴 날짜가 오늘 이후인 시드 글(월·화에 보는 수·목 글)은 아직 안 쓴 글 → 목록에서 뺌 (store SEED_POSTS)
+ *  · 시드 글·댓글의 time('12분 전'·'어제'·'10.07')은 Figma 시각(이번 주 금 9:41 = SCENARIO_DAY) 기준 절대 시각
+ *    postedAt / at 으로 바꿔 둠 → 표기는 지금 기준으로 흘러감 (금 9:41 = Figma 글자 그대로 · 금 오후 'n시간 전' · 토 '어제'·날짜)
+ *    '어제'·날짜 글의 시·분은 SEED_HM (없으면 어제 18:00 · 날짜 12:00)
+ *  · 지금보다 뒤에 쓴 시드 글·댓글은 아직 없는 글 → 목록·댓글에서 뺌 (store, 분 단위)
+ *  · 모집 마감 D-day · 과제 마감 표기 · '오늘 새 글 n'은 실제 오늘·지금 기준으로 계산 (아래 도우미)
  * ──────────────────────────────────────────────────────────── */
 
 export type CampusBoardId = 'free' | 'info' | 'team' | 'dept' | 'market' | 'lost';
@@ -90,14 +92,15 @@ export const boardTitle = (b: Board) => (b.kind === 'course' ? `${b.name} 게시
 export const verifiedLabel = (b: Board) => (b.kind === 'course' ? '수강생 인증' : b.id === 'dept' ? '학과 인증' : '재학생 인증');
 
 /* ── 탭 루트 '내 수업 게시판' 목록 (687:6491 — 처음 4개, '전체 6'으로 펼침) ──── */
-/** 오늘 새 글 수 — 0보다 크면 'NEW' 배지 + '오늘 새 글 n' */
-export const MY_COURSE_ROWS: { id: CourseId; newToday: number }[] = [
-  { id: 'service-design', newToday: 3 },
-  { id: 'brand-design', newToday: 0 },
-  { id: 'ux-research', newToday: 1 },
-  { id: 'design-management', newToday: 0 },
-  { id: 'motion-graphics', newToday: 0 },
-  { id: 'writing', newToday: 0 },
+/** readAgo: 그 게시판을 마지막으로 본 시각 (Figma 금 9:41에서 n분 전) — '오늘 새 글 n' = 오늘 올라온 글 중 그 뒤에 올라온 글 수
+ *  (newTodayCount). Figma 9:41: 서비스디자인 3 · UX 리서치 1(8:31에 봄 → 8:41 글 1개) · 브랜드디자인 0(8:41에 봄 → 7:41 글은 읽음) */
+export const MY_COURSE_ROWS: { id: CourseId; readAgo?: number }[] = [
+  { id: 'service-design' },
+  { id: 'brand-design', readAgo: 60 },
+  { id: 'ux-research', readAgo: 70 },
+  { id: 'design-management' },
+  { id: 'motion-graphics' },
+  { id: 'writing' },
 ];
 export const COURSE_ROWS_FOLDED = 4;
 export const courseHeadcount = (id: CourseId) => COURSE_HEADCOUNT[id];
@@ -145,8 +148,10 @@ export type Post = {
   pinned?: boolean;
   /** 이번 세션에 쓴 글 (피드 하이라이트용 타임스탬프 — 실제 경과 시간) */
   createdAt?: number;
-  /** 이번 세션에 쓴 글의 작성 시각 (clock now() 기준 ms) — '방금'·'n분 전' 표기 */
+  /** 작성 시각 (ms) — 시드는 Figma 금 9:41 기준 절대 시각(time 글자에서 계산), 내가 쓴 글은 clock now() */
   postedAt?: number;
+  /** 피드 행에서만 다른 시각 (feedTime → 절대 시각) */
+  feedAt?: number;
 };
 
 export type Comment = {
@@ -160,13 +165,58 @@ export type Comment = {
   parent?: string;
   isAuthor?: boolean;
   mine?: boolean;
-  /** 내가 단 댓글의 작성 시각 (clock now() 기준 ms) — '방금'·'n분 전' 표기 */
+  /** 작성 시각 (ms) — 시드는 Figma 금 9:41 기준 절대 시각, 내가 단 댓글은 clock now() */
   at?: number;
 };
 
+/* ── 시각 (시드 상대 시각 → 절대 시각, 표기는 지금 기준) ─────────────
+ * 모듈을 읽을 때 쓰이므로 함수 선언으로 둔다 (POSTS·댓글보다 위) */
+
+/** '어제'·날짜('MM.DD') 시드 글·댓글의 시·분 — 없으면 어제 18:00 · 날짜 12:00 */
+const SEED_HM: Record<string, string> = {
+  // 어제(목) 글
+  p4: '21:40', u4: '19:05', u5: '16:30', f4: '18:20', i3: '22:10', t2: '20:45', v2: '15:10', k2: '13:25', l3: '17:50',
+  // 날짜 글
+  u6: '15:00', b2: '22:15', b3: '19:30', m1: '16:40', m2: '20:00', d1: '12:05', d2: '13:00', w1: '10:00', w2: '11:00', t3: '21:00', v3: '23:30', k3: '14:20', guide: '09:00',
+  // 어제 댓글 (p4 21:40 글 뒤)
+  'p4-c1': '21:58', 'p4-c2': '22:31', 'p4-c3': '23:12',
+};
+/** Figma 시각 글자 → 절대 시각(ms). 기준 = 이번 주 금 9:41 (SCENARIO_DAY). 날짜 글자는 이미 옮긴 값 */
+function seedAt(label: string, key?: string): number | undefined {
+  const base = SCENARIO_DAY.getTime();
+  const hm = key ? SEED_HM[key] : undefined;
+  const at = (d: Date, fallback: string) => {
+    const min = hmToMin(hm ?? fallback);
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate(), Math.floor(min / 60), min % 60).getTime();
+  };
+  if (label === '방금') return base;
+  let m = /^(\d+)분 전$/.exec(label);
+  if (m) return base - +m[1] * 60000;
+  m = /^(\d+)시간 전$/.exec(label);
+  if (m) return base - +m[1] * 3600000;
+  if (label === '어제') return at(new Date(base - 86400000), '18:00');
+  if (/^\d{1,2}\.\d{1,2}$/.test(label)) return at(mdToDate(label, SCENARIO_DAY), '12:00');
+  return undefined;
+}
+function withSeedTimes(list: Post[]): Post[] {
+  return list.map((p) => ({ ...p, postedAt: seedAt(p.time, p.id), ...(p.feedTime ? { feedAt: seedAt(p.feedTime, p.id) } : {}) }));
+}
+
+/** 시각 표기 (지금 기준): 방금 · n분 전 · n시간 전(같은 날) · 어제 · 'MM.DD' (피드 날짜 글 표기) */
+export function relLabel(at: number, now: Date): string {
+  const min = Math.floor((now.getTime() - at) / 60000);
+  if (min < 1) return '방금';
+  if (min < 60) return `${min}분 전`;
+  const d = new Date(at);
+  const days = dayDiff(d, now);
+  if (days <= 0) return `${Math.floor(min / 60)}시간 전`;
+  if (days === 1) return '어제';
+  return fmtMD(d);
+}
+
 const A1: LinkedAssignment = { courseId: 'service-design', aid: 'a1', title: '서비스 분석 리포트', due: '오늘 23:59' };
 
-export const POSTS: Post[] = shiftDeep<Post[]>([
+export const POSTS: Post[] = withSeedTimes(shiftDeep<Post[]>([
   /* 서비스디자인 — Figma v5 687:6661 (피드) · 687:6783 (p1 상세) · 698:7597 (p2 상세)
    * p1은 '내 글'(알림 '내 글에 댓글 2개가 달렸어요') → mine: true · 내 공감 없음(공감 4는 다른 사람들) */
   {
@@ -723,14 +773,14 @@ export const POSTS: Post[] = shiftDeep<Post[]>([
     comments: 0,
     pinned: true,
   },
-]);
+]));
 
 /* ── 탭 루트 ────────────────────────────────────────────────── */
 export const TEAM_FEATURED = 'u1';
 export const POPULAR = ['p1', 'i1', 't1'];
 
 /* ── 댓글 (시드) ────────────────────────────────────────────── */
-const C = (postId: string, n: number, author: string, time: string, body: string, likes = 0, extra: Partial<Comment> = {}): Comment => ({ id: `${postId}-c${n}`, postId, author, time, body, likes, ...extra });
+const C = (postId: string, n: number, author: string, time: string, body: string, likes = 0, extra: Partial<Comment> = {}): Comment => ({ id: `${postId}-c${n}`, postId, author, time, body, likes, at: seedAt(time, `${postId}-c${n}`), ...extra });
 
 const EXPLICIT: Comment[] = [
   // p1 — Figma v5 687:6783 (위 3개) + 이어지는 답글
@@ -746,9 +796,10 @@ const EXPLICIT: Comment[] = [
   C('p2', 2, '작성자', '6분 전', '좋아요, 쪽지 드릴게요!', 0, { parent: 'p2-c1', isAuthor: true }),
   C('p2', 3, '익명2', '3분 전', '혹시 온라인으로도 참여할 수 있나요?', 0),
 
-  C('p3', 1, '익명1', '어제', '이거 진짜 필요했어요. 감사합니다!', 4),
-  C('p3', 2, '익명2', '어제', '페인 포인트 칸 따로 있는 게 좋네요', 2),
-  C('p3', 3, '작성자', '어제', '유용하게 쓰세요 :)', 1, { parent: 'p3-c2', isAuthor: true }),
+  // p3 글은 '2시간 전'(7:41) — 댓글이 글보다 앞선 '어제'였던 것을 글 뒤로 맞춤
+  C('p3', 1, '익명1', '1시간 전', '이거 진짜 필요했어요. 감사합니다!', 4),
+  C('p3', 2, '익명2', '50분 전', '페인 포인트 칸 따로 있는 게 좋네요', 2),
+  C('p3', 3, '작성자', '42분 전', '유용하게 쓰세요 :)', 1, { parent: 'p3-c2', isAuthor: true }),
 
   C('p4', 1, '익명1', '어제', '저희 팀은 Figma 템플릿 써요. 수업 과제 양식이랑 바로 이어져서 편해요', 3),
   C('p4', 2, '익명2', '어제', 'Miro는 포스트잇 정리할 때 좋긴 한데 최종 정리는 결국 Figma로 옮기게 되더라고요', 2),
@@ -808,6 +859,7 @@ export function seedComments(post: Post): Comment[] {
     postId: post.id,
     author: `익명${i + 1}`,
     time: post.time,
+    at: post.postedAt,
     body: FILLER[(offset + i) % FILLER.length],
     likes: (offset + i) % 3,
   }));
@@ -869,16 +921,21 @@ export const recruitClosed = (r: Recruit | undefined, today: Date = NOW) => {
   return n !== null && n < 0;
 };
 
-/** 시드 글 날짜('MM.DD', 옮긴 값)가 오늘 이후 → 아직 안 쓴 글 */
-export const isFuturePost = (p: Post, today: Date = NOW) => MD_ONLY.test(p.time) && dayDiff(today, mdToDate(p.time, today)) > 0;
+/** 시드 글·댓글이 지금 보이는지 — 지금보다 뒤에 쓴 글은 아직 없는 글 (월~목에 보는 금요일 글 등) */
+export const seedVisible = (at: number | undefined, now: Date) => at === undefined || at <= now.getTime();
 
-/** 이번 세션에 쓴 글·댓글: '방금' → 'n분 전' → 'n시간 전' (날짜가 바뀌면 새로고침되어 그 전에 사라짐) */
-export function agoLabel(at: number, now: Date): string {
-  const min = Math.floor((now.getTime() - at) / 60000);
-  if (min < 1) return '방금';
-  if (min < 60) return `${min}분 전`;
-  return `${Math.floor(min / 60)}시간 전`;
+/** 글 시각 표기 (피드는 feedAt 우선) */
+export function postTime(p: Post, now: Date, feed = false): string {
+  const at = (feed ? p.feedAt : undefined) ?? p.postedAt;
+  return at !== undefined ? relLabel(at, now) : ((feed ? p.feedTime : undefined) ?? p.time);
 }
-/** 글 시각 표기 (피드는 feedTime 우선) */
-export const postTime = (p: Post, now: Date, feed = false) => (p.postedAt !== undefined ? agoLabel(p.postedAt, now) : (feed ? p.feedTime : undefined) ?? p.time);
-export const commentTime = (c: Comment, now: Date) => (c.at !== undefined ? agoLabel(c.at, now) : c.time);
+export const commentTime = (c: Comment, now: Date) => (c.at !== undefined ? relLabel(c.at, now) : c.time);
+
+/** '오늘 새 글 n' — 오늘 올라온 그 과목 글 중 마지막으로 본 뒤(readAgo)에 올라온 글 수.
+ *  마지막으로 본 시각이 아직 안 왔으면(금요일 전) 오늘 글 전부. posts는 지금 보이는 글(useAllPosts) */
+export function newTodayCount(id: CourseId, posts: Post[], now: Date): number {
+  const row = MY_COURSE_ROWS.find((r) => r.id === id);
+  const read = row?.readAgo !== undefined ? SCENARIO_DAY.getTime() - row.readAgo * 60000 : -Infinity;
+  const since = read <= now.getTime() ? read : -Infinity;
+  return posts.filter((p) => p.boardId === id && p.postedAt !== undefined && p.postedAt <= now.getTime() && p.postedAt > since && sameDay(new Date(p.postedAt), now)).length;
+}

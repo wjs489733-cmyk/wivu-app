@@ -3,8 +3,9 @@ import { useSearchParams } from 'react-router';
 import { Chip, IconButton, LargeHeader, ListRow, Screen, Section, TabBar, Text } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
+import { useNow } from '@/data/clock';
 import { courseById } from '@/data/core';
-import { CAMPUS_BOARDS, COURSE_ROWS_FOLDED, MY_COURSE_ROWS, TEAM_FEATURED, courseHeadcount } from './data';
+import { CAMPUS_BOARDS, COURSE_ROWS_FOLDED, MY_COURSE_ROWS, TEAM_FEATURED, courseHeadcount, newTodayCount, recruitClosed } from './data';
 import { useAllPosts, useBoard } from './store';
 import { ApplyOverlay, BoardSearch, Fab, RecruitCard, useFabVisible } from './parts';
 import { useApplyFlow } from './applyFlow';
@@ -30,7 +31,10 @@ export function BoardRoot() {
   const fabShown = useFabVisible(scrollRef, fabSlot);
   const write = () => nav.modal(P.boardWrite);
 
-  const team = posts.find((p) => p.id === TEAM_FEATURED);
+  const now = useNow();
+  // 모집 중인 팀플: Figma 카드(u1) — 아직 안 올라왔거나 마감됐으면 지금 모집 중인 다른 글
+  const open = (id?: string) => posts.find((p) => (id ? p.id === id : true) && !!p.recruit && !p.mine && !recruitClosed(p.recruit));
+  const team = open(TEAM_FEATURED) ?? open();
   const rows = expanded ? MY_COURSE_ROWS : MY_COURSE_ROWS.slice(0, COURSE_ROWS_FOLDED);
 
   // 데모 쿼리(?sheet=apply)는 처음 한 번만 상태로 옮긴다
@@ -70,13 +74,14 @@ export function BoardRoot() {
           <div className={`${s.inset} ${s.plainRows}`}>
             {rows.map((c) => {
               const course = courseById(c.id);
-              const fresh = c.newToday > 0 && !seen.includes(c.id);
+              const newToday = newTodayCount(c.id, posts, now);
+              const fresh = newToday > 0 && !seen.includes(c.id);
               return (
                 <ListRow
                   key={c.id}
                   title={course.name}
                   titleAddon={fresh ? <Chip tone="brand" className={s.newBadge}>NEW</Chip> : undefined}
-                  meta={`수강생 ${courseHeadcount(c.id)}명${c.newToday > 0 ? ` · 오늘 새 글 ${c.newToday}` : ''}`}
+                  meta={`수강생 ${courseHeadcount(c.id)}명${newToday > 0 ? ` · 오늘 새 글 ${newToday}` : ''}`}
                   chevron
                   onPress={() => nav.push(P.boardCourse(c.id))}
                 />

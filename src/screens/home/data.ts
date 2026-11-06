@@ -1,6 +1,7 @@
 import { P } from '@/app/paths';
-import { addDays, dayDiff, dayStart, DOW_KO, fmtHM, fmtISO, fmtLongDay, hmToMin, minOfDay, sameDay, shiftDate, shiftDeep, shiftText } from '@/data/clock';
+import { addDays, dayDiff, dayStart, DOW_KO, fmtHM, fmtISO, fmtLongDay, hmToMin, mdToDate, minOfDay, sameDay, shiftDate, shiftDeep, shiftText } from '@/data/clock';
 import { SCENARIO_DAY, SCENARIO_FREE_DAY, SEMESTER_WEEK, TODAY_LABEL, courseById, type CourseId } from '@/data/core';
+import { NOTICE_LIST } from '@/screens/info/data';
 import { classesOn, isFreeDay, isHoliday, minutesLeft, nextSession, phaseOf, relDayLabel, windowElapsed, type ClassSession } from '@/data/today';
 import type { AttendMethod } from '@/store/app';
 import { ASSIGNMENT_LIST, type CourseAssignment } from '@/screens/courses/data';
@@ -112,7 +113,13 @@ export function freeCard(now: Date): FreeCard {
 }
 
 /* ── 공지 한 줄 ───────────────────────────────────────────── */
-export const NOTICE_LINE = { id: 'n1', text: shiftText('2학기 중간고사 시행 안내 · 10.19–10.23') };
+/** 학사 공지 최신 1건 — 정보 섹션 목록(NOTICE_LIST) 중 그날까지 올라온 것만 (옮긴 날짜가 오늘 이후인 공지는 아직 없음 · 총괄 공통 규칙)
+ *  n1(중간고사)은 Figma 한 줄 문구 '2학기 중간고사 시행 안내 · 10.19–10.23' 그대로 */
+export function noticeLine(base: Date): { id: string; text: string } {
+  const posted = NOTICE_LIST.filter((n) => dayDiff(mdToDate(n.date, base), base) >= 0).sort((a, b) => mdToDate(b.date, base).getTime() - mdToDate(a.date, base).getTime());
+  const n = posted[0] ?? NOTICE_LIST[0];
+  return n.id === 'n1' ? { id: 'n1', text: shiftText('2학기 중간고사 시행 안내 · 10.19–10.23') } : { id: n.id, text: n.short };
+}
 
 /* ── 오늘 할 일 ───────────────────────────────────────────── */
 export type TodoItem = {

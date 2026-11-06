@@ -1,10 +1,7 @@
 import { useMemo } from 'react';
 import { create } from 'zustand';
-import { isFuturePost, POSTS, RECENT_SEARCHES, seedComments, type BoardId, type Comment, type Post } from './data';
-
-/** 보이는 시드 글 — 이번 주로 옮긴 날짜가 오늘 이후인 글(월·화에 보는 수요일 글 등)은 아직 안 쓴 글이라 뺀다.
- *  날짜 단위라 앱을 연 날(NOW) 기준으로 한 번만 계산 (날짜가 바뀌면 새로고침) */
-const SEED_POSTS = POSTS.filter((p) => !isFuturePost(p));
+import { useNow } from '@/data/clock';
+import { POSTS, RECENT_SEARCHES, seedComments, seedVisible, type BoardId, type Comment, type Post } from './data';
 
 /* ────────────────────────────────────────────────────────────
  * 게시판 섹션 상태 (섹션 로컬 zustand — 전역 useApp은 건드리지 않음)
@@ -79,16 +76,21 @@ export const useBoard = create<BoardState>((set, get) => ({
 
 /* ── 파생 데이터 훅 ─────────────────────────────────────────── */
 
-/** 보이는 글 전체 (내가 쓴 글이 맨 앞 · 수정 내용 반영) */
+/** 보이는 글 전체 (내가 쓴 글이 맨 앞 · 수정 내용 반영)
+ *  시드 글은 작성 시각(postedAt)이 지금 이전인 것만 — 매 분 다시 계산 (내가 쓴 글은 항상) */
 export function useAllPosts(): Post[] {
   const created = useBoard((st) => st.created);
   const hidden = useBoard((st) => st.hidden);
   const edits = useBoard((st) => st.edits);
+  const now = useNow();
   return useMemo(
-    () => [...created, ...SEED_POSTS].filter((p) => !hidden.includes(p.id)).map((p) => (edits[p.id] ? { ...p, ...edits[p.id] } : p)),
-    [created, hidden, edits],
+    () => [...created, ...POSTS.filter((p) => seedVisible(p.postedAt, now))].filter((p) => !hidden.includes(p.id)).map((p) => (edits[p.id] ? { ...p, ...edits[p.id] } : p)),
+    [created, hidden, edits, now],
   );
 }
+
+/** 지금까지 달린 시드 댓글 (작성 시각이 지금 이전) */
+const seedSoFar = (post: Post, now: Date) => seedComments(post).filter((c) => seedVisible(c.at, now));
 
 export function usePost(pid: string | undefined): Post | undefined {
   const all = useAllPosts();
@@ -100,19 +102,22 @@ export function usePostStats(post: Post) {
   const liked = useBoard((st) => st.liked[post.id]) ?? !!post.likedByMe;
   const scrapped = useBoard((st) => !!st.scrapped[post.id]);
   const mine = useBoard((st) => st.added[post.id]);
+  const now = useNow();
   return {
     liked,
     likeCount: post.likes - (post.likedByMe ? 1 : 0) + (liked ? 1 : 0),
     scrapped,
-    commentCount: post.comments + (mine?.length ?? 0),
+    // 시드 댓글 수(post.comments)는 시드 댓글이 다 달린 뒤의 수 → 지금까지 달린 것만 센다
+    commentCount: seedSoFar(post, now).length + (mine?.length ?? 0),
   };
 }
 
 /** 시드 댓글 + 내가 단 댓글을 스레드 순서(부모 → 답글)로 */
 export function useThread(post: Post) {
   const mine = useBoard((st) => st.added[post.id]);
+  const now = useNow();
   return useMemo(() => {
-    const all = [...seedComments(post), ...(mine ?? [])];
+    const all = [...seedSoFar(post, now), ...(mine ?? [])];
     const roots = all.filter((c) => !c.parent);
     const out: Comment[] = [];
     for (const r of roots) {
@@ -120,7 +125,7 @@ export function useThread(post: Post) {
       out.push(...all.filter((c) => c.parent === r.id));
     }
     return { comments: out, total: all.length };
-  }, [post, mine]);
+  }, [post, mine, now]);
 }
 
 /** 팀플 모집 현황 */

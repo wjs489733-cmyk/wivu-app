@@ -361,7 +361,8 @@ function PostView({ post }: { post: Post }) {
               <Icon name="chevron-down" size={16} />
             </button>
           )}
-          {visible.length === 0 && (
+          {/* 접힌 '이전 댓글'이 있으면 빈 상태 문구를 띄우지 않는다 */}
+          {comments.length === 0 && (
             <Text variant="body-3" color="tertiary" as="p" style={{ padding: '10px 0' }}>
               아직 댓글이 없어요. 첫 댓글을 남겨보세요.
             </Text>

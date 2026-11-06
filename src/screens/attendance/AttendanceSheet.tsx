@@ -220,15 +220,20 @@ export function AttendanceSheet({
             </Button>
           </div>
 
-          <div className={s.pinAlt}>
-            <Button variant="tertiary" size="m" onClick={toQr} disabled={status === 'checking' || none}>
-              QR · NFC로 인증하기
-            </Button>
-          </div>
+          {/* 인증할 수업이 없으면 QR·NFC와 키패드는 빼고 입력칸·버튼만 비활성으로 (아무 동작도 안 하는 키패드를 보이지 않게) */}
+          {!none && (
+            <>
+              <div className={s.pinAlt}>
+                <Button variant="tertiary" size="m" onClick={toQr} disabled={status === 'checking'}>
+                  QR · NFC로 인증하기
+                </Button>
+              </div>
 
-          <div className={s.pinPad}>
-            <Keypad onDigit={onDigit} onDelete={onDelete} disabled={busy || locked} />
-          </div>
+              <div className={s.pinPad}>
+                <Keypad onDigit={onDigit} onDelete={onDelete} disabled={busy || locked} />
+              </div>
+            </>
+          )}
         </>
       )}
     </BottomSheet>

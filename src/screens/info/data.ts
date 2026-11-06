@@ -1,4 +1,4 @@
-import { DOW_KO, LOAD_NOW, dayDiff, fmtHM, fmtMD, sameDay, shiftDate, shiftDeep } from '@/data/clock';
+import { DOW_KO, LOAD_NOW, dayDiff, fmtHM, fmtMD, mdToDate, sameDay, shiftDate, shiftDeep } from '@/data/clock';
 import { COURSES, NOW, SCENARIO_DAY, type Course } from '@/data/core';
 import { classesOn, nextSession, phaseOf, relDayLabel, type ClassSession } from '@/data/today';
 
@@ -251,9 +251,9 @@ export const NOTICE_FILTERS: { value: 'all' | NoticeCategory; label: string }[] 
   { value: '행사', label: '행사' },
 ];
 
-/** 이번 학기 최근 공지 3건 — 다른 섹션(학교 연동 카운트 SYNC_COUNTS)이 개수를 읽으므로 3건 유지
- *  날짜(목록·메타·한눈에 보기·본문)는 시나리오 날짜 → 이번 주로 옮김(shiftDeep, 요일 글자는 주 단위라 그대로 맞음) */
-export const ACADEMIC_NOTICES: AcademicNotice[] = shiftDeep<AcademicNotice[]>([
+/** 이번 학기 최근 공지 3건 (게시 전 공지 포함 원본) — 날짜(목록·메타·한눈에 보기·본문)는 시나리오 날짜 → 이번 주로 옮김
+ *  (shiftDeep, 요일 글자는 주 단위라 그대로 맞음). 화면·다른 섹션은 아래 ACADEMIC_NOTICES(게시된 것만) */
+const RECENT_NOTICES: AcademicNotice[] = shiftDeep<AcademicNotice[]>([
   {
     id: 'n1',
     category: '학사',
@@ -316,7 +316,7 @@ const portalNotice = (n: Omit<AcademicNotice, 'secondary' | 'body'> & { lead: st
   body: `${n.lead}\n\n· 자세한 일정과 기준은 학교 포털 원문 공지를 확인해 주세요.\n· 내용이 바뀌면 WivU 알림으로 다시 안내됩니다.`,
   secondary: { label: '원문 보기', action: 'portal' },
 });
-export const PAST_NOTICES: AcademicNotice[] = shiftDeep([
+const OLD_NOTICES: AcademicNotice[] = shiftDeep([
   portalNotice({
     id: 'n4',
     category: '학사',
@@ -380,9 +380,19 @@ export const PAST_NOTICES: AcademicNotice[] = shiftDeep([
   }),
 ]);
 
-/** 학사 공지 목록(688:6810) 전체 — 최신순 */
+/* 게시일(목록 날짜)이 오늘 이후인 공지는 아직 안 올라온 것 → 목록에서 숨김 (총괄 공통 결정 11-06).
+ * 시나리오 금 10/9(옮긴 이번 주 금)에는 7건 모두 지난 날짜라 Figma 그대로. 월–수에는 이번 주 수·목 공지(n2·n1)가 그날 되어야 보임.
+ * 날짜 단위라 앱을 연 날(NOW) 기준 — 자정이 지나면 clock이 새로고침 */
+const posted = (n: AcademicNotice) => dayDiff(mdToDate(n.date), NOW) >= 0;
+/** 이번 학기 최근 공지 (게시된 것만, 시나리오 금 = 3건) — 다른 섹션(학교 연동 카운트 SYNC_COUNTS)이 개수를 읽음 */
+export const ACADEMIC_NOTICES: AcademicNotice[] = RECENT_NOTICES.filter(posted);
+/** 지난 공지 (게시된 것만) */
+export const PAST_NOTICES: AcademicNotice[] = OLD_NOTICES.filter(posted);
+/** 학사 공지 목록(688:6810) — 게시된 것만, 최신순 */
 export const NOTICE_LIST: AcademicNotice[] = [...ACADEMIC_NOTICES, ...PAST_NOTICES];
-export const noticeById = (id?: string) => NOTICE_LIST.find((n) => n.id === id);
+/** 공지 전체 (게시 전 포함) — 상세 바로 열기(홈 공지 한 줄 n1 등)·캘린더 상태용 */
+export const ALL_NOTICES: AcademicNotice[] = [...RECENT_NOTICES, ...OLD_NOTICES];
+export const noticeById = (id?: string) => ALL_NOTICES.find((n) => n.id === id);
 
 /* ── 강의실 지도 (가상 캠퍼스 · Figma 좌표계 392×852 기준) ───────── */
 export type Pt = [number, number];

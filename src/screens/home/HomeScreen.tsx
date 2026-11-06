@@ -19,13 +19,13 @@ import {
   LIBRARY_ROOMS,
   MEAL,
   MEAL_CLOSED,
-  NOTICE_LINE,
   attendMark,
   classCards,
   dueBadge,
   freeCard,
   libraryAsOf,
   nextRoom,
+  noticeLine,
   todoPlan,
   upcomingDeadlines,
   type ClassCard,
@@ -102,7 +102,7 @@ export function HomeScreen({ variant = 'today' }: { variant?: 'today' | 'free-da
 function Block({ id, now }: { id: BlockId; now: Date }) {
   switch (id) {
     case 'notice':
-      return <NoticeLine />;
+      return <NoticeLine now={now} />;
     case 'todo':
       return <TodoBlock now={now} />;
     case 'deadline':
@@ -386,15 +386,16 @@ function FreeDayCard({ free }: { free: FreeCard }) {
   );
 }
 
-/* ── 공지 한 줄 ───────────────────────────────────────────── */
-function NoticeLine() {
+/* ── 공지 한 줄 — 그날까지 올라온 학사 공지 최신 1건 ───────────────── */
+function NoticeLine({ now }: { now: Date }) {
   const nav = useNav();
+  const n = noticeLine(now);
   return (
     <div className={s.pad}>
-      <button type="button" className={s.noticeLine} onClick={() => nav.push(P.academicNotice(NOTICE_LINE.id))}>
+      <button type="button" className={s.noticeLine} onClick={() => nav.push(P.academicNotice(n.id))}>
         <Text variant="caption-1-strong">공지</Text>
         <Text variant="body-3" color="secondary" className="truncate" style={{ flex: 1, textAlign: 'left' }} tnum>
-          {NOTICE_LINE.text}
+          {n.text}
         </Text>
         <Icon name="chevron-right" size={16} color="tertiary" />
       </button>

@@ -201,12 +201,15 @@ export function AssignmentSubmit() {
           disabled={sending}
         />
 
-        <div className={s.note}>
-          <Icon name="info" size={16} color="tertiary" />
-          <Text variant="caption-1" color="tertiary" as="p">
-            마감 전까지 몇 번이든 다시 제출할 수 있어요.
-          </Text>
-        </div>
+        {/* 마감이 지난 과제(주소로 직접 연 경우)에는 '다시 제출' 안내를 빼 모순을 막음 */}
+        {!closed && (
+          <div className={s.note}>
+            <Icon name="info" size={16} color="tertiary" />
+            <Text variant="caption-1" color="tertiary" as="p">
+              마감 전까지 몇 번이든 다시 제출할 수 있어요.
+            </Text>
+          </div>
+        )}
       </div>
     </Screen>
   );

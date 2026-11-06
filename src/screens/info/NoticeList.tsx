@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Screen, Text, TopNav } from '@/ui';
+import { Icon, Screen, Text, TopNav } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { NOTICE_FILTERS, NOTICE_LIST, type NoticeCategory } from './data';
@@ -9,7 +9,7 @@ import s from './Info.module.css';
 /**
  * 학사 공지 목록 — Figma v5 688:6810 (홈 '학사 공지 · 공지 전체' · 마이 '공지사항' → PUSH)
  * 분류 필터(전체·학사·장학·행사) · 행 = 배지 + 제목(Body 1) / '날짜 · 부서'(Caption 1), 행 사이 1px 선.
- * 행을 누르면 학사 공지 상세(688:6925)로 PUSH.
+ * 행을 누르면 학사 공지 상세(688:6925)로 PUSH. 게시일이 오늘 이후인 공지는 아직 안 보임(NOTICE_LIST).
  */
 export function NoticeList() {
   const nav = useNav();
@@ -20,6 +20,14 @@ export function NoticeList() {
     <Screen figma="688:6810" header={<TopNav title="학사 공지" fallback={P.home} />}>
       <div className={s.noticePage}>
         <FilterRow label="공지 분류" items={NOTICE_FILTERS} value={filter} onChange={setFilter} />
+        {list.length === 0 && (
+          <div className={s.empty}>
+            <Icon name="bell" size={24} color="tertiary" />
+            <Text variant="body-3" color="secondary">
+              이 분류의 공지가 없어요
+            </Text>
+          </div>
+        )}
         <div className={s.noticeList}>
           {list.map((n) => (
             <button key={n.id} type="button" className={s.noticeRow} onClick={() => nav.push(P.academicNotice(n.id))}>
