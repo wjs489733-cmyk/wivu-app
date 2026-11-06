@@ -35,6 +35,7 @@ export function CourseAttendance() {
 
   const st = courseStats(courseId, today, now);
   const sessions = courseSessions(courseId, today, now);
+  // 이의 신청 대상 = 결석 · 지각 · 오늘 인증 마감(missed: status '결석'으로 들고 있어 함께 들어옴)
   const contestable = sessions.filter((r) => r.status === '결석' || r.status === '지각');
   const pending = contestable.filter((r) => appeals[appealKey(courseId, r.date)]);
   const allPending = contestable.length > 0 && pending.length === contestable.length;
@@ -154,7 +155,8 @@ function AppealForm({ onClose, courseId, sessions }: { onClose: () => void; cour
   const appeals = useAttendanceLocal((st) => st.appeals);
   const addAppeal = useAttendanceLocal((st) => st.addAppeal);
   const available = sessions.filter((r) => !appeals[appealKey(courseId, r.date)]);
-  const [target, setTarget] = useState<string | null>(() => available[0]?.date ?? null);
+  // 오늘 '인증 마감'(missed) 회차가 있으면 그 회차를 골라 둔 채로 연다 (홈·출석 탭 [이의 신청] → ?sheet=appeal)
+  const [target, setTarget] = useState<string | null>(() => (available.find((r) => r.missed) ?? available[0])?.date ?? null);
   const [reason, setReason] = useState<(typeof REASONS)[number] | null>(null);
   const [memo, setMemo] = useState('');
   const [sending, setSending] = useState(false);

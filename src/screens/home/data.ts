@@ -1,7 +1,7 @@
 import { P } from '@/app/paths';
 import { addDays, dayDiff, dayStart, DOW_KO, fmtHM, fmtISO, fmtLongDay, hmToMin, mdToDate, minOfDay, sameDay, shiftDate, shiftDeep, shiftText } from '@/data/clock';
 import { SCENARIO_DAY, SCENARIO_FREE_DAY, SEMESTER_WEEK, TODAY_LABEL, courseById, type CourseId } from '@/data/core';
-import { NOTICE_LIST } from '@/screens/info/data';
+import { ALL_NOTICES, MEAL_CLOSED_WEEKEND, MEAL_TIME, buildingIdOf, mealsOn } from '@/screens/info/data';
 import { classesOn, isFreeDay, isHoliday, minutesLeft, nextSession, phaseOf, relDayLabel, windowElapsed, type ClassSession } from '@/data/today';
 import type { AttendMethod } from '@/store/app';
 import { ASSIGNMENT_LIST, type CourseAssignment } from '@/screens/courses/data';
@@ -48,7 +48,12 @@ export type ClassCard = {
   action?: { label: string; to: string; mode: 'push' | 'tab' };
 };
 
-const ROOM_ACTION: ClassCard['action'] = { label: '강의실 위치 보기', to: P.campusMap, mode: 'push' };
+/** 강의실 지도 — 그 수업 건물을 열어 둠 (지도 ?b=<건물 id>) */
+export const mapFor = (courseId: CourseId) => {
+  const b = buildingIdOf(courseById(courseId));
+  return b ? `${P.campusMap}?b=${b}` : P.campusMap;
+};
+const roomAction = (courseId: CourseId): ClassCard['action'] => ({ label: '강의실 위치 보기', to: mapFor(courseId), mode: 'push' });
 const TIMETABLE_ACTION: ClassCard['action'] = { label: '시간표에서 보기', to: P.timetable, mode: 'tab' };
 
 export type AttendedMap = Record<string, { method: AttendMethod; time: string }>;
@@ -84,7 +89,7 @@ export function classCards(now: Date, attended: AttendedMap): ClassCard[] {
         return { ...base, kind: 'closed', badge: '인증 마감', status: '수업 중', action: { label: '이의 신청', to: `${P.attendanceCourse(x.courseId)}?sheet=appeal`, mode: 'push' } };
       }
       const last = x.key === lastKey;
-      return { ...base, kind: 'later', badge: last ? '오늘 마지막 수업' : '다음 수업', status: `${x.start} 시작`, action: last ? TIMETABLE_ACTION : ROOM_ACTION };
+      return { ...base, kind: 'later', badge: last ? '오늘 마지막 수업' : '다음 수업', status: `${x.start} 시작`, action: last ? TIMETABLE_ACTION : roomAction(x.courseId) };
     });
 }
 
@@ -113,11 +118,12 @@ export function freeCard(now: Date): FreeCard {
 }
 
 /* ── 공지 한 줄 ───────────────────────────────────────────── */
-/** 학사 공지 최신 1건 — 정보 섹션 목록(NOTICE_LIST) 중 그날까지 올라온 것만 (옮긴 날짜가 오늘 이후인 공지는 아직 없음 · 총괄 공통 규칙)
- *  n1(중간고사)은 Figma 한 줄 문구 '2학기 중간고사 시행 안내 · 10.19–10.23' 그대로 */
+/** 학사 공지 최신 1건 — 정보 섹션 공지(ALL_NOTICES) 중 base 날까지 올라온 것만 (게시일이 그날 이후면 아직 없음 · 총괄 공통 규칙,
+ *  /home은 실제 오늘 = 정보 섹션 ACADEMIC_NOTICES 첫 항목과 같음 · /home/free-day 데모는 목요일 기준)
+ *  n1(중간고사)은 Figma 한 줄 문구 '2학기 중간고사 시행 안내 · 10.19–10.23' 그대로. 월–수엔 n1 대신 그때까지 올라온 최신 공지 */
 export function noticeLine(base: Date): { id: string; text: string } {
-  const posted = NOTICE_LIST.filter((n) => dayDiff(mdToDate(n.date, base), base) >= 0).sort((a, b) => mdToDate(b.date, base).getTime() - mdToDate(a.date, base).getTime());
-  const n = posted[0] ?? NOTICE_LIST[0];
+  const posted = ALL_NOTICES.filter((n) => dayDiff(mdToDate(n.date, base), base) >= 0).sort((a, b) => mdToDate(b.date, base).getTime() - mdToDate(a.date, base).getTime());
+  const n = posted[0] ?? ALL_NOTICES[0];
   return n.id === 'n1' ? { id: 'n1', text: shiftText('2학기 중간고사 시행 안내 · 10.19–10.23') } : { id: n.id, text: n.short };
 }
 
@@ -264,11 +270,11 @@ export function todoPlan(now: Date, events: CalEvent[]): TodoPlan {
   return { kind: 'day', items: todoOn(now, now, events, 'today'), tomorrow: todoOn(addDays(dayStart(now), 1), now, events, 'tomorrow') };
 }
 
-/** 오늘 수업 줄의 출석 상태 — 완료 = attended[key] · 창이 닫혔는데 기록 없음 = 결석 (공통 규칙 4) */
-export function attendMark(x: ClassSession, now: Date, attended: AttendedMap): '출석 완료' | '결석' | null {
+/** 오늘 수업 줄의 출석 상태 — 완료 = attended[key] · 창이 닫혔는데 기록 없음 = 인증 마감 (결석으로 세지 않음 · 총괄 11-06) */
+export function attendMark(x: ClassSession, now: Date, attended: AttendedMap): '출석 완료' | '인증 마감' | null {
   if (attended[x.key]) return '출석 완료';
   const p = phaseOf(x, now);
-  return p === 'inClass' || p === 'ended' ? '결석' : null;
+  return p === 'inClass' || p === 'ended' ? '인증 마감' : null;
 }
 
 /* ── 마감 임박 과제 ───────────────────────────────────────── */
@@ -305,17 +311,39 @@ export const MEAL = {
   peak: 3,
   axis: ['11:30', '12:00', '12:30', '13:00'],
 };
-/** 주말 학식 빈 상태 (공통 문구) */
-export const MEAL_CLOSED = { title: '주말에는 학생식당을 운영하지 않아요', meta: '평일 중식 11:30–13:30 · 학생식당 1층' };
+export type HomeMeal = typeof MEAL;
+/** 주말 학식 빈 상태 — 정보 섹션 문구 그대로 */
+export const MEAL_CLOSED = { title: MEAL_CLOSED_WEEKEND, meta: `평일 중식 ${MEAL_TIME['중식'].range} · 학생식당 1층` };
+/** 오늘의 학식 — 정보 섹션 식단(mealsOn, 학생식당)에서 읽음. 중식이 끝나면(13:30) 석식. 주말 = null(운영 안 함)
+ *  금 학생식당 중식(Figma 674:4748 '돈까스')은 홈 Figma 막대(7칸) 그대로, 나머지는 학식 화면 혼잡도(8칸)를 56 높이로 */
+export function homeMeal(now: Date): HomeMeal | null {
+  const meals = mealsOn(now);
+  if (!meals?.length) return null;
+  const lunch = meals.find((m) => m.kind === '중식') ?? meals[0];
+  const dinner = meals.find((m) => m.kind === '석식');
+  const lunchEnd = hmToMin(MEAL_TIME['중식'].range.split('–')[1]);
+  const m = dinner && minOfDay(now) >= lunchEnd ? dinner : lunch;
+  if (m === mealsOn(SCENARIO_DAY)?.[0]) return MEAL;
+  const t = MEAL_TIME[m.kind];
+  return {
+    title: `${m.main} (${m.price})`,
+    meta: `${m.kind} | ${t.range} · 학생식당 1층`,
+    peakLabel: `${m.peak.split('–')[0]} 가장 붐빔`,
+    crowd: m.crowd.map((v) => Math.round(v * 56)),
+    peak: m.crowd.indexOf(Math.max(...m.crowd)),
+    axis: t.axis,
+  };
+}
 
 /* ── 꺼져 있는 블록 (홈 편집에서 켤 때) ───────────────────── */
 /** 다음 강의실 — 다음 수업(인증 창이 아직 안 열린 가장 가까운 회차). 금 9:41 → '디자인관 401호 · 13:00 브랜드디자인 · 도보 4분' */
-export function nextRoom(now: Date): { room: string; meta: string } {
+export function nextRoom(now: Date): { room: string; meta: string; to: string } {
   const n = nextSession(now);
-  if (!n) return { room: '다음 수업이 없어요', meta: '' };
+  if (!n) return { room: '다음 수업이 없어요', meta: '', to: P.campusMap };
+  const to = mapFor(n.courseId);
   return sameDay(n.day, now)
-    ? { room: n.course.room, meta: `${n.start} ${n.course.name} · 도보 4분` }
-    : { room: n.course.room, meta: `${relDayLabel(n.day, now)} ${n.start} ${n.course.name}` };
+    ? { room: n.course.room, meta: `${n.start} ${n.course.name} · 도보 4분`, to }
+    : { room: n.course.room, meta: `${relDayLabel(n.day, now)} ${n.start} ${n.course.name}`, to };
 }
 export const LIBRARY_ROOMS = [
   { name: '제1열람실', left: 42, total: 120 },

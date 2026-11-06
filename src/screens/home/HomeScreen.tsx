@@ -6,7 +6,6 @@ import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
 import { useNow } from '@/data/clock';
 import { USER } from '@/data/core';
-import { isWeekend } from '@/data/today';
 import { AttendanceSheet } from '@/screens/attendance/AttendanceSheet';
 import { useIsSubmitted } from '@/screens/courses/store';
 import { useSchedule } from '@/screens/timetable/store';
@@ -19,6 +18,8 @@ import {
   LIBRARY_ROOMS,
   MEAL,
   MEAL_CLOSED,
+  homeMeal,
+  mapFor,
   attendMark,
   classCards,
   dueBadge,
@@ -86,7 +87,7 @@ export function HomeScreen({ variant = 'today' }: { variant?: 'today' | 'free-da
 
       {blocks.map((id, i) => (
         <div key={id} className={s.block} data-tight={i === 0 && id === 'notice'}>
-          <Block id={id} now={now} />
+          <Block id={id} now={now} demo={freeDay} />
         </div>
       ))}
 
@@ -99,7 +100,7 @@ export function HomeScreen({ variant = 'today' }: { variant?: 'today' | 'free-da
   );
 }
 
-function Block({ id, now }: { id: BlockId; now: Date }) {
+function Block({ id, now, demo }: { id: BlockId; now: Date; demo: boolean }) {
   switch (id) {
     case 'notice':
       return <NoticeLine now={now} />;
@@ -110,7 +111,7 @@ function Block({ id, now }: { id: BlockId; now: Date }) {
     case 'menu':
       return <MyMenuBlock />;
     case 'meal':
-      return <MealBlock now={now} />;
+      return <MealBlock now={now} demo={demo} />;
     case 'nextRoom':
       return <NextRoomBlock now={now} />;
     case 'library':
@@ -160,7 +161,7 @@ function ClassCarousel({ cards, onAttend }: { cards: ClassCard[]; onAttend: () =
       actions: [
         { label: '과목 상세', icon: 'courses', run: () => nav.push(P.course(c.id)) },
         { label: '이 수업 출석 기록', icon: 'attendance', run: () => nav.push(P.attendanceCourse(c.id)) },
-        { label: '강의실 위치', icon: 'map', run: () => nav.push(P.campusMap) },
+        { label: '강의실 위치', icon: 'map', run: () => nav.push(mapFor(c.id)) },
       ],
     });
   const runAction = (a: SheetAct) => {
@@ -459,7 +460,7 @@ function TodoRow({ it, now }: { it: TodoItem; now: Date }) {
     meta = (
       <>
         {it.meta}{' '}
-        <Text variant="caption-1" color={mark === '결석' ? 'error' : 'brand'}>
+        <Text variant="caption-1" color={mark === '인증 마감' ? 'error' : 'brand'}>
           · {mark}
         </Text>
       </>
@@ -576,10 +577,12 @@ function PressBox({ onPress, className, label, children }: { onPress: () => void
   );
 }
 
-/* ── 오늘의 학식 (메뉴·가격 + 시간대별 혼잡도) — 주말은 운영 안 함 ───────────── */
-function MealBlock({ now }: { now: Date }) {
+/* ── 오늘의 학식 (메뉴·가격 + 시간대별 혼잡도) — 정보 섹션 식단(mealsOn) · 주말은 운영 안 함 ───────────── */
+function MealBlock({ now, demo }: { now: Date; demo: boolean }) {
   const nav = useNav();
-  if (isWeekend(now)) {
+  // /home/free-day는 Figma 692:6804 데모 그대로(돈까스 블록)
+  const meal = demo ? MEAL : homeMeal(now);
+  if (!meal) {
     return (
       <Section title="오늘의 학식" more="전체 식단" onMore={() => nav.push(P.meal)} padded={false}>
         <div className={s.pad}>
@@ -609,10 +612,10 @@ function MealBlock({ now }: { now: Date }) {
           <div className={s.infoRow}>
             <div className={s.infoText}>
               <Text variant="body-1-strong" as="p" className="truncate" tnum>
-                {MEAL.title}
+                {meal.title}
               </Text>
               <Text variant="caption-1" color="tertiary" as="p" className="truncate" tnum>
-                {MEAL.meta}
+                {meal.meta}
               </Text>
             </div>
             <span className={s.thumb} aria-hidden>
@@ -625,16 +628,16 @@ function MealBlock({ now }: { now: Date }) {
                 시간대별 혼잡도
               </Text>
               <Text variant="caption-1-strong" color="error" tnum>
-                {MEAL.peakLabel}
+                {meal.peakLabel}
               </Text>
             </div>
-            <div className={s.bars} role="img" aria-label={`시간대별 혼잡도 · ${MEAL.peakLabel}`}>
-              {MEAL.crowd.map((h, i) => (
-                <span key={i} style={{ height: h }} data-peak={i === MEAL.peak} />
+            <div className={s.bars} role="img" aria-label={`시간대별 혼잡도 · ${meal.peakLabel}`}>
+              {meal.crowd.map((h, i) => (
+                <span key={i} style={{ height: h }} data-peak={i === meal.peak} />
               ))}
             </div>
             <div className={s.axis} aria-hidden>
-              {MEAL.axis.map((a) => (
+              {meal.axis.map((a) => (
                 <Text key={a} variant="caption-2" color="tertiary" tnum>
                   {a}
                 </Text>
@@ -652,9 +655,9 @@ function NextRoomBlock({ now }: { now: Date }) {
   const nav = useNav();
   const r = nextRoom(now);
   return (
-    <Section title="다음 강의실" more="지도 보기" onMore={() => nav.push(P.campusMap)} padded={false}>
+    <Section title="다음 강의실" more="지도 보기" onMore={() => nav.push(r.to)} padded={false}>
       <div className={s.pad}>
-        <PressBox onPress={() => nav.push(P.campusMap)}>
+        <PressBox onPress={() => nav.push(r.to)}>
           <div className={s.infoRow}>
             <div className={s.infoText}>
               <Text variant="body-1-strong" as="p" className="truncate">
