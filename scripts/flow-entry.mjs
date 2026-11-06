@@ -17,7 +17,9 @@ const hash = () => new URL(p.url()).hash.slice(1);
 const steps = [];
 const check = (name, ok) => steps.push(`${ok ? 'PASS' : 'FAIL'} ${name}`);
 
-await p.goto(`${base}?frame=0#/splash`);
+// 시각: 기본 Figma 시나리오(10/9 9:41) 고정 — 실시간이면 출석 창이 안 열려 있을 수 있음. NOW=real 이면 실시간
+const NOW = process.env.NOW ?? '2026-10-09T09:41';
+await p.goto(`${base}?frame=0${NOW === 'real' ? '' : '&now=' + NOW}#/splash`);
 await shot('01-splash', 500);
 await p.waitForTimeout(2200);
 check('스플래시 → 온보딩', hash().startsWith('/intro/1'));

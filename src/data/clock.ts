@@ -115,7 +115,8 @@ export function shiftText(s: string): string {
       const x = moved(SCEN_YEAR, +m, +d);
       return `${x.getMonth() + 1}월${sp}${x.getDate()}일`;
     })
-    .replace(/(?<![\d.:/,])(\d{1,2})\.(\d{1,2})(?![\d.%:])/g, (all, m, d) => {
+    // 뒤에 단위(km·MB·%·점·배 등)가 붙은 소수는 날짜가 아님
+    .replace(/(?<![\d.:/,])(\d{1,2})\.(\d{1,2})(?![\d.%:A-Za-z]|점|배|시간|분)/g, (all, m, d) => {
       if (!semMonth(+m) || !validDay(+d)) return all;
       const x = moved(SCEN_YEAR, +m, +d);
       // 기본은 'MM.DD'(앞 0 채움). '9.30'·'10.1'처럼 앞 0 없이 쓴 경우만 그대로 안 채움
