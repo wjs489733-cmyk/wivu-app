@@ -84,9 +84,14 @@ export function useAllPosts(): Post[] {
   const edits = useBoard((st) => st.edits);
   const now = useNow();
   return useMemo(
-    () => [...created, ...POSTS.filter((p) => seedVisible(p.postedAt, now))].filter((p) => !hidden.includes(p.id)).map((p) => (edits[p.id] ? { ...p, ...edits[p.id] } : p)),
+    () => [...created, ...POSTS.filter((p) => seedVisible(p.postedAt, now)).sort(byNewest)].filter((p) => !hidden.includes(p.id)).map((p) => (edits[p.id] ? { ...p, ...edits[p.id] } : p)),
     [created, hidden, edits, now],
   );
+}
+
+/** 작성 시각 최신순 (피드 행 시각 feedAt 우선) — Figma 9:41 데이터 순서와 같고, 지난주 묶음·이번 주 날짜 글이 섞여도 순서가 맞게 */
+function byNewest(a: Post, b: Post) {
+  return (b.feedAt ?? b.postedAt ?? 0) - (a.feedAt ?? a.postedAt ?? 0);
 }
 
 /** 지금까지 달린 시드 댓글 (작성 시각이 지금 이전) */

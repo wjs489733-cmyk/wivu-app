@@ -1,5 +1,5 @@
 import { P } from '@/app/paths';
-import { dayDiff, DOW_KO, fmtHM, fmtMD, hmToMin, mdToDate, sameDay, shiftDeep } from '@/data/clock';
+import { addDays, dayDiff, DOW_KO, fmtHM, fmtMD, hmToMin, mdToDate, sameDay, shiftDeep } from '@/data/clock';
 import { COURSES, NOW, SCENARIO_DAY, courseById, type CourseId } from '@/data/core';
 import { ASSIGNMENT_LIST } from '@/screens/courses/data';
 import type { ChipTone, IconName } from '@/ui';
@@ -12,9 +12,13 @@ import type { ChipTone, IconName } from '@/ui';
  *
  * 11-06 실시간 전환 (data/clock.ts)
  *  · POSTS의 날짜 글자('10.07' · '10.19(월)' · 모집 마감 until)는 shiftDeep으로 이번 주로 옮김 (요일 유지)
- *  · 시드 글·댓글의 time('12분 전'·'어제'·'10.07')은 Figma 시각(이번 주 금 9:41 = SCENARIO_DAY) 기준 절대 시각
- *    postedAt / at 으로 바꿔 둠 → 표기는 지금 기준으로 흘러감 (금 9:41 = Figma 글자 그대로 · 금 오후 'n시간 전' · 토 '어제'·날짜)
- *    '어제'·날짜 글의 시·분은 SEED_HM (없으면 어제 18:00 · 날짜 12:00)
+ *  · 시드 글·댓글의 time('12분 전'·'어제'·'10.07')은 절대 시각 postedAt / at 으로 바꿔 둠 → 표기는 지금 기준으로 흘러감
+ *    (금 9:41 = Figma 글자 그대로 · 금 오후 'n시간 전' · 토 '어제'·날짜). '어제'·날짜 글의 시·분은 SEED_HM (없으면 어제 18:00 · 날짜 12:00)
+ *    - 상대 시각 글('n분 전'·'어제' — Figma 금요일 묶음)의 기준 = BOARD_BASE: 앱을 연 시각 이전의 가장 최근 시나리오 금요일 9:41
+ *      (이번 주 금 9:41 이후·주말 = 이번 주 금 · 월~목·금 9:41 전 = 지난주 금 → 지난주 글이 '11.06' 같은 날짜로 보임, 피드가 비지 않게)
+ *      그 글의 모집 마감(until)·댓글 시각도 같은 기준으로 옮김 (지난주 모집은 마감 지남 → '마감')
+ *    - 날짜 글('10.07'·1주차 글)은 학기 달력(주차) 기준이라 shiftDeep 그대로 (이번 주 화·수 글은 그날 시각이 되면 나타남)
+ *    - 피드는 작성 시각 최신순 (Figma 9:41 순서와 같음)
  *  · 지금보다 뒤에 쓴 시드 글·댓글은 아직 없는 글 → 목록·댓글에서 뺌 (store, 분 단위)
  *  · 모집 마감 D-day · 과제 마감 표기 · '오늘 새 글 n'은 실제 오늘·지금 기준으로 계산 (아래 도우미)
  * ──────────────────────────────────────────────────────────── */
@@ -172,6 +176,11 @@ export type Comment = {
 /* ── 시각 (시드 상대 시각 → 절대 시각, 표기는 지금 기준) ─────────────
  * 모듈을 읽을 때 쓰이므로 함수 선언으로 둔다 (POSTS·댓글보다 위) */
 
+/** 게시판 시드 기준 금요일 9:41 — 앱을 연 시각(NOW) 이전의 가장 최근 시나리오 금요일 (열어 둔 채 금 9:41을 넘기면 다음 새로고침부터 이번 주) */
+const BOARD_BASE = NOW.getTime() >= SCENARIO_DAY.getTime() ? SCENARIO_DAY : addDays(SCENARIO_DAY, -7);
+/** 상대 시각 글 묶음을 이번 주 기준에서 옮길 날 수 (0 또는 −7) */
+const BASE_SHIFT = dayDiff(SCENARIO_DAY, BOARD_BASE);
+
 /** '어제'·날짜('MM.DD') 시드 글·댓글의 시·분 — 없으면 어제 18:00 · 날짜 12:00 */
 const SEED_HM: Record<string, string> = {
   // 어제(목) 글
@@ -181,9 +190,9 @@ const SEED_HM: Record<string, string> = {
   // 어제 댓글 (p4 21:40 글 뒤)
   'p4-c1': '21:58', 'p4-c2': '22:31', 'p4-c3': '23:12',
 };
-/** Figma 시각 글자 → 절대 시각(ms). 기준 = 이번 주 금 9:41 (SCENARIO_DAY). 날짜 글자는 이미 옮긴 값 */
+/** Figma 시각 글자 → 절대 시각(ms). 상대 시각 기준 = BOARD_BASE(가장 최근 시나리오 금 9:41). 날짜 글자는 이미 옮긴 값(학기 달력 그대로) */
 function seedAt(label: string, key?: string): number | undefined {
-  const base = SCENARIO_DAY.getTime();
+  const base = BOARD_BASE.getTime();
   const hm = key ? SEED_HM[key] : undefined;
   const at = (d: Date, fallback: string) => {
     const min = hmToMin(hm ?? fallback);
@@ -198,8 +207,14 @@ function seedAt(label: string, key?: string): number | undefined {
   if (/^\d{1,2}\.\d{1,2}$/.test(label)) return at(mdToDate(label, SCENARIO_DAY), '12:00');
   return undefined;
 }
+/** 상대 시각 글의 모집 마감일도 같은 기준으로 (지난주 금요일 묶음이면 −7일) */
+const moveUntil = (p: Post): Post['recruit'] => {
+  const r = p.recruit;
+  if (!r?.until || !BASE_SHIFT || /^\d{1,2}\.\d{1,2}$/.test(p.time)) return r;
+  return { ...r, until: fmtMD(addDays(mdToDate(r.until, SCENARIO_DAY), BASE_SHIFT)) };
+};
 function withSeedTimes(list: Post[]): Post[] {
-  return list.map((p) => ({ ...p, postedAt: seedAt(p.time, p.id), ...(p.feedTime ? { feedAt: seedAt(p.feedTime, p.id) } : {}) }));
+  return list.map((p) => ({ ...p, postedAt: seedAt(p.time, p.id), ...(p.feedTime ? { feedAt: seedAt(p.feedTime, p.id) } : {}), ...(p.recruit ? { recruit: moveUntil(p) } : {}) }));
 }
 
 /** 시각 표기 (지금 기준): 방금 · n분 전 · n시간 전(같은 날) · 어제 · 'MM.DD' (피드 날짜 글 표기) */
@@ -935,7 +950,7 @@ export const commentTime = (c: Comment, now: Date) => (c.at !== undefined ? relL
  *  마지막으로 본 시각이 아직 안 왔으면(금요일 전) 오늘 글 전부. posts는 지금 보이는 글(useAllPosts) */
 export function newTodayCount(id: CourseId, posts: Post[], now: Date): number {
   const row = MY_COURSE_ROWS.find((r) => r.id === id);
-  const read = row?.readAgo !== undefined ? SCENARIO_DAY.getTime() - row.readAgo * 60000 : -Infinity;
+  const read = row?.readAgo !== undefined ? BOARD_BASE.getTime() - row.readAgo * 60000 : -Infinity;
   const since = read <= now.getTime() ? read : -Infinity;
   return posts.filter((p) => p.boardId === id && p.postedAt !== undefined && p.postedAt <= now.getTime() && p.postedAt > since && sameDay(new Date(p.postedAt), now)).length;
 }
