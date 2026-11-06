@@ -90,7 +90,3 @@ export const ACADEMIC_SCHEDULE = shiftDeep([
 
 export const PIN_DEMO = '1234'; // 데모: 아무 4자리나 통과, 오류 플로우는 ?error=1 또는 '0000'
 
-/** @deprecated 실시간 전환 중 임시 별칭 — data/today.ts classesOn()·SCENARIO_CLASSES로 옮긴 뒤 지울 것 */
-export const TODAY_CLASSES = SCENARIO_CLASSES;
-/** @deprecated 임시 별칭 — data/today.ts (OPEN_BEFORE·CLOSE_AFTER·openSession)로 옮긴 뒤 지울 것 */
-export const ATTENDANCE_WINDOW = { courseId: 'service-design' as CourseId, opens: '10:00', closes: '10:10', minutesToStart: 19 };
