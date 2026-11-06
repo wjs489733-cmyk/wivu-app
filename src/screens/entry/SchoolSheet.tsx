@@ -1,5 +1,5 @@
 import { useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
-import { BottomSheet, Chip, ListRow, Text, TextField, toast } from '@/ui';
+import { BottomSheet, Chip, Icon, ListRow, Text, TextField, toast } from '@/ui';
 import { HOME_LOCATION, NEAREST, NEARBY, SCHOOLS, type School } from './data';
 import s from './Entry.module.css';
 
@@ -7,13 +7,14 @@ import s from './Entry.module.css';
  * 로그인 · 대학교 검색 — Figma v5 667:4592 (로그인 위 바텀시트, 같은 라우트의 상태)
  * 검색어 실시간 필터 · 거리순/가나다순 정렬 · 학교를 누르면 Selected school 설정 → 시트 닫힘(로그인 · 입력 상태 669:4633).
  * 딤을 누르면 닫힘(Figma BACK).
+ * 11-06 사용자 요청: '학교 변경'으로 열었을 때 지금 고른 학교를 파란 글자 + 오른쪽 체크로 표시하고 목록 맨 위로 (검색 중엔 자리 그대로 표시만).
  */
 type Sort = 'distance' | 'name';
 
-export function SchoolSheet({ open, onClose, onPick }: { open: boolean; onClose: () => void; onPick: (name: string) => void }) {
+export function SchoolSheet({ open, onClose, onPick, selected }: { open: boolean; onClose: () => void; onPick: (name: string) => void; selected?: string | null }) {
   return (
     <BottomSheet open={open} onClose={onClose} label="대학교 검색">
-      <SheetBody onPick={onPick} />
+      <SheetBody onPick={onPick} selected={selected ?? null} />
     </BottomSheet>
   );
 }
@@ -21,7 +22,7 @@ export function SchoolSheet({ open, onClose, onPick }: { open: boolean; onClose:
 const byName = (a: School, b: School) => a.name.localeCompare(b.name, 'ko');
 const byDistance = (a: School, b: School) => (a.km ?? Infinity) - (b.km ?? Infinity) || byName(a, b);
 
-function SheetBody({ onPick }: { onPick: (name: string) => void }) {
+function SheetBody({ onPick, selected }: { onPick: (name: string) => void; selected: string | null }) {
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<Sort>('distance');
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -30,8 +31,12 @@ function SheetBody({ onPick }: { onPick: (name: string) => void }) {
   const q = query.trim();
   const results = useMemo(() => {
     const base = q ? SCHOOLS.filter((sc) => sc.name.includes(q) || sc.location.includes(q)) : NEARBY;
-    return [...base].sort(sort === 'distance' ? byDistance : byName);
-  }, [q, sort]);
+    const sorted = [...base].sort(sort === 'distance' ? byDistance : byName);
+    if (q || !selected) return sorted;
+    // 검색 전: 지금 고른 학교를 맨 위로 (주변 목록에 없으면 전체 목록에서 찾아 붙임)
+    const cur = SCHOOLS.find((sc) => sc.name === selected);
+    return cur ? [cur, ...sorted.filter((sc) => sc.name !== selected)] : sorted;
+  }, [q, sort, selected]);
 
   return (
     <div
@@ -84,15 +89,20 @@ function SheetBody({ onPick }: { onPick: (name: string) => void }) {
 
       <div className={s.schoolList}>
         {results.length ? (
-          results.map((sc) => (
-            <ListRow
-              key={sc.name}
-              title={sc.name}
-              titleAddon={sc.name === NEAREST ? <Chip tone="brand" className={s.nearBadge}>가장 가까움</Chip> : undefined}
-              meta={sc.km !== undefined ? `${sc.location} · ${sc.km}km` : sc.location}
-              onPress={() => onPick(sc.name)}
-            />
-          ))
+          results.map((sc) => {
+            const on = sc.name === selected;
+            return (
+              <ListRow
+                key={sc.name}
+                title={on ? <span style={{ color: 'var(--wivu-color-text-brand)' }}>{sc.name}</span> : sc.name}
+                titleVariant={on ? 'body-1-strong' : undefined}
+                titleAddon={sc.name === NEAREST ? <Chip tone="brand" className={s.nearBadge}>가장 가까움</Chip> : undefined}
+                meta={sc.km !== undefined ? `${sc.location} · ${sc.km}km` : sc.location}
+                trailing={on ? <Icon name="check" size={20} color="brand" label="선택한 학교" /> : undefined}
+                onPress={() => onPick(sc.name)}
+              />
+            );
+          })
         ) : (
           <div className={s.empty}>
             <Text variant="body-2-strong" as="p" align="center">

@@ -1,3 +1,4 @@
+import { useNow } from '@/data/clock';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import { Icon, type IconName } from './Icon';
 import { Text } from './primitives';
@@ -91,6 +92,12 @@ export function Screen({ header, footer, bg = 'surface', tone, indicatorTone, sc
 }
 
 /* ── Status bar ─────────────────────────────────────────────── */
+/** 상태바 시각 — 실시간(11-06), 시각 고정이면 그 시각 (Figma 시나리오 = 9:41) */
+function StatusTime() {
+  const n = useNow();
+  return <span className="tnum">{`${n.getHours()}:${String(n.getMinutes()).padStart(2, '0')}`}</span>;
+}
+
 export function StatusBar({ tone = 'dark' }: { tone?: 'dark' | 'light' }) {
   const { framed } = useDevice();
   const color = tone === 'dark' ? '#000' : '#fff';
@@ -98,7 +105,7 @@ export function StatusBar({ tone = 'dark' }: { tone?: 'dark' | 'light' }) {
     <div className={s.statusBar} style={{ color }} aria-hidden>
       {framed && (
         <>
-          <span>9:41</span>
+          <StatusTime />
           <span className={s.statusIcons}>
             <svg width="19" height="12" viewBox="0 0 19 12" fill={color}>
               <rect x="0" y="7.5" width="3.2" height="4.5" rx="1" />

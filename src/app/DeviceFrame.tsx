@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router';
 import { QRCodeSVG } from 'qrcode.react';
 import { DeviceCtx, Icon, Logo, ToastHost } from '@/ui';
 import { useApp } from '@/store/app';
+import { DOW_KO, setDemoTime, TIME_SOURCE, useNow } from '@/data/clock';
 import { FLOWS, P } from './paths';
 import { findScreen, SCREENS } from './registry';
 import s from './DeviceFrame.module.css';
@@ -112,12 +113,37 @@ function LeftPanel() {
       </div>
 
       <div className={s.meta}>
-        <MetaItem k="기준 시각" v="2026.10.09 (금) 9:41" />
+        <TimeMeta />
         <MetaItem k="사용자" v="김유진 · 시각디자인과 4학년 (가상)" />
         <MetaItem k="화면" v={`${SCREENS.length}개 라우트 · Figma ${FIGMA_FRAMES} 프레임 대응`} />
         <MetaItem k="데이터" v="가상 데이터 · 백엔드 없음 · 새로고침 시 초기화" />
       </div>
     </aside>
+  );
+}
+
+/** 시각: 실시간(기본) ↔ 시연 시각(이번 주 금 9:41) 스위치 — 11-06 사용자 결정. 바꾸면 새로고침(데이터 기준이 바뀌므로) */
+function TimeMeta() {
+  const n = useNow();
+  const when = `${String(n.getMonth() + 1).padStart(2, '0')}.${String(n.getDate()).padStart(2, '0')} (${DOW_KO[n.getDay()]}) ${n.getHours()}:${String(n.getMinutes()).padStart(2, '0')}`;
+  const demo = TIME_SOURCE === 'demo';
+  const mode = TIME_SOURCE === 'real' ? '실시간' : demo ? '시연 시각' : '고정(주소 now)';
+  return (
+    <div className={s.metaItem}>
+      <span className="t-caption-2" style={{ color: 'var(--wivu-color-text-tertiary)' }}>
+        시각
+      </span>
+      <span className="t-caption-1" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', columnGap: 10 }}>
+        <span className="tnum">
+          {mode} · {when}
+        </span>
+        {TIME_SOURCE !== 'param' && (
+          <button type="button" className="t-caption-1-strong" style={{ color: 'var(--wivu-color-text-brand)' }} onClick={() => setDemoTime(!demo)}>
+            {demo ? '실시간으로 돌아가기' : '시연 시각(금 9:41)으로 보기'}
+          </button>
+        )}
+      </span>
+    </div>
   );
 }
 

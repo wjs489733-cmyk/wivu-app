@@ -79,7 +79,7 @@ export function Login() {
     <Screen
       figma={figma}
       header={<TopNav title="로그인" fallback={P.intro(1)} />}
-      overlay={<SchoolSheet open={sheet} onClose={() => setSheet(false)} onPick={pick} />}
+      overlay={<SchoolSheet open={sheet} onClose={() => setSheet(false)} onPick={pick} selected={picked ? school : null} />}
       footer={
         // 로그인 버튼은 작은 화면(375×667)에서도 항상 보이게 하단 고정
         <CtaBar>
