@@ -21,7 +21,8 @@ import { useApp, type AttendMethod } from '@/store/app';
  *   · 날짜: 시나리오 주(10.05–10.11)를 실제 이번 주로 옮김 — 모든 날짜는 sess()에서 shiftDate / sd()로 옮기고 정렬 키도 옮긴 날짜로 계산
  *   · 이번 주 · 다음 주 수업 = today.ts classesOn() (요일 시간표 + 월 휴강 + 화 10:30 디자인경영 보강)
  *   · 회차 상태 (브리프 규칙 4): 오늘 이전 = 기록(아래 PAST, 없으면 '출석' · 시작 3분 전 · PIN)
- *       오늘 = phaseOf(now) + store attended[key] → 창 전 '오늘' · 창 안 '인증 가능' · 완료 '출석' · 창 닫힘 + 기록 없음 '결석'(인증 마감)
+ *       오늘 = phaseOf(now) + store attended[key] → 창 전 '오늘' · 창 안 '인증 가능' · 완료 '출석' · 창 닫힘 + 기록 없음 '인증 마감'(missed)
+ *         ※ 총괄 결정(11-06): missed는 기록 행에 '인증 마감' 배지 + 이의 신청으로만 보이고 요약·과목별 숫자(출석·지각·결석)에는 세지 않음
  *       이후 = '예정'
  *   · 숫자(요약·과목별)도 now 기준 — ?now=2026-10-09T09:41 이면 원래 Figma 숫자 그대로
  * ──────────────────────────────────────────────────────────── */
@@ -52,7 +53,7 @@ export type Session = {
   opened?: boolean;
   /** 휴강 보강 회차 — 기록 행에 '보강'으로 보이고, 출석 탭 상단 요약(정규 회차)에서는 빠진다 */
   makeup?: boolean;
-  /** 오늘 수업인데 인증 창이 닫혔고 기록이 없음 → '결석'으로 세고 배지는 '인증 마감' */
+  /** 오늘 수업인데 인증 창이 닫혔고 기록이 없음 → 배지 '인증 마감' (status는 '결석'이지만 숫자에는 세지 않음 — allRecords에서 뺌) */
   missed?: boolean;
   /** 정렬용 (YYYYMMDD + 시작 시각, 옮긴 날짜 기준) */
   key: string;
@@ -226,10 +227,10 @@ const attendedOf = (t: TodayState) => t.attended ?? useApp.getState().attended;
 
 const isRecord = (s: SessionStatus): s is RecordStatus => s === '출석' || s === '지각' || s === '결석';
 
-/** 모든 출석 기록 (최신순) — 지금(now) 기준 */
+/** 모든 출석 기록 (최신순) — 지금(now) 기준. 오늘 인증 마감(missed)은 확정 기록이 아니라 숫자에서 뺀다 */
 export function allRecords(t: TodayState, includeOnline = false, now: Date = clockNow()): Session[] {
   return live(now, attendedOf(t))
-    .filter((r) => isRecord(r.status) && (includeOnline || r.courseId !== 'writing'))
+    .filter((r) => isRecord(r.status) && !r.missed && (includeOnline || r.courseId !== 'writing'))
     .slice()
     .sort((a, b) => byKey(b, a));
 }

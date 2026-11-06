@@ -17,7 +17,7 @@ import s from './Attendance.module.css';
  * 하단 버튼: 오늘 인증 가능한 수업이면 [출석 인증하기](출석 인증 시트), 결석·지각이 있으면 [출석 이의 신청](v5 692:7904 시트).
  * 이의 신청 시트 바로 열기: ?sheet=appeal
  * 실시간(11-06): 회차 상태·숫자는 지금(useNow) 기준 (data.ts 규칙 4). 오늘 인증 창이 닫혔는데 기록이 없으면
- *   그 회차는 '인증 마감'(결석으로 셈) → 하단 [출석 이의 신청]으로 이어진다.
+ *   그 회차는 '인증 마감'(숫자엔 안 셈) → 하단 [출석 이의 신청]으로 이어진다.
  */
 export function CourseAttendance() {
   const { id = 'service-design' } = useParams();

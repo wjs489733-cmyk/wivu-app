@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { RADIAL_DEFAULT } from '@/data/quickMenu';
 import { fmtHM, now, TIME_FIXED } from '@/data/clock';
-import { openSession, sessionKey } from '@/data/today';
-import { SCENARIO_DAY } from '@/data/core';
+import { openSession } from '@/data/today';
 
 /* ────────────────────────────────────────────────────────────
  * 앱 전역 상태 — Figma 프로토타입 변수를 그대로 옮김
@@ -39,7 +38,7 @@ type AppState = {
 
   setSchool: (name: string) => void;
   login: () => void;
-  /** 출석 완료 — key 없으면 지금 인증 가능한 수업, 그것도 없으면 시나리오 금요일 서비스디자인 */
+  /** 출석 완료 — key 없으면 지금 인증 가능한 수업 (그것도 없으면 기록하지 않음) */
   completeAttendance: (method: AttendMethod, key?: string) => void;
   submitAssignment: (fileName: string) => void;
   setQuickMenu: (ids: string[]) => void;
@@ -83,7 +82,8 @@ export const useApp = create<AppState>((set) => ({
       const n = now();
       // 시각 고정 9:41(Figma 시나리오)일 때는 Figma 완료 시각 09:52를 그대로 씀
       const time = TIME_FIXED && fmtHM(n) === '09:41' ? '09:52' : fmtHM(n);
-      const k = key ?? openSession(n)?.key ?? sessionKey(SCENARIO_DAY, 'service-design');
+      const k = key ?? openSession(n)?.key;
+      if (!k) return {};
       return { attended: { ...st.attended, [k]: { method, time } }, attendanceComplete: true, attendanceMethod: method, attendanceTime: time };
     }),
   submitAssignment: (fileName) => set({ assignmentSubmitted: true, submittedFile: fileName }),
