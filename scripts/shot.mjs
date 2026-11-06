@@ -1,5 +1,6 @@
 // 사용: node scripts/shot.mjs <url-hash-path> <out.png> [width] [height] [fullPage]
 // 예: node scripts/shot.mjs /home shots/home.png 393 852
+// 시각: 기본 Figma 시나리오(2026-10-09 9:41) 고정. NOW=real 이면 실시간, NOW=2026-11-11T10:20 처럼 지정 가능
 import { chromium } from 'playwright';
 const [, , path = '/home', out = 'shot.png', w = '393', h = '852', full = '0', base = 'http://localhost:5173/'] = process.argv;
 import { existsSync } from 'node:fs';
@@ -9,7 +10,9 @@ const page = await browser.newPage({ viewport: { width: +w, height: +h }, device
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
-const sep = base.includes('?') ? '' : (+w < 520 ? '?frame=0' : '');
+const NOW = process.env.NOW ?? '2026-10-09T09:41';
+const qs = [+w < 520 && 'frame=0', NOW !== 'real' && `now=${NOW}`].filter(Boolean).join('&');
+const sep = base.includes('?') ? '' : qs ? `?${qs}` : '';
 await page.goto(`${base}${sep}#${path}`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(+process.env.WAIT || 900);
 await page.screenshot({ path: out, fullPage: full === '1' });

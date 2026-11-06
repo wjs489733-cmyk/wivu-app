@@ -33,7 +33,8 @@ let i = 0;
 for (const r of ROUTES) {
   errs = [];
   const [path, q] = r.split('?');
-  await p.goto(`http://127.0.0.1:5173/?frame=0${q ? '&' + q : ''}#${path}${q ? '?' + q : ''}`);
+  const NOW = process.env.NOW; // 예: NOW=2026-10-09T09:41 (없으면 실시간)
+  await p.goto(`http://127.0.0.1:5173/?frame=0${q ? '&' + q : ''}${NOW ? '&now=' + NOW : ''}#${path}${q ? '?' + q : ''}`);
   await p.waitForTimeout(r.startsWith('/splash') ? 400 : 900);
   const final = new URL(p.url()).hash.slice(1);
   const slug = String(++i).padStart(2, '0') + '_' + r.replace(/[/?=]/g, '-').replace(/^-/, '');

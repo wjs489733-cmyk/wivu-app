@@ -1,19 +1,38 @@
+import { DOW_KO, LOAD_NOW, SCENARIO_NOW, dayStart, fmtLongDay, fmtMD, shiftDate, shiftDeep } from './clock';
+
 /* ────────────────────────────────────────────────────────────
  * 데이터 기준 (모든 화면 공통) — progress 문서 '데이터 기준'과 동일하게 유지
- * 기준 시각: 2026-10-09(금) 9:41 = 학기 6주차 · 가상 인물·가상 캠퍼스 배치
- * (9/1(화) 개강 · 4주차 추석 연휴로 금요일 휴강 · 10/5(월) 대체공휴일 휴강 · 8주차 10/19–10/23 중간고사)
+ * 시나리오: 2026-10-09(금) 9:41 = 학기 6주차 · 가상 인물·가상 캠퍼스 배치
+ * (9/1(화) 개강 · 4주차 추석 연휴로 금요일 휴강 · 8주차 10/19–10/23 중간고사)
  * 실제 학교 규정·수치처럼 보이는 가상 정보는 피한다.
+ *
+ * 11-06 실시간 전환 (data/clock.ts): 시나리오 주를 실제 이번 주로 옮겨 붙임(요일 유지) + 시각은 실제 시각.
+ *   · NOW / TODAY_* = 실제 '오늘'(앱을 연 순간). 매 분 바뀌는 상태는 컴포넌트에서 useNow() 사용
+ *   · 데이터 속 날짜 글자·Date는 shiftDeep / sd() 로 옮겨서 쓴다
+ *   · ?now=2026-10-09T09:41 이면 옮김 0주 · 9:41 고정 = 원래 Figma 그대로
  * ──────────────────────────────────────────────────────────── */
 
-export const NOW = new Date(2026, 9, 9, 9, 41); // 월은 0부터 → 9 = 10월
-export const TODAY_LABEL = '10월 9일 금요일';
-/** 오늘 'MM.DD' — 출석·과제 등 날짜 문자열 비교용 */
-export const TODAY_MD = '10.09';
+/** 앱을 연 순간의 '지금' (실시간 또는 고정 시각) — 날짜 단위 계산용. 분 단위는 useNow() */
+export const NOW = LOAD_NOW;
+/** 이번 주로 옮긴 시나리오 '오늘' = 이번 주 금요일 9:41 (Figma 홈·출석 프레임이 그린 날) */
+export const SCENARIO_DAY = shiftDate(SCENARIO_NOW);
+/** 이번 주로 옮긴 시나리오 공강일 = 이번 주 목요일 (Figma '홈 · 공강 (목 10/8)') */
+export const SCENARIO_FREE_DAY = new Date(SCENARIO_DAY.getFullYear(), SCENARIO_DAY.getMonth(), SCENARIO_DAY.getDate() - 1, 9, 41);
+export const TODAY_LABEL = fmtLongDay(NOW);
+/** 오늘 'MM.DD' — 출석·과제 등 날짜 문자열 비교용 (실제 오늘) */
+export const TODAY_MD = fmtMD(NOW);
+export const TODAY_DOW = DOW_KO[NOW.getDay()];
 export const SEMESTER = '2026-2학기';
-/** 학기 주차 (개강 주 = 1주차) */
+/** 학기 주차 (개강 주 = 1주차) — 시나리오 주를 이번 주로 옮겼으므로 이번 주 = 6주차 (주말도 같은 주) */
 export const SEMESTER_WEEK = 6;
-/** 월 기준 주차 (1일이 들어 있는 주 = 1주차) — 시간표 헤더 */
-export const WEEK_LABEL = '10월 2주차';
+/** 월 기준 주차 (1일이 들어 있는 주 = 1주차, 월요일 시작) — 시간표 헤더 '10월 2주차' */
+export const WEEK_LABEL = (() => {
+  const d = dayStart(NOW);
+  const first = new Date(d.getFullYear(), d.getMonth(), 1);
+  const firstMon = new Date(first);
+  firstMon.setDate(first.getDate() - ((first.getDay() + 6) % 7));
+  return `${d.getMonth() + 1}월 ${Math.floor((d.getTime() - firstMon.getTime()) / (7 * 86400000)) + 1}주차`;
+})();
 
 export const USER = {
   name: '김유진',
@@ -57,18 +76,21 @@ export const TOTAL_CREDITS = COURSES.reduce((a, c) => a + c.credits, 0); // 17
 export const courseById = (id: string) => COURSES.find((c) => c.id === id) ?? COURSES[0];
 export const slotLabel = (c: Course) => (c.online ? '사이버 강의' : c.slots.map((s) => `${s.day} ${s.start}–${s.end}`).join(', '));
 
-/** 오늘(금) 수업 순서 */
-export const TODAY_CLASSES: CourseId[] = ['service-design', 'brand-design', 'ux-research'];
-/** 출석 인증 가능 시간: 수업 시작 ~ 10분 */
-export const ATTENDANCE_WINDOW = { courseId: 'service-design' as CourseId, opens: '10:00', closes: '10:10', minutesToStart: 19 };
+/** 시나리오 '오늘'(금) 수업 순서 — Figma 홈·수강과목 프레임용. 실제 오늘 수업은 data/today.ts classesOn() */
+export const SCENARIO_CLASSES: CourseId[] = ['service-design', 'brand-design', 'ux-research'];
 
-export const ASSIGNMENTS = [
+export const ASSIGNMENTS = shiftDeep([
   { id: 'a1', courseId: 'service-design' as CourseId, title: '서비스 분석 리포트', due: '오늘 23:59', dueFull: '10월 9일(금) 23:59', format: 'PDF', status: '미제출' as '미제출' | '제출 완료', dday: 'D-DAY' },
-];
+]);
 
-export const ACADEMIC_SCHEDULE = [
+export const ACADEMIC_SCHEDULE = shiftDeep([
   { id: 's1', title: '중간고사 기간', date: '10.19(월) – 10.23(금)', tag: '학사' },
   { id: 's2', title: '2026 하반기 취업박람회', date: '10.12(월) 14:00', tag: '행사' },
-];
+]);
 
 export const PIN_DEMO = '1234'; // 데모: 아무 4자리나 통과, 오류 플로우는 ?error=1 또는 '0000'
+
+/** @deprecated 실시간 전환 중 임시 별칭 — data/today.ts classesOn()·SCENARIO_CLASSES로 옮긴 뒤 지울 것 */
+export const TODAY_CLASSES = SCENARIO_CLASSES;
+/** @deprecated 임시 별칭 — data/today.ts (OPEN_BEFORE·CLOSE_AFTER·openSession)로 옮긴 뒤 지울 것 */
+export const ATTENDANCE_WINDOW = { courseId: 'service-design' as CourseId, opens: '10:00', closes: '10:10', minutesToStart: 19 };

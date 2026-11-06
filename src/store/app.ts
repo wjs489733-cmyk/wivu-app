@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 import { RADIAL_DEFAULT } from '@/data/quickMenu';
+import { fmtHM, now, TIME_FIXED } from '@/data/clock';
+import { openSession, sessionKey } from '@/data/today';
+import { SCENARIO_DAY } from '@/data/core';
 
 /* ────────────────────────────────────────────────────────────
  * 앱 전역 상태 — Figma 프로토타입 변수를 그대로 옮김
@@ -14,6 +17,9 @@ export type PinDigits = 2 | 4;
 type AppState = {
   selectedSchool: string;
   loggedIn: boolean;
+  /** 출석 완료 기록 (실시간 11-06): key = data/today sessionKey 'YYYY-MM-DD|courseId' */
+  attended: Record<string, { method: AttendMethod; time: string }>;
+  /** 호환용: 마지막 출석 완료 (어느 수업이든) */
   attendanceComplete: boolean;
   attendanceMethod: AttendMethod | null;
   attendanceTime: string | null;
@@ -33,7 +39,8 @@ type AppState = {
 
   setSchool: (name: string) => void;
   login: () => void;
-  completeAttendance: (method: AttendMethod) => void;
+  /** 출석 완료 — key 없으면 지금 인증 가능한 수업, 그것도 없으면 시나리오 금요일 서비스디자인 */
+  completeAttendance: (method: AttendMethod, key?: string) => void;
   submitAssignment: (fileName: string) => void;
   setQuickMenu: (ids: string[]) => void;
   markRead: (id: string) => void;
@@ -51,6 +58,7 @@ type AppState = {
 const INITIAL = {
   selectedSchool: '대구가톨릭대학교',
   loggedIn: false,
+  attended: {} as Record<string, { method: AttendMethod; time: string }>,
   attendanceComplete: false,
   attendanceMethod: null,
   attendanceTime: null,
@@ -70,7 +78,14 @@ export const useApp = create<AppState>((set) => ({
   finishOnboarding: () => set({ onboarded: true }),
   setPinDigits: (n) => set({ pinDigits: n }),
   logout: () => set({ ...INITIAL, loggedOut: true }),
-  completeAttendance: (method) => set({ attendanceComplete: true, attendanceMethod: method, attendanceTime: '09:52' }),
+  completeAttendance: (method, key) =>
+    set((st) => {
+      const n = now();
+      // 시각 고정 9:41(Figma 시나리오)일 때는 Figma 완료 시각 09:52를 그대로 씀
+      const time = TIME_FIXED && fmtHM(n) === '09:41' ? '09:52' : fmtHM(n);
+      const k = key ?? openSession(n)?.key ?? sessionKey(SCENARIO_DAY, 'service-design');
+      return { attended: { ...st.attended, [k]: { method, time } }, attendanceComplete: true, attendanceMethod: method, attendanceTime: time };
+    }),
   submitAssignment: (fileName) => set({ assignmentSubmitted: true, submittedFile: fileName }),
   setQuickMenu: (ids) => set({ quickMenu: ids }),
   markRead: (id) => set((st) => ({ readNotifications: st.readNotifications.includes(id) ? st.readNotifications : [...st.readNotifications, id] })),
@@ -82,3 +97,6 @@ export const useApp = create<AppState>((set) => ({
 export const isEntryPath = (pathname: string) => /^\/(splash|intro|school|login|setup)(\/|$)/.test(pathname);
 /** 로그인 전 단계 라우트 — 로그아웃 잠금 중에 머물 수 있는 곳 (연동 중·초기 설정은 로그인 뒤 단계라 제외) */
 export const isPreLoginPath = (pathname: string) => /^\/(splash|intro\/\d|school(\/search)?|login)$/.test(pathname);
+
+/* 개발 서버 전용: 캡처 스크립트가 같은 스토어 인스턴스를 쓰게 (HMR 뒤 모듈 주소가 바뀌어도) */
+if (import.meta.env.DEV) (window as unknown as { __wivuApp: typeof useApp }).__wivuApp = useApp;
