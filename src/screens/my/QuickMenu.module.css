@@ -53,7 +53,7 @@
   gap: var(--wivu-space-8);
   min-width: 0;
   height: 48px;
-  padding: 0 14px 0 16px;
+  padding: 0 15px 0 17px; /* v5 Figma: 테두리 1px이 레이아웃에 포함됨 → 글자 시작 x37 */
   border-radius: var(--wivu-radius-12);
   background: var(--wivu-color-bg-surface);
   box-shadow: inset 0 0 0 1px var(--wivu-color-border-default);
@@ -65,6 +65,7 @@
   background: var(--wivu-color-bg-brand-tint);
   box-shadow: inset 0 0 0 1.5px var(--wivu-color-border-brand);
   color: var(--wivu-color-text-brand);
+  padding: 0 15.5px 0 17.5px; /* 선택 테두리 1.5 → 글자 시작 x38 */
 }
 .tile:active {
   transform: scale(0.98);
