@@ -36,7 +36,7 @@ export function CourseDetail() {
 
   const posted = visibleNotices(info, now);
   const hasNew = posted.some(isNew);
-  const firstNotice = posted.find(isNew) ?? posted[0] ?? info.notices[0];
+  const firstNotice = posted.find(isNew) ?? posted[0];
   // 이번 학기 진행 과제(지난 학기 초 closed 제외) — 마감 전 + 이번 주에 마감이 지난 것
   const list = info.assignments.filter((a) => !a.closed).sort((a, b) => a.due.getTime() - b.due.getTime());
   const open = list.filter((a) => !isPastDue(a, now));
@@ -88,7 +88,7 @@ export function CourseDetail() {
 
       {/* 바로가기 4칸 (숫자 Title 3 + 라벨 Caption 1) */}
       <div className={s.stats}>
-        <Stat value={posted.length} label="공지" color={hasNew ? 'brand' : 'primary'} onPress={() => nav.push(P.courseNotice(course.id, firstNotice.id))} />
+        <Stat value={posted.length} label="공지" color={hasNew ? 'brand' : 'primary'} onPress={() => (firstNotice ? nav.push(P.courseNotice(course.id, firstNotice.id)) : toast('아직 올라온 공지가 없어요'))} />
         <Stat value={list.length} label="과제" onPress={() => (main ? nav.push(P.assignment(course.id, main.id)) : toast('진행 중인 과제가 없어요'))} />
         <Stat value={files.length} label="강의자료" onPress={() => nav.push(P.courseMaterials(course.id))} />
         <Stat value={`${att.rate}%`} label="출석" color={att.absent > 0 ? 'error' : 'primary'} onPress={() => nav.push(P.attendanceCourse(course.id))} />
@@ -117,24 +117,27 @@ export function CourseDetail() {
           </Section>
         )}
 
-        <Section title="공지사항" more={posted.length > 2 ? (expanded ? '접기' : `전체 ${posted.length}`) : undefined} onMore={() => setExpanded((v) => !v)} padded={false} style={{ gap: 4 }}>
-          <div className={s.inset}>
-            {notices.map((n) => (
-              <ItemRow
-                key={n.id}
-                title={n.title}
-                badge={
-                  isNew(n) ? (
-                    <Chip tone="brand">NEW</Chip>
-                  ) : undefined
-                }
-                meta={`${n.date} · 조회 ${n.views}`}
-                chevron
-                onPress={() => nav.push(P.courseNotice(course.id, n.id))}
-              />
-            ))}
-          </div>
-        </Section>
+        {/* 공지: 아직 올라온 글이 없으면(사이버 강의 주 초) 묶음 숨김 */}
+        {notices.length > 0 && (
+          <Section title="공지사항" more={posted.length > 2 ? (expanded ? '접기' : `전체 ${posted.length}`) : undefined} onMore={() => setExpanded((v) => !v)} padded={false} style={{ gap: 4 }}>
+            <div className={s.inset}>
+              {notices.map((n) => (
+                <ItemRow
+                  key={n.id}
+                  title={n.title}
+                  badge={
+                    isNew(n) ? (
+                      <Chip tone="brand">NEW</Chip>
+                    ) : undefined
+                  }
+                  meta={`${n.date} · 조회 ${n.views}`}
+                  chevron
+                  onPress={() => nav.push(P.courseNotice(course.id, n.id))}
+                />
+              ))}
+            </div>
+          </Section>
+        )}
 
         <Section title="강의자료" more={`전체 ${files.length}`} onMore={() => nav.push(P.courseMaterials(course.id))} padded={false} style={{ gap: 4 }}>
           <div className={s.inset}>

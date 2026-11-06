@@ -56,16 +56,19 @@ export const NOTI_FILTERS: { value: NotiFilter; label: string }[] = [
   { value: 'board', label: '게시판' },
 ];
 
-type NotiSrc = Omit<Noti, 'group' | 'time'>;
+type NotiSrc = Omit<Noti, 'group' | 'time'> & {
+  /** 알림함에 나타나는 시각 (없으면 at) — Figma 시각이 9:41보다 뒤인 댓글 알림용 */
+  from?: Date;
+};
 /** 시나리오 시각 (2026-10-DD HH:MM) — shiftDeep으로 이번 주로 옮김 */
 const at = (d: number, hm: string) => new Date(2026, 9, d, +hm.slice(0, 2), +hm.slice(3, 5));
 
 /* 시각은 Figma 681:5798 그대로 = 시나리오 금 10/9 기준 '오늘'(금) · '어제'(목 10/8) · '이번 주'(월 10/5).
- * (댓글 09:57은 상태바 9:41보다 뒤 — 게시판 상대 시각 '12분 전' 기준과 맞춘 값이라 Figma 그대로 둠: 9:41 고정 화면에서도 보임)
+ * (댓글 09:57은 상태바 9:41보다 뒤 — Figma 그대로 표시하되, 9:41 화면에도 보이게 나타나는 시각(from)은 금 9:41)
  * 취업박람회 알림은 Figma에 날짜만 있어 시각은 09:00으로 둠(그날이 오늘일 때만 시각이 보임).
  * 출석 알림(Figma nt-attend 09:40 서비스디자인)은 아래 attendanceNotis가 실제 수업에서 만든다. */
 const NOTI_SRC: NotiSrc[] = shiftDeep<NotiSrc[]>([
-  { id: 'nt-comment', at: at(9, '09:57'), category: '게시판', filter: 'board' as const, title: '내 글에 댓글 2개가 달렸어요', body: '“서비스 분석 리포트, 분석 대상 겹쳐도…”', unread: true, highlight: true, to: { kind: 'boardPost' as const, id: 'p1' } },
+  { id: 'nt-comment', at: at(9, '09:57'), from: at(9, '09:41'), category: '게시판', filter: 'board' as const, title: '내 글에 댓글 2개가 달렸어요', body: '“서비스 분석 리포트, 분석 대상 겹쳐도…”', unread: true, highlight: true, to: { kind: 'boardPost' as const, id: 'p1' } },
   { id: 'nt-assign', at: at(9, '09:00'), category: '과제', filter: 'assignment' as const, title: '서비스 분석 리포트 오늘 마감', body: '23:59까지 · 아직 제출하지 않았어요', unread: true, highlight: true, to: { kind: 'assignment' as const } },
   { id: 'nt-course-notice', at: at(9, '08:30'), category: '공지', filter: 'notice' as const, title: '서비스디자인 새 공지', body: '오늘 수업 진행 방식 안내', unread: false, to: { kind: 'courseNotice' as const } },
   { id: 'nt-academic', at: at(8, '18:20'), category: '학사', filter: 'notice' as const, title: '2학기 중간고사 시행 안내', body: '10.19(월)–10.23(금) 시험 기간', unread: false, to: { kind: 'academicNotice' as const, id: 'n1' } },
@@ -116,9 +119,9 @@ const groupOf = (d: Date, now: Date): NotiGroup => {
  */
 export function notificationsAt(now: Date): Noti[] {
   return [...NOTI_SRC, ...attendanceNotis(now)]
-    .filter((n) => n.at.getTime() <= now.getTime())
+    .filter((n) => (n.from ?? n.at).getTime() <= now.getTime())
     .sort((a, b) => b.at.getTime() - a.at.getTime())
-    .map((n) => {
+    .map(({ from: _from, ...n }) => {
       const group = groupOf(n.at, now);
       return { ...n, group, time: group === '이번 주' ? fmtMD(n.at) : fmtHM(n.at), highlight: !!n.highlight && group === '오늘' };
     });

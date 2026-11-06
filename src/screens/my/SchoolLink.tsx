@@ -4,12 +4,11 @@ import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
 import { USER } from '@/data/core';
+import { fmtHM, now } from '@/data/clock';
 import { SYNC_ITEMS } from './data';
 import { useMy } from './store';
 import s from './My.module.css';
 
-/** 기준 시각(core.ts 2026-10-09 9:41) — '지금 동기화'를 누르면 이 시각으로 갱신 */
-const NOW = '09:41';
 const SYNC_MS = 1200;
 
 /**
@@ -32,8 +31,10 @@ export function SchoolLink() {
     setSyncing(true);
     timer.current = window.setTimeout(() => {
       setSyncing(false);
-      const changed = useMy.getState().lastSync !== NOW;
-      useMy.getState().setLastSync(NOW);
+      // '지금 동기화' = 누른 시각(실제 HH:MM · 9:41 고정이면 '09:41')으로 갱신
+      const t = fmtHM(now());
+      const changed = useMy.getState().lastSync !== t;
+      useMy.getState().setLastSync(t);
       toast(changed ? '학교 정보를 새로 가져왔어요' : '이미 최신 정보예요', 'check');
     }, SYNC_MS);
   };
