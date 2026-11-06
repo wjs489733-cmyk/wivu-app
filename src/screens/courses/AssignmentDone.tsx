@@ -1,10 +1,11 @@
+import { useState } from 'react';
 import { motion } from 'motion/react';
 import { useParams } from 'react-router';
 import { Button, Screen, Text } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { TODAY_MD, USER } from '@/data/core';
-import { SUBMIT_TIME, atDetail, getAssignment, sampleFileName } from './data';
+import { USER } from '@/data/core';
+import { atDetail, getAssignment, sampleFileName, submitStamp } from './data';
 import { useSubmissionOf } from './store';
 import { InfoTable } from './parts';
 import s from './Courses.module.css';
@@ -14,6 +15,7 @@ import s from './Courses.module.css';
  * 체크 원 · '과제를 제출했어요' · 제출 내역 상자(과제 / 파일 / 제출 시각)
  * '확인' → 과제 상세로 돌아가 제출 상태 확인 (Figma는 두 버튼 모두 과목 상세 → 역할 구분)
  * '과목으로 돌아가기' → 과목 상세 (스택 초기화 후 이동)
+ * 제출 시각 = 제출 기록(실제 지금) · 기록 없이 바로 열면 연 시각 (시각 고정 9:41이면 Figma '09:48')
  */
 export function AssignmentDone() {
   const { id, aid } = useParams();
@@ -21,7 +23,8 @@ export function AssignmentDone() {
   const nav = useNav();
   const sub = useSubmissionOf(course.id)(a);
   const files = sub?.files ?? [{ name: sampleFileName(a.title, USER.name), size: '3.8MB' }];
-  const at = sub?.at ?? `${TODAY_MD} ${SUBMIT_TIME}`;
+  const [opened] = useState(() => submitStamp());
+  const at = sub?.at ?? opened;
   const fileLine = `${files[0].name} · ${files[0].size}${files.length > 1 ? ` 외 ${files.length - 1}개` : ''}`;
 
   return (

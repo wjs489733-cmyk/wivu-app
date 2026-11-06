@@ -3,7 +3,9 @@ import { useSearchParams } from 'react-router';
 import { BottomSheet, Button, CtaBar, Icon, OptionRow, Screen, SheetHead, Switch, Text, TextField, TopNav, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { ALARM_OPTIONS, CAT, CATEGORIES, MONTHS, TIME_OPTIONS, longDate, toMin, type CalEvent, type Category } from './data';
+import { SCENARIO_DAY } from '@/data/core';
+import { sameDay, shiftText } from '@/data/clock';
+import { ALARM_OPTIONS, CAT, CATEGORIES, MONTHS, TIME_OPTIONS, TODAY, longDate, parseIso, toMin, type CalEvent, type Category } from './data';
 import { useSchedule } from './store';
 import { holidayOn } from './agenda';
 import { MonthGrid, SmallIconButton } from './parts';
@@ -18,8 +20,8 @@ const PICKER_TITLE: Record<Picker, string> = {
   alarm: '알림',
 };
 const plusHour = (t: string) => TIME_OPTIONS.find((x) => toMin(x) >= toMin(t) + 60) ?? TIME_OPTIONS[TIME_OPTIONS.length - 1];
-/** Figma 686:6717 기본 날짜 (캘린더에서 오늘을 보고 있을 때) */
-const DEFAULT_DATE = '2026-10-14';
+/** 기본 날짜 (캘린더에서 오늘을 보고 있을 때) — 오늘. 시나리오 금요일(이번 주 금)은 Figma 686:6717대로 다음 주 수요일(10.14를 옮긴 날) */
+const DEFAULT_DATE = sameDay(parseIso(TODAY), SCENARIO_DAY) ? shiftText('2026-10-14') : TODAY;
 
 /**
  * 일정 추가 — Figma v5 686:6717 · 모달 (+ 날짜 선택 시트 697:7703: 같은 라우트의 상태)

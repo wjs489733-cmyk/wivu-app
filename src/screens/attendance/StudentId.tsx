@@ -6,10 +6,12 @@ import { BottomSheet, Button, Chip, CtaBar, Icon, Screen, SheetHead, Text, TopNa
 import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
 import { USER } from '@/data/core';
+import { fmtHM, now } from '@/data/clock';
 import s from './StudentId.module.css';
 
 const TTL = 30; // QR 유효 시간(초)
-/** 학생증 유효기간 (가상) — v5 679:6017 */
+/** 학생증 유효기간 (가상) — v5 679:6017
+ *  실시간(11-06): 학년도 끝(2월 말)이라 주 단위 옮김(shiftText)을 하지 않는다 — 옮기면 '2027.04.04'처럼 어색한 날이 됨 */
 const VALID_UNTIL = '2027.02.28까지';
 type Mode = 'id' | 'library';
 
@@ -182,7 +184,8 @@ function NfcSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
 }
 
 function NfcBody({ onClose }: { onClose: () => void }) {
-  const [done, setDone] = useState(false);
+  /** 태그된 시각 (실시간 · 고정 9:41이면 Figma 그대로 09:41) */
+  const [done, setDone] = useState<string | null>(null);
   const closeRef = useRef(onClose);
   useEffect(() => {
     closeRef.current = onClose;
@@ -191,7 +194,7 @@ function NfcBody({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     let t2 = 0;
     const t1 = window.setTimeout(() => {
-      setDone(true);
+      setDone(fmtHM(now()));
       t2 = window.setTimeout(() => {
         closeRef.current();
         toast('출입이 확인됐어요', 'check');
@@ -207,7 +210,7 @@ function NfcBody({ onClose }: { onClose: () => void }) {
     <>
       <SheetHead title="NFC 태그" onClose={onClose} />
       <div className={s.nfcBody}>
-        <span className={s.nfcRing} data-done={done}>
+        <span className={s.nfcRing} data-done={!!done}>
           {!done && <span className={s.nfcPulse} />}
           <Icon name={done ? 'check' : 'nfc'} size={24} color={done ? 'on-brand' : 'brand'} className={s.icon28} />
         </span>
@@ -215,10 +218,10 @@ function NfcBody({ onClose }: { onClose: () => void }) {
           {done ? '태그됐어요' : '리더기에 휴대폰을 대주세요'}
         </Text>
         <Text variant="body-3" color="secondary" as="p" align="center">
-          {done ? '디자인관 3층 출입문 · 09:41' : '휴대폰 뒷면 윗부분을 출입문 리더기에 가까이 대면 자동으로 인식돼요.'}
+          {done ? `디자인관 3층 출입문 · ${done}` : '휴대폰 뒷면 윗부분을 출입문 리더기에 가까이 대면 자동으로 인식돼요.'}
         </Text>
       </div>
-      <Button variant="secondary" block onClick={onClose} disabled={done}>
+      <Button variant="secondary" block onClick={onClose} disabled={!!done}>
         취소
       </Button>
     </>

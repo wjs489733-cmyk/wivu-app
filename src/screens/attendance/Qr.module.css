@@ -72,7 +72,8 @@
   background: rgba(255, 255, 255, 0.9); /* 카메라 속 종이 — 토큰 없음 */
   color: var(--wivu-color-text-primary);
 }
-.viewfinder[data-phase='already'] .poster {
+.viewfinder[data-phase='already'] .poster,
+.viewfinder[data-phase='none'] .poster {
   opacity: 0.3;
 }
 

@@ -56,6 +56,7 @@ function resolveSubmission(
   if (isGlobalAssignment(courseId, a.id)) {
     // 전역 상태가 기준 (스플래시 리셋 등으로 전역이 false면 미제출)
     if (!globalDone) return null;
+    // 로컬 기록 없이 전역만 켜진 경우(다른 곳에서 제출 처리) — 오늘 날짜 + Figma 제출 시각
     return local ?? { files: [{ name: globalFile ?? `서비스분석리포트_${USER.name}.pdf`, size: '3.8MB' }], at: `${TODAY_MD} ${SUBMIT_TIME}` };
   }
   if (local) return local;

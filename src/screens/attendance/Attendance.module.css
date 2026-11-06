@@ -99,6 +99,11 @@
 .notice[data-tone='warning'] {
   background: var(--wivu-color-bg-warning-tint);
 }
+/* 출석 탭 '지금 인증할 수업 없음' 안내 (실시간 11-06) — 기존 bg/subtle 면 · 오늘 수업 행 아래 */
+.notice[data-tone='neutral'] {
+  margin-top: 4px;
+  background: var(--wivu-color-bg-subtle);
+}
 .notice > svg {
   flex-shrink: 0;
 }
@@ -296,4 +301,8 @@ button.disabledLabel:disabled {
 }
 .doneCta {
   margin-top: 24px;
+}
+/* 인증할 수업이 없을 때(완료 시트 자리) — 제목 · 4 · 다음 수업 */
+.doneNext {
+  margin-top: 4px;
 }

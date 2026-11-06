@@ -1,6 +1,10 @@
 import { useMemo } from 'react';
 import { create } from 'zustand';
-import { POSTS, RECENT_SEARCHES, seedComments, type BoardId, type Comment, type Post } from './data';
+import { isFuturePost, POSTS, RECENT_SEARCHES, seedComments, type BoardId, type Comment, type Post } from './data';
+
+/** 보이는 시드 글 — 이번 주로 옮긴 날짜가 오늘 이후인 글(월·화에 보는 수요일 글 등)은 아직 안 쓴 글이라 뺀다.
+ *  날짜 단위라 앱을 연 날(NOW) 기준으로 한 번만 계산 (날짜가 바뀌면 새로고침) */
+const SEED_POSTS = POSTS.filter((p) => !isFuturePost(p));
 
 /* ────────────────────────────────────────────────────────────
  * 게시판 섹션 상태 (섹션 로컬 zustand — 전역 useApp은 건드리지 않음)
@@ -81,7 +85,7 @@ export function useAllPosts(): Post[] {
   const hidden = useBoard((st) => st.hidden);
   const edits = useBoard((st) => st.edits);
   return useMemo(
-    () => [...created, ...POSTS].filter((p) => !hidden.includes(p.id)).map((p) => (edits[p.id] ? { ...p, ...edits[p.id] } : p)),
+    () => [...created, ...SEED_POSTS].filter((p) => !hidden.includes(p.id)).map((p) => (edits[p.id] ? { ...p, ...edits[p.id] } : p)),
     [created, hidden, edits],
   );
 }

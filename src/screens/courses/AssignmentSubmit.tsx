@@ -3,9 +3,10 @@ import { useParams } from 'react-router';
 import { Button, CtaBar, Dialog, Icon, Screen, Text, TopNav, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { TODAY_MD, USER } from '@/data/core';
+import { USER } from '@/data/core';
+import { useNow } from '@/data/clock';
 import { useApp } from '@/store/app';
-import { SAMPLE_SIZE, SUBMIT_TIME, dueShort, getAssignment, sampleFileName } from './data';
+import { SAMPLE_SIZE, dueShort, getAssignment, isClosed, sampleFileName, submitStamp } from './data';
 import { assignmentKey, isGlobalAssignment, useCourses } from './store';
 import { useQueryOnce } from './useQueryOnce';
 import s from './Courses.module.css';
@@ -23,6 +24,7 @@ const fmtSize = (b: number) => (b >= 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(
  * 진입 시 Figma처럼 최근 작업 파일(샘플 '서비스분석리포트_김유진.pdf')이 첨부된 상태 — 전시에서 OS 파일 창 없이 흐름이 이어지게.
  * '파일 추가' → 실제 파일 선택(<input type=file accept=.pdf>) → 이름·용량 + 업로드 진행 흉내. ✕로 빼기.
  * 닫기(✕): 첨부·메모가 있으면 나가기 확인 → '나가기' = 과제 상세로. 제출하기 → 로딩 → submitAssignment(파일명) → 제출 완료(DISSOLVE, replace)
+ * 제출 시각 = 실제 지금 (시각 고정 9:41이면 Figma '09:48') · 마감이 지나면 '마감된 과제예요'(비활성)
  */
 export function AssignmentSubmit() {
   const { id, aid } = useParams();
@@ -31,6 +33,8 @@ export function AssignmentSubmit() {
   const submitGlobal = useApp((st) => st.submitAssignment);
   const saveSubmission = useCourses((st) => st.saveSubmission);
   const dialogParam = useQueryOnce('dialog');
+  const now = useNow();
+  const closed = isClosed(a, now);
 
   const sampleName = sampleFileName(a.title, USER.name);
   const [files, setFiles] = useState<Picked[]>(() => [{ key: 0, name: sampleName, bytes: SAMPLE_SIZE, progress: 100 }]);
@@ -43,7 +47,7 @@ export function AssignmentSubmit() {
   useEffect(() => () => timers.current.forEach((t) => clearInterval(t)), []);
 
   const uploading = files.some((f) => f.progress < 100);
-  const canSubmit = files.length > 0 && !uploading && !a.closed;
+  const canSubmit = files.length > 0 && !uploading && !closed;
   const dirty = files.length > 0 || memo.trim().length > 0;
 
   /** 업로드 진행 흉내 (용량 비례 0.6–1.4초) */
@@ -95,7 +99,7 @@ export function AssignmentSubmit() {
     timers.current.push(
       window.setTimeout(() => {
         const picked = files.map((f) => ({ name: f.name, size: fmtSize(f.bytes) }));
-        saveSubmission(assignmentKey(course.id, a.id), { files: picked, memo: memo.trim(), at: `${TODAY_MD} ${SUBMIT_TIME}` });
+        saveSubmission(assignmentKey(course.id, a.id), { files: picked, memo: memo.trim(), at: submitStamp() });
         if (isGlobalAssignment(course.id, a.id)) submitGlobal(picked[0].name);
         nav.fade(P.assignmentDone(course.id, a.id));
       }, 1100),
@@ -112,7 +116,7 @@ export function AssignmentSubmit() {
       footer={
         <CtaBar>
           <Button block disabled={!canSubmit} loading={sending} onClick={submit}>
-            {a.closed ? '마감된 과제예요' : uploading ? '업로드 중…' : '제출하기'}
+            {closed ? '마감된 과제예요' : uploading ? '업로드 중…' : '제출하기'}
           </Button>
         </CtaBar>
       }
@@ -138,7 +142,7 @@ export function AssignmentSubmit() {
           {a.title}
         </Text>
         <Text variant="caption-1" color="tertiary" as="p" className="truncate" style={{ marginTop: 2 }}>
-          {course.name} · {dueShort(a.due)} 마감
+          {course.name} · {dueShort(a.due, now)} 마감
         </Text>
 
         {/* 제출 파일 */}

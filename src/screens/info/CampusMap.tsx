@@ -4,7 +4,8 @@ import { AnimatePresence, animate, motion, useMotionValue } from 'motion/react';
 import { Button, Chip, Icon, Screen, StatusBar, Text, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { arrivePoint, BUILDINGS, guideMinutes, guideTitle, MAP_SHORTCUTS, ME, NEXT_BUILDING, routeLength, type Building, type Pt } from './data';
+import { useNow } from '@/data/clock';
+import { arrivePoint, BUILDINGS, buildingView, guideMinutes, guideTitle, mapShortcuts, ME, nextBuildingId, routeLength, type Building, type Pt } from './data';
 import s from './CampusMap.module.css';
 
 /* 캔버스 = Figma 좌표(392×852) + 여백. 드래그로 둘러볼 수 있게 조금 더 넓게 */
@@ -41,7 +42,8 @@ type Guide = 'idle' | 'navigating' | 'arrived';
 
 /**
  * 강의실 지도 — Figma v5 688:6715 (홈 '다음 강의실' · 히어로 '강의실 위치 보기' · 퀵메뉴 → PUSH)
- * 가상 캠퍼스 지도(실제 캠퍼스 아님). 다음 수업 건물(디자인관 401호) 강조 + 아래 시트.
+ * 가상 캠퍼스 지도(실제 캠퍼스 아님). 다음 수업 건물(9:41 = 디자인관 401호) 강조 + 아래 시트.
+ * 실시간(11-06): 다음 수업·오늘 수업은 지금 시각 기준(data/today nextSession · classesOn) — 칩·강조 건물·처음 선택·바로가기가 매 분 맞춰짐.
  * [길 안내 시작] → 안내 중: 위 배너 'Nm 직진 후 ○○ 정문' + 경로 + 현재 위치가 2.5초 동안 경로를 따라 이동 → 도착.
  * 안내 중 [안내 종료] · 도착 배너/[다시 안내]. 건물을 누르면 시트가 바뀌고, [건물 정보]로 층별 안내.
  * 검색 바: 건물·강의실 이름 검색, 비어 있으면 오늘 수업 바로가기. ?b=<건물 id>로 특정 건물을 열 수 있음.
@@ -49,7 +51,11 @@ type Guide = 'idle' | 'navigating' | 'arrived';
 export function CampusMap() {
   const nav = useNav();
   const [params] = useSearchParams();
-  const initial = BUILDINGS.some((b) => b.id === params.get('b')) ? params.get('b')! : NEXT_BUILDING;
+  const now = useNow();
+  // 건물별 칩·핀·강의실 안내를 지금 기준으로 (다음 수업 건물 = next)
+  const views = useMemo(() => BUILDINGS.map((it) => buildingView(it, now)), [now]);
+  const shortcuts = useMemo(() => mapShortcuts(now), [now]);
+  const initial = BUILDINGS.some((b) => b.id === params.get('b')) ? params.get('b')! : nextBuildingId(now);
   const [sel, setSel] = useState(initial);
   const [expanded, setExpanded] = useState(false);
   const [guide, setGuide] = useState<Guide>('idle');
@@ -63,7 +69,7 @@ export function CampusMap() {
   const x = useMotionValue(-OX);
   const y = useMotionValue(-OY);
 
-  const b = BUILDINGS.find((it) => it.id === sel)!;
+  const b = views.find((it) => it.id === sel)!;
   const walk = useMemo(() => walkPath(b), [b]);
   const me: Pt = guide === 'idle' ? ME : guide === 'arrived' ? walk[walk.length - 1] : pointAt(walk, t);
   // 안내 중 배지 'N분 남음' — 건물 입구까지 남은 시간(Figma 702:8726 디자인관 = 2분)에서 줄어듦
@@ -105,7 +111,7 @@ export function CampusMap() {
     animate(y, clamp(vp.h * 0.36 - cy, vp.h - H, 0), { type: 'spring', stiffness: 220, damping: 32 });
   };
   const select = (id: string, pan = false) => {
-    const nb = BUILDINGS.find((it) => it.id === id)!;
+    const nb = views.find((it) => it.id === id)!;
     setSel(id);
     setGuide('idle');
     setT(0);
@@ -129,15 +135,18 @@ export function CampusMap() {
   const results = useMemo(() => {
     const q = query.trim();
     if (!q) return null;
-    return BUILDINGS.flatMap((it) => {
+    return views.flatMap((it) => {
       const hits: { key: string; label: string; meta: string; building: string }[] = [];
-      if (it.name.includes(q) || it.title.includes(q)) hits.push({ key: it.id, label: it.title, meta: it.chip, building: it.id });
+      const titleHit = it.name.includes(q) || it.title.includes(q);
+      if (titleHit) hits.push({ key: it.id, label: it.title, meta: it.chip, building: it.id });
+      // 시트 제목 강의실(예: 디자인관 302호 → '302호 …' 층)과 같은 층 행은 건물 결과와 겹치므로 뺌 (없으면 첫 층 — Figma 때와 같음)
+      const own = Math.max(0, it.floors.findIndex((f) => it.title.includes(f.desc.split(' ')[0].replace(/호$/, ''))));
       it.floors.forEach((f, i) => {
-        if (f.desc.includes(q) && !(it.title.includes(q) && i === 0)) hits.push({ key: `${it.id}-${i}`, label: `${it.name} ${f.floor}`, meta: f.desc, building: it.id });
+        if (f.desc.includes(q) && !(titleHit && it.title.includes(q) && i === own)) hits.push({ key: `${it.id}-${i}`, label: `${it.name} ${f.floor}`, meta: f.desc, building: it.id });
       });
       return hits;
     }).slice(0, 6);
-  }, [query]);
+  }, [query, views]);
 
   const badge = guide === 'navigating' ? `안내 중 · ${left}분 남음` : guide === 'arrived' ? '도착했어요' : b.chip;
 
@@ -164,7 +173,7 @@ export function CampusMap() {
             onClick={() => searching && closeSearch()}
           >
             <MapBase route={b.route} walkLen={routeLength(walk)} guide={guide} t={t} />
-            {BUILDINGS.map((it) => (
+            {views.map((it) => (
               <BuildingBlock
                 key={it.id}
                 b={it}
@@ -248,9 +257,9 @@ export function CampusMap() {
                         {!results ? (
                           <>
                             <Text variant="caption-1-strong" color="tertiary" as="p" className={s.resultHead}>
-                              오늘 수업 강의실
+                              {shortcuts.head}
                             </Text>
-                            {MAP_SHORTCUTS.map((r) => (
+                            {shortcuts.items.map((r) => (
                               <ResultRow key={r.label} label={r.label} meta={r.meta} onPress={() => (select(r.building, true), closeSearch())} />
                             ))}
                           </>

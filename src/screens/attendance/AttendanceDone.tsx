@@ -14,10 +14,12 @@ const SHEET_EXIT_MS = 320;
  * /attendance/done — 출석 인증 완료 (Figma v5 679:5848: 시작한 화면 위 완료 시트)
  * v5에는 전체 화면 완료 프레임이 없다 → PIN 시트와 같은 '완료' 시트를 시작한 곳(홈·출석 탭) 위에 띄운다.
  * QR 인식 뒤 여기로 온다(DISSOLVE). [확인]·닫기 → 시작한 곳으로 (Figma: 홈 · 출석 완료 675:4839).
+ * 실시간(11-06): 방금 완료한 기록(nav state key = store attended key)을 보여 준다.
+ *   바로 열면 마지막 완료 기록 → 지금 열린 수업 미리보기(시나리오 9:41 = Figma '서비스디자인 · 09:52 PIN') → 없으면 '지금 인증할 수 있는 수업이 없어요'.
  */
 export function AttendanceDone() {
   const nav = useNav();
-  const { from } = useNavState<{ from: AttendOrigin }>();
+  const { from, key } = useNavState<{ from: AttendOrigin; key: string }>();
   const origin: AttendOrigin = from === 'attendance' ? 'attendance' : 'home';
   const [open, setOpen] = useState(true);
   const timer = useRef(0);
@@ -33,7 +35,7 @@ export function AttendanceDone() {
     <>
       {origin === 'attendance' ? <AttendanceRoot /> : <HomeScreen />}
       <BottomSheet open={open} onClose={close} label="출석 완료">
-        <AttendDoneBody onConfirm={close} />
+        <AttendDoneBody onConfirm={close} recordKey={typeof key === 'string' ? key : undefined} />
       </BottomSheet>
     </>
   );

@@ -1,16 +1,20 @@
 import { P } from '@/app/paths';
 import { courseById } from '@/data/core';
+import { classesOn as sessionsOn, isHoliday } from '@/data/today';
 import {
   CAT,
+  CORE_COURSES,
   SEMESTER_END,
   SEMESTER_START,
   TODAY,
   dday,
   dotDate,
   dowOf,
+  parseIso,
   toMin,
   type CalEvent,
   type Category,
+  type Slot,
   type TTCourse,
 } from './data';
 
@@ -43,11 +47,18 @@ export function eventsOn(events: CalEvent[], date: string) {
   return events.filter((e) => inSpan(e, date));
 }
 
-/** 그날 수업 (학기 중 평일, 공휴일 제외) */
-export function classesOn(courses: TTCourse[], events: CalEvent[], date: string) {
-  if (date < SEMESTER_START || date > SEMESTER_END || holidayOn(events, date)) return [];
+/** 휴강일 — 공휴일 일정(holiday) 또는 이번 주 휴강일(data/today.ts isHoliday: 시나리오 10.05 월) */
+export const offDay = (events: CalEvent[], date: string) => holidayOn(events, date) || isHoliday(parseIso(date));
+
+/** 그날 수업 (학기 중 평일, 휴강일 제외 + 이번 주 보강 회차: data/today.ts와 같은 기준) */
+export function classesOn(courses: TTCourse[], events: CalEvent[], date: string): { course: TTCourse; slot: Slot; makeup?: boolean }[] {
+  if (date < SEMESTER_START || date > SEMESTER_END) return [];
+  const makeups = sessionsOn(parseIso(date))
+    .filter((x) => x.makeup)
+    .map((x) => ({ course: CORE_COURSES.find((c) => c.id === x.courseId)!, slot: { day: dowOf(date) as Slot['day'], start: x.start, end: x.end }, makeup: true }));
+  if (offDay(events, date)) return makeups;
   const dow = dowOf(date);
-  return courses.flatMap((c) => c.slots.filter((sl) => sl.day === dow).map((sl) => ({ course: c, slot: sl })));
+  return [...courses.flatMap((c) => c.slots.filter((sl) => sl.day === dow).map((sl) => ({ course: c, slot: sl }))), ...makeups];
 }
 
 /** 과제 일정 상태: 제출 완료 / 미제출(오늘·지난 마감) / null(아직 여유) */
@@ -77,8 +88,16 @@ function eventTime(e: CalEvent, date: string): { time: string; sort: number } {
 /** 선택일 일정 (Figma 686:6385: 시간 + 분류 / 제목 + 장소) — 수업 + 일정, 시간순 */
 export function dayAgenda(date: string, courses: TTCourse[], events: CalEvent[], ctx: Ctx): AgendaItem[] {
   const items: AgendaItem[] = [];
-  for (const { course, slot } of classesOn(courses, events, date)) {
-    items.push({ key: `class-${course.id}-${slot.day}`, category: 'class', time: slot.start, title: course.name, meta: course.room, sort: toMin(slot.start), course });
+  for (const { course, slot, makeup } of classesOn(courses, events, date)) {
+    items.push({
+      key: `class-${course.id}-${slot.day}${makeup ? '-makeup' : ''}`,
+      category: 'class',
+      time: slot.start,
+      title: course.name,
+      meta: makeup ? `${course.room} · 보강` : course.room,
+      sort: toMin(slot.start),
+      course,
+    });
   }
   for (const e of eventsOn(events, date)) {
     const m = eventMeta(e, ctx);

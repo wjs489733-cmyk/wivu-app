@@ -3,10 +3,11 @@ import { useSearchParams } from 'react-router';
 import { BottomSheet, Button, Checkbox, Dialog, Icon, OptionRow, Screen, SheetHead, Text, TextAction, TopNav, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
+import { now as clockNow, useNow } from '@/data/clock';
 import { NOW, USER, courseById } from '@/data/core';
 import { openAssignments, type CourseAssignment } from '@/screens/courses/data';
 import { useIsSubmitted } from '@/screens/courses/store';
-import { boardById, CAMPUS_BOARDS, COURSE_BOARDS, DEMO_DRAFT, isBoardId, TEAM_ASSIGNMENTS, type Attachment, type Board, type BoardId, type LinkedAssignment } from './data';
+import { boardById, CAMPUS_BOARDS, COURSE_BOARDS, DEMO_DRAFT, dueLabel, isBoardId, TEAM_ASSIGNMENTS, type Attachment, type Board, type BoardId, type LinkedAssignment } from './data';
 import { useBoard, usePost } from './store';
 import { LocalIcon } from './icons';
 import s from './Board.module.css';
@@ -15,18 +16,14 @@ const MAX_FILES = 4;
 const BODY_MAX = 2000;
 
 const fmtSize = (bytes: number) => (bytes >= 1024 * 1024 ? `${(bytes / 1024 / 1024).toFixed(1)}MB` : `${Math.max(1, Math.round(bytes / 1024))}KB`);
-const DOW = ['일', '월', '화', '수', '목', '금', '토'];
-const pad = (n: number) => String(n).padStart(2, '0');
-const sameDay = (a: Date, b: Date) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-/** 과제 연결 시트(699:8424)는 다음 주(일요일)까지 마감하는 과제만 — v5: 오늘 · 10.15 · 10.16 */
+/** 과제 연결 시트(699:8424)는 다음 주 일요일까지 마감하는 과제만 — v5(금 10/9): 오늘 · 10.15 · 10.16
+ *  실제 오늘 기준 (월요일 시작 주 → 일요일에 보면 이번 주 = 오늘까지, 다음 주 = 7일 뒤 일요일) */
 const LINK_UNTIL = (() => {
   const d = new Date(NOW);
-  d.setDate(d.getDate() + (7 - d.getDay()) + 7);
+  d.setDate(d.getDate() + ((7 - d.getDay()) % 7) + 7);
   d.setHours(23, 59, 59, 999);
   return d.getTime();
 })();
-/** 699:8424 표기: '오늘 23:59' / '10.15 (목)' */
-const dueLabel = (due: Date) => (sameDay(due, NOW) ? `오늘 ${pad(due.getHours())}:${pad(due.getMinutes())}` : `${due.getMonth() + 1}.${pad(due.getDate())} (${DOW[due.getDay()]})`);
 
 /** 높이 자동 맞춤 (textarea) */
 const autoGrow = (el: HTMLTextAreaElement | null) => {
@@ -87,10 +84,13 @@ function WriteForm() {
   const exitTo = edit ? P.boardPost(edit.id) : from && isBoardId(from) ? P.boardCourse(from) : P.board;
 
   // 과제 목록은 수강과목 데이터가 단일 기준 (진행 중 · 다음 주까지 마감) — 지금 게시판 과목을 맨 앞에
+  // 마감이 지금 막 지난 과제(예: 오늘 23:59)는 매 분 다시 걸러 뺀다
+  const now = useNow();
+  const nowMs = now.getTime();
   const assignments = useMemo(() => {
-    const list = openAssignments().filter((a) => a.due.getTime() <= LINK_UNTIL);
+    const list = openAssignments().filter((a) => a.due.getTime() >= nowMs && a.due.getTime() <= LINK_UNTIL);
     return [...list.filter((a) => a.courseId === boardId), ...list.filter((a) => a.courseId !== boardId)];
-  }, [boardId]);
+  }, [boardId, nowMs]);
   const keyOf = (a: CourseAssignment) => `${a.courseId}:${a.id}`;
   // 데모 ?sheet=assignment: v5 699:8424처럼 첫 과제가 골라진 상태로 연다
   const [pick, setPick] = useState<string | null>(() => (sheet === 'assignment' && assignments[0] ? (linked ? `${linked.courseId}:${linked.aid}` : keyOf(assignments[0])) : null));
@@ -135,7 +135,7 @@ function WriteForm() {
   const connect = () => {
     const a = assignments.find((x) => keyOf(x) === pick);
     if (!a) return;
-    setLinked({ courseId: a.courseId, aid: a.id, title: a.title, due: dueLabel(a.due) });
+    setLinked({ courseId: a.courseId, aid: a.id, title: a.title, due: dueLabel(a.due, now) });
     setSheet(null);
   };
 
@@ -157,7 +157,8 @@ function WriteForm() {
       return;
     }
     const id = `my-${Date.now().toString(36)}`;
-    addPost({ id, ...fields, time: '방금', views: 1, likes: 0, comments: 0, mine: true, createdAt: Date.now() });
+    // createdAt = 실제 경과(피드 하이라이트) · postedAt = 앱 시계(고정 시각이면 계속 '방금') → '방금'·'n분 전' 표기
+    addPost({ id, ...fields, time: '방금', views: 1, likes: 0, comments: 0, mine: true, createdAt: Date.now(), postedAt: clockNow().getTime() });
     // Figma: 등록 → 게시글 상세 DISSOLVE. 글쓰기 모달을 대체해서 뒤로 가면 원래 게시판으로 돌아간다.
     nav.fade(P.boardPost(id));
     toast('글을 등록했어요', 'check');
@@ -218,7 +219,7 @@ function WriteForm() {
             <div className={s.optionList} role="radiogroup" aria-label="연결할 과제">
               {assignments.map((a) => {
                 const state = TEAM_ASSIGNMENTS.has(keyOf(a)) ? '팀 과제' : isSubmitted(a.courseId, a.id) ? '제출 완료' : '미제출';
-                return <OptionRow key={keyOf(a)} title={a.title} meta={`${courseById(a.courseId).name} · ${dueLabel(a.due)} 마감 · ${state}`} selected={pick === keyOf(a)} onPress={() => setPick(keyOf(a))} />;
+                return <OptionRow key={keyOf(a)} title={a.title} meta={`${courseById(a.courseId).name} · ${dueLabel(a.due, now)} 마감 · ${state}`} selected={pick === keyOf(a)} onPress={() => setPick(keyOf(a))} />;
               })}
             </div>
             <div className={s.sheetCta}>

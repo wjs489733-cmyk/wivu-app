@@ -3,7 +3,7 @@ import { useParams, useSearchParams } from 'react-router';
 import { Button, Chip, Icon, IconButton, Screen, Text, TopNav } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { boardById, boardTitle, type Board, type Post } from './data';
+import { boardById, boardTitle, recruitClosed, type Board, type Post } from './data';
 import { useAllPosts, useBoard } from './store';
 import { BoardSearch, EmptyState, Fab, PostRow } from './parts';
 import s from './Board.module.css';
@@ -42,7 +42,8 @@ export function BoardFeed() {
   const list = useMemo(() => {
     const mine = postsOf(board, all);
     if (filter === ALL) return mine;
-    if (filter === RECRUITING) return mine.filter((p) => !!p.recruit);
+    // '모집 중' = 마감일이 안 지난 모집 글 (실제 오늘 기준)
+    if (filter === RECRUITING) return mine.filter((p) => !!p.recruit && !recruitClosed(p.recruit));
     return mine.filter((p) => p.tag === filter);
   }, [board, all, filter]);
 

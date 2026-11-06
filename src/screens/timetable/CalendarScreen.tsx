@@ -4,7 +4,7 @@ import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useIsSubmitted } from '@/screens/courses/store';
 import { DOW_FULL, MONTHS, TODAY, parseIso } from './data';
-import { dayAgenda, dotsOn, holidayOn, itemTarget, nextEvent, nextEventLabel, type AgendaItem, type Ctx } from './agenda';
+import { dayAgenda, dotsOn, holidayOn, itemTarget, nextEvent, nextEventLabel, offDay, type AgendaItem, type Ctx } from './agenda';
 import { useMyCourses, useSchedule } from './store';
 import { AgendaList, BellButton, CategoryBadge, EmptyNote, MonthGrid, ScheduleHeader, SmallIconButton } from './parts';
 import s from './Calendar.module.css';
@@ -13,6 +13,7 @@ import s from './Calendar.module.css';
  * 시간표 탭 › 캘린더 — Figma v5 686:6385
  * 월간 달력(일정 점: 학사·과제·개인) + 선택일 일정(시간·분류 / 제목·장소) + 다가오는 일정 카드 한 장.
  * v4의 카테고리 필터 칩·카드 리스트·구분선은 v5에서 빠짐.
+ * 기본 = 실제 이번 달 · 오늘 선택 (TODAY: 날짜가 바뀌면 앱이 새로고침됨). 일정 날짜는 이번 주로 옮긴 시드(data.ts).
  */
 export function CalendarScreen() {
   const nav = useNav();
@@ -43,7 +44,7 @@ export function CalendarScreen() {
     setMonth(nm);
     selectDate(nm === TODAY.slice(0, 7) ? TODAY : `${nm}-01`);
   };
-  // 오늘이 선택돼 있으면 Figma 686:6717 기본값(10월 14일 수)으로, 다른 날을 골랐으면 그 날짜로 연다
+  // 오늘이 선택돼 있으면 일정 추가 기본값(EventNew: 시나리오 금요일이면 Figma 686:6717 다음 주 수, 그 밖엔 오늘)으로, 다른 날을 골랐으면 그 날짜로 연다
   const newEvent = () => nav.modal(selected === TODAY ? P.calendarNew : `${P.calendarNew}?date=${selected}`);
 
   return (
@@ -98,7 +99,8 @@ export function CalendarScreen() {
           onPress={open}
           empty={
             <EmptyNote
-              title="이날은 일정이 없어요"
+              // 이번 주 휴강일(data/today.ts)은 수업이 빠진 이유를 알려 준다
+              title={offDay(events, selected) ? '휴강일이라 수업이 없어요' : '이날은 일정이 없어요'}
               action={
                 <Button variant="secondary" size="s" leadingIcon="plus" onClick={() => nav.modal(`${P.calendarNew}?date=${selected}`)}>
                   일정 추가

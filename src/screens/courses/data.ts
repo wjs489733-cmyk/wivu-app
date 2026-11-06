@@ -1,11 +1,18 @@
 import { COURSES, NOW, courseById, type Course, type CourseId } from '@/data/core';
+import { DOW_KO, TIME_FIXED, dayDiff, fmtHM, fmtMD, mdToDate, now as clockNow, sameDay, shiftDeep } from '@/data/clock';
 import { ACADEMIC_NOTICES } from '@/screens/info/data';
 
 /* ────────────────────────────────────────────────────────────
  * 수강과목 섹션 데이터 — Figma v5 '06 수강과목 (v5)' 684:5962 · 684:6082 · 684:6198 · 684:6271 · 684:6349 · 684:6409 · 684:6453 문구 그대로.
  * Figma에는 서비스디자인만 그려져 있어 나머지 5과목은 같은 구조로 그럴듯하게 채움(가상 인물 'OOO').
- * 기준 시각 core NOW = 2026-10-09(금) 9:41 = 6주차 · 1주차 9.1–9.4 · 6주차 10.6–10.9 (10.5 대체공휴일)
- * 1주차(OT·강의계획서·'1주차 …') 글/자료는 9월 날짜 그대로, '이번 주' 글/자료는 6주차로 둠.
+ * 시나리오 기준 2026-10-09(금) 9:41 = 6주차 · 1주차 9.1–9.4 · 6주차 10.6–10.9 (10.5 휴강)
+ * 1주차(OT·강의계획서·'1주차 …') 글/자료는 9월 날짜, '이번 주' 글/자료는 6주차로 둠.
+ *
+ * 11-06 실시간 전환: 아래 날짜는 시나리오 날짜로 적고 COURSE_INFO 전체를 shiftDeep으로 이번 주에 옮겨 붙임
+ *  (요일 유지 · 'MM.DD' · '10/9' · '9월 17일' · Date 모두). D-day·'오늘/내일 마감'·마감 지남은 now 인자로 계산.
+ *  · 아직 안 올라온 글/자료(게시 시각 > 지금)는 목록에서 뺌 — 월요일에 금요일 공지가 보이지 않게 (visibleNotices · visibleMaterials)
+ *  · 강의자료 '오늘' 배지 = 묶음 날짜가 실제 오늘일 때 (isTodayGroup)
+ *  · 제출 시각 = 실제 지금 (시각 고정 9:41이면 Figma '09:48', submitStamp)
  *
  * 단일 기준(single source of truth)
  *  · 과제: 여기 COURSE_INFO[].assignments → ASSIGNMENT_LIST로 내보내고, 캘린더(timetable/data.ts)는 이 목록에서
@@ -61,7 +68,8 @@ export type Assignment = {
   closed?: boolean;
 };
 
-export type MaterialGroup = { label: string; today?: boolean; items: FileItem[] };
+/** label '6주차 · 10.09' — 끝의 날짜로 '오늘' 배지를 계산 (isTodayGroup) */
+export type MaterialGroup = { label: string; items: FileItem[] };
 
 export type CourseInfo = {
   /** core의 professor를 덮어씀 (글쓰기와 소통: core '사이버 강의' ↔ Figma '한OO 교수') */
@@ -85,7 +93,8 @@ const SD_SYLLABUS = pdf('sd-syllabus', '강의계획서_서비스디자인.pdf',
 const UX_TEMPLATE = pdf('ux-question', '인터뷰_질문지_템플릿.pdf', '0.4MB', '10.08');
 const BD_FEEDBACK = pdf('bd-feedback', '1주차_브랜드분석_피드백.pdf', '1.6MB', '09.08');
 
-export const COURSE_INFO: Record<CourseId, CourseInfo> = {
+/** 과목별 공지·과제·자료 — 시나리오 날짜로 적고 이번 주로 옮겨 붙임 (shiftDeep: 글자 속 날짜 + Date) */
+export const COURSE_INFO: Record<CourseId, CourseInfo> = shiftDeep<Record<CourseId, CourseInfo>>({
   'service-design': {
     notices: [
       {
@@ -142,7 +151,7 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       },
     ],
     materials: [
-      { label: '6주차 · 10.09', today: true, items: [SD_BLUEPRINT, SD_TEMPLATE] },
+      { label: '6주차 · 10.09', items: [SD_BLUEPRINT, SD_TEMPLATE] },
       { label: '1주차 · 09.04', items: [SD_OT, SD_SYLLABUS] },
     ],
   },
@@ -179,7 +188,7 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       },
     ],
     materials: [
-      { label: '6주차 · 10.09', today: true, items: [pdf('bd-identity', '브랜드 아이덴티티 개론.pdf', '3.1MB', '10.09')] },
+      { label: '6주차 · 10.09', items: [pdf('bd-identity', '브랜드 아이덴티티 개론.pdf', '3.1MB', '10.09')] },
       { label: '1주차 · 09.04', items: [pdf('bd-ot', '오리엔테이션_브랜드디자인.pdf', '1.2MB', '09.04')] },
     ],
   },
@@ -242,7 +251,6 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
     materials: [
       {
         label: '6주차 · 10.08',
-        today: false,
         items: [UX_TEMPLATE, { id: 'ux-article', name: '인터뷰 질문 잘 만드는 법', kind: 'link', size: '외부 링크', date: '10.08' }],
       },
       { label: '1주차 · 09.04', items: [pdf('ux-intro', '리서치 개요.pdf', '2.4MB', '09.04')] },
@@ -273,7 +281,7 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
     assignments: [],
     materials: [
       { label: '6주차 · 10.07', items: [pdf('dm-case', '디자인 주도 기업 사례 읽기.pdf', '3.4MB', '10.07'), pdf('dm-w2', '6주차 강의 슬라이드.pdf', '5.2MB', '10.07')] },
-      // 10.05(월)은 대체공휴일 휴강 → 직전 수업(5주차 수) 자료로 둠
+      // 10.05(월)은 휴강 → 직전 수업(5주차 수) 자료로 둠
       { label: '5주차 · 09.30', items: [pdf('dm-def', '디자인 경영의 정의.pdf', '2.0MB', '09.30')] },
       { label: '1주차 · 09.02', items: [pdf('dm-ot', '오리엔테이션_디자인경영.pdf', '1.0MB', '09.02'), pdf('dm-syllabus', '강의계획서_디자인경영.pdf', '0.5MB', '09.02')] },
     ],
@@ -332,7 +340,7 @@ export const COURSE_INFO: Record<CourseId, CourseInfo> = {
       { label: '1주차 · 09.01', items: [{ id: 'wr-w1', name: '1주차 강의 · 소통으로서의 글쓰기', kind: 'video', size: '22분', date: '09.01' }] },
     ],
   },
-};
+});
 
 /* ── 조회 헬퍼 ─────────────────────────────────────────────── */
 export const isCourseId = (id?: string): id is CourseId => !!id && COURSES.some((c) => c.id === id);
@@ -343,7 +351,39 @@ export function getCourse(id?: string): { course: Course; info: CourseInfo } {
 }
 export const professorOf = (c: Course) => COURSE_INFO[c.id].professor ?? c.professor;
 
-export const allFiles = (info: CourseInfo) => info.materials.flatMap((g) => g.items);
+/* ── 게시 시각 (옮긴 실제 날짜) — 지금보다 뒤에 올라올 글/자료는 아직 안 보임 ── */
+/** 'MM.DD' (+ 'HH:MM') → Date */
+function mdAt(md: string, hm?: string) {
+  const d = mdToDate(md);
+  if (hm) {
+    const [h, m] = hm.split(':').map(Number);
+    d.setHours(h, m);
+  }
+  return d;
+}
+/** 공지 게시 시각 — dateFull '10.09 (금) 08:30' */
+export function noticeAt(n: Pick<Notice, 'dateFull' | 'date'>): Date {
+  const m = /^(\d{1,2}\.\d{1,2})(?: \(.\))?(?: (\d{2}:\d{2}))?/.exec(n.dateFull) ?? /^(\d{1,2}\.\d{1,2})(?: (\d{2}:\d{2}))?/.exec(n.date);
+  return m ? mdAt(m[1], m[2]) : new Date(0);
+}
+/** 지금(at) 이미 올라온 공지인지 (분 단위) */
+export const noticePosted = (n: Pick<Notice, 'dateFull' | 'date'>, at: Date = NOW) => noticeAt(n).getTime() <= at.getTime();
+/** 지금 보이는 공지 (최신순 그대로) */
+export const visibleNotices = (info: CourseInfo, at: Date = NOW) => info.notices.filter((n) => noticePosted(n, at));
+
+/** 자료가 올라온 날이 지났는지 (날짜 단위 — 그날 0시부터 보임) */
+const filePosted = (f: FileItem, at: Date) => !f.date || dayDiff(mdToDate(f.date), at) >= 0;
+/** 지금 보이는 강의자료 묶음 (아직 안 올라온 자료·빈 묶음은 뺌) */
+export function visibleMaterials(info: CourseInfo, at: Date = NOW): MaterialGroup[] {
+  return info.materials.map((g) => ({ ...g, items: g.items.filter((f) => filePosted(f, at)) })).filter((g) => g.items.length > 0);
+}
+/** 묶음 날짜('6주차 · 10.09')가 오늘인지 → '오늘' 배지 */
+export function isTodayGroup(g: MaterialGroup, at: Date = NOW) {
+  const m = /(\d{1,2}\.\d{1,2})\s*$/.exec(g.label);
+  return !!m && sameDay(mdToDate(m[1]), at);
+}
+
+export const allFiles = (info: CourseInfo, at: Date = NOW) => visibleMaterials(info, at).flatMap((g) => g.items);
 
 export function findAssignment(info: CourseInfo, aid?: string) {
   return info.assignments.find((a) => a.id === aid) ?? info.assignments[0];
@@ -357,46 +397,53 @@ export function getAssignment(id?: string, aid?: string): { course: Course; info
   return { ...sd, a: findAssignment(sd.info, 'a1') };
 }
 
+/* ── 마감 판정 (now 인자 — 컴포넌트는 useNow()로 넘김) ─────── */
+/** 마감 시각이 지났는지 */
+export const isPastDue = (a: Pick<Assignment, 'due'>, at: Date = NOW) => a.due.getTime() < at.getTime();
+/** 더 이상 제출할 수 없는지 (지난 학기 초 과제 closed · 마감 지남) */
+export const isClosed = (a: Pick<Assignment, 'due' | 'closed'>, at: Date = NOW) => !!a.closed || isPastDue(a, at);
+
 /* ── 단일 기준 목록 (캘린더 · 게시판 과제 연결 · 연동 카운트가 모두 이걸 읽음) ── */
 export type CourseAssignment = Assignment & { courseId: CourseId };
 export const ASSIGNMENT_LIST: CourseAssignment[] = COURSES.flatMap((c) => COURSE_INFO[c.id].assignments.map((a) => ({ ...a, courseId: c.id })));
-/** 아직 마감 전인 과제 (오늘 마감 포함) */
-export const openAssignments = () => ASSIGNMENT_LIST.filter((a) => !a.closed && a.due.getTime() >= NOW.getTime());
+/** 아직 마감 전인 과제 (오늘 마감 포함) — at 기본 = 앱을 연 순간 */
+export const openAssignments = (at: Date = NOW) => ASSIGNMENT_LIST.filter((a) => !isClosed(a, at));
 
-/** 학교 연동(진입 411:11957 · 마이 426:8952) 카운트 — 데이터에서 계산
- *  과제 = 진행 중 과제 · 공지 = 이번 주(6주차) 과목 공지 + 학사 공지 */
+/** 학교 연동(진입 411:11957 · 마이 426:8952) 카운트 — 데이터에서 계산 (앱을 연 순간 기준)
+ *  과제 = 진행 중 과제 · 공지 = 이번 주(6주차) 과목 공지 중 이미 올라온 것 + 학사 공지 */
 export const SYNC_COUNTS = {
   assignments: openAssignments().length,
-  notices: COURSES.reduce((a, c) => a + COURSE_INFO[c.id].notices.filter((n) => n.thisWeek).length, 0) + ACADEMIC_NOTICES.length,
+  notices: COURSES.reduce((a, c) => a + COURSE_INFO[c.id].notices.filter((n) => n.thisWeek && noticePosted(n)).length, 0) + ACADEMIC_NOTICES.length,
 };
 
-const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 const pad = (n: number) => String(n).padStart(2, '0');
-const hm = (dt: Date) => `${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
-const dayStart = (dt: Date) => new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()).getTime();
 
-/** D-DAY / D-4 / 마감 */
-export function dday(due: Date) {
-  const days = Math.round((dayStart(due) - dayStart(NOW)) / 86_400_000);
-  if (due.getTime() < NOW.getTime()) return '마감';
+/** D-DAY / D-4 / 마감 지남 */
+export function dday(due: Date, at: Date = NOW) {
+  if (due.getTime() < at.getTime()) return '마감 지남';
+  const days = dayDiff(at, due);
   return days === 0 ? 'D-DAY' : `D-${days}`;
 }
-export const ddayCount = (due: Date) => Math.round((dayStart(due) - dayStart(NOW)) / 86_400_000);
+/** 마감까지 남은 날 (오늘 = 0, 지난 날은 음수) */
+export const ddayCount = (due: Date, at: Date = NOW) => dayDiff(at, due);
 
-/** '오늘 23:59' / '10.13(화) 14:00' */
-export function dueShort(due: Date) {
-  if (dayStart(due) === dayStart(NOW)) return `오늘 ${hm(due)}`;
-  return `${due.getMonth() + 1}.${due.getDate()}(${DOW[due.getDay()]}) ${hm(due)}`;
+/** '오늘 23:59' / '내일 23:59' / '어제 23:59' / '10.13(화) 14:00' */
+export function dueShort(due: Date, at: Date = NOW) {
+  const dd = dayDiff(at, due);
+  if (dd === 0) return `오늘 ${fmtHM(due)}`;
+  if (dd === 1) return `내일 ${fmtHM(due)}`;
+  if (dd === -1) return `어제 ${fmtHM(due)}`;
+  return `${due.getMonth() + 1}.${due.getDate()}(${DOW_KO[due.getDay()]}) ${fmtHM(due)}`;
 }
 /** '10.09 (금) 23:59' — v5 과제 상세 '마감' 행 */
-export const dueDetail = (due: Date) => `${pad(due.getMonth() + 1)}.${pad(due.getDate())} (${DOW[due.getDay()]}) ${hm(due)}`;
+export const dueDetail = (due: Date) => `${pad(due.getMonth() + 1)}.${pad(due.getDate())} (${DOW_KO[due.getDay()]}) ${fmtHM(due)}`;
 
-/** 제출 기록 시각 'MM.DD HH:MM' → '10.09 (금) 09:48' (2026년 기준) */
+/** 제출 기록 시각 'MM.DD HH:MM' → '10.09 (금) 09:48' */
 export function atDetail(at: string) {
   const m = /^(\d{2})\.(\d{2}) (\d{2}:\d{2})$/.exec(at);
   if (!m) return at;
-  const dt = new Date(NOW.getFullYear(), +m[1] - 1, +m[2]);
-  return `${m[1]}.${m[2]} (${DOW[dt.getDay()]}) ${m[3]}`;
+  const dt = mdToDate(`${m[1]}.${m[2]}`);
+  return `${m[1]}.${m[2]} (${DOW_KO[dt.getDay()]}) ${m[3]}`;
 }
 
 /** 과목 메타: '김OO 교수 · 금 10:00–11:50 · 디자인관 302호' (수강과목 탭 행 · 과목 상세 공통) */
@@ -412,5 +459,9 @@ export const fileMeta = (f: FileItem, withDate = false) => [f.kind === 'link' ? 
 /** 제출 샘플 파일명 — Figma '서비스분석리포트_김유진.pdf' (core USER) */
 export const sampleFileName = (title: string, userName: string) => `${title.replace(/\s+/g, '')}_${userName}.pdf`;
 export const SAMPLE_SIZE = 3.8 * 1024 * 1024;
-/** 데모용 제출 시각 (Figma v5 684:6349 '10.09 (금) 09:48') */
+/** 시각 고정 9:41(Figma 시나리오)일 때의 제출 시각 (Figma v5 684:6349 '10.09 (금) 09:48') */
 export const SUBMIT_TIME = '09:48';
+/** 제출 시각 'MM.DD HH:MM' = 실제 지금. 단 시각 고정 9:41이면 Figma 문구 '09:48' */
+export function submitStamp(at: Date = clockNow()) {
+  return `${fmtMD(at)} ${TIME_FIXED && fmtHM(at) === '09:41' ? SUBMIT_TIME : fmtHM(at)}`;
+}

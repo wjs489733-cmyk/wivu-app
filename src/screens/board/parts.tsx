@@ -3,8 +3,9 @@ import { AnimatePresence, motion } from 'motion/react';
 import { BottomSheet, Button, Card, Chip, Dialog, Icon, SheetHead, StatusBar, Text, TextField } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
+import { useNow } from '@/data/clock';
 import { USER, courseById } from '@/data/core';
-import { boardById, boardLabel, boardTitle, tagTone, type BoardId, type Post } from './data';
+import { boardById, boardLabel, boardTitle, postTime, recruitClosed, recruitDeadline, tagTone, type BoardId, type Post } from './data';
 import type { ApplyFlow } from './applyFlow';
 import { useAllPosts, useBoard, usePostStats, useRecruit } from './store';
 import s from './Board.module.css';
@@ -72,8 +73,10 @@ export function PostRow({ post, showBoard, fresh, highlight, onOpen }: { post: P
   const nav = useNav();
   const { likeCount, commentCount } = usePostStats(post);
   const { current, max } = useRecruit(post);
-  const tail = post.recruit ? [`모집 ${current}/${max}`, post.recruit.deadline] : [`공감 ${likeCount}`, `댓글 ${commentCount}`];
-  const meta = [showBoard && boardLabel(post.boardId), post.author, post.feedTime ?? post.time, ...tail].filter(Boolean).join(' · ');
+  // 내가 쓴 글은 '방금' → 'n분 전'으로 매 분 갱신 · 모집 마감 D-day는 실제 오늘 기준
+  const now = useNow();
+  const tail = post.recruit ? [`모집 ${current}/${max}`, recruitDeadline(post.recruit)] : [`공감 ${likeCount}`, `댓글 ${commentCount}`];
+  const meta = [showBoard && boardLabel(post.boardId), post.author, postTime(post, now, true), ...tail].filter(Boolean).join(' · ');
   return (
     <button
       type="button"
@@ -233,6 +236,7 @@ function SearchPanel({ onClose, scope }: { onClose: () => void; scope?: BoardId 
  * 신청 후(699:7595): '현재 4 / 5명 · …' + Secondary S ✓ '신청 완료' → 누르면 취소 확인(699:7948) */
 export function RecruitRow({ post, onApply }: { post: Post; onApply: (p: Post) => void }) {
   const { applied, current, max, full } = useRecruit(post);
+  const closed = recruitClosed(post.recruit);
   const when = post.recruit?.when;
   const press = (e: MouseEvent) => {
     e.stopPropagation();
@@ -248,8 +252,8 @@ export function RecruitRow({ post, onApply }: { post: Post; onApply: (p: Post) =
           신청 완료
         </Button>
       ) : (
-        <Button size="s" disabled={full} onClick={press} data-fab-avoid>
-          {full ? '모집 완료' : '참여 신청'}
+        <Button size="s" disabled={full || closed} onClick={press} data-fab-avoid>
+          {full ? '모집 완료' : closed ? '모집 마감' : '참여 신청'}
         </Button>
       )}
     </div>
@@ -261,10 +265,11 @@ export function RecruitCard({ post, onApply }: { post: Post; onApply: (p: Post) 
   const nav = useNav();
   const r = post.recruit!;
   const where = r.courseId ? boardTitle(boardById(r.courseId)) : boardById(post.boardId).name;
+  const deadline = recruitDeadline(r);
   return (
     <Card variant="outline" className={s.teamCard} onPress={() => nav.push(P.boardPost(post.id))} aria-label={`${post.title} 모집 글 보기`}>
       <div className={s.teamTop}>
-        {r.deadline && <Chip tone="warningSoft">{r.deadline}</Chip>}
+        {deadline && <Chip tone={recruitClosed(r) ? 'neutral' : 'warningSoft'}>{deadline}</Chip>}
         <Text variant="caption-1" color="tertiary" className="truncate">
           {where}
         </Text>
@@ -303,13 +308,14 @@ function ApplySheetBody({ post, note, setNote, loading, onConfirm, onClose }: { 
   const r = post.recruit!;
   const { current, max } = r;
   const label = r.courseId ? courseById(r.courseId).name : boardById(post.boardId).name;
+  const deadline = recruitDeadline(r);
   return (
     <>
       <SheetHead title="팀플 참여 신청" onClose={onClose} />
       <div className={s.applySummary}>
         <div className={s.teamTop}>
           <Chip tone="neutral">{label}</Chip>
-          {r.deadline && <Chip tone="warningSoft">{r.deadline}</Chip>}
+          {deadline && <Chip tone="warningSoft">{deadline}</Chip>}
         </div>
         <Text variant="body-1-strong" as="p">
           {post.title}

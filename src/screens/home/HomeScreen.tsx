@@ -4,7 +4,9 @@ import { BottomSheet, Button, Chip, Icon, IconButton, Logo, Screen, Section, She
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
-import { NOW, USER } from '@/data/core';
+import { useNow } from '@/data/clock';
+import { USER } from '@/data/core';
+import { isWeekend } from '@/data/today';
 import { AttendanceSheet } from '@/screens/attendance/AttendanceSheet';
 import { useIsSubmitted } from '@/screens/courses/store';
 import { useSchedule } from '@/screens/timetable/store';
@@ -12,20 +14,22 @@ import { RadialMenu } from './RadialMenu';
 import { useMyMenu, useOpenMenu } from './quick';
 import { useVisibleBlocks, type BlockId } from './store';
 import {
-  CLASS_CARDS,
   DATE_LINE,
-  DEADLINES,
   FREE_DAY,
-  FREE_NEXT,
   LIBRARY_ROOMS,
   MEAL,
-  NEXT_ROOM,
+  MEAL_CLOSED,
   NOTICE_LINE,
-  TODO_FREE,
-  TODO_TODAY,
-  TODO_TOMORROW,
+  attendMark,
+  classCards,
   dueBadge,
+  freeCard,
+  libraryAsOf,
+  nextRoom,
+  todoPlan,
+  upcomingDeadlines,
   type ClassCard,
+  type FreeCard,
   type TodoItem,
 } from './data';
 import s from './Home.module.css';
@@ -34,16 +38,22 @@ import s from './Home.module.css';
 const openedFromUrl = new Set<string>();
 
 /**
- * 홈 v5 — Figma 674:4748(출석 전) · 675:4839(출석 완료) · 675:5022(퀵메뉴, 홈 탭 길게) · 692:6804(공강, 목 10/8)
- * 출석 완료 여부는 전역 attendanceComplete로 자동 분기 (Figma CONDITIONAL 대체).
+ * 홈 v5 — Figma 674:4748(출석 전) · 675:4839(출석 완료) · 675:5022(퀵메뉴, 홈 탭 길게) · 692:6804(공강, 목)
+ * 실시간 (11-06): 오늘 수업 카드는 classesOn(now) 중 안 끝난 수업 — 매 분(useNow) 다시 계산.
+ *   인증 가능 / 출석 완료(attended[key], 수업 끝날 때까지) / 창 전 / 인증 마감(창 닫힘 + 기록 없음) — 끝난 수업은 뺌.
+ *   남은 수업이 없으면(목·주말·휴강·수업 끝) 공강 카드. /home/free-day는 이번 주 목요일 9:41 고정 데모.
  * 블록 구성(켜기/끄기·순서)은 홈 편집(/home/edit · 676:5225)의 로컬 스토어를 따른다. '오늘 수업'은 항상 맨 위.
  * 퀵메뉴: 홈 탭 길게 누르기(0.5초)로만 연다 — 다른 탭에서 길게 누르면 /home?menu=1로 와서 열린다. 홈 탭 짧게 = 맨 위로.
  */
 export function HomeScreen({ variant = 'today' }: { variant?: 'today' | 'free-day' }) {
   const nav = useNav();
   const location = useLocation();
-  const done = useApp((st) => st.attendanceComplete);
   const freeDay = variant === 'free-day';
+  const live = useNow();
+  const now = freeDay ? FREE_DAY : live;
+  const attended = useApp((st) => st.attended);
+  const cards = classCards(now, attended);
+  const free = cards.length ? null : freeCard(now);
   const fromUrl = new URLSearchParams(location.search).get('menu') === '1' && !openedFromUrl.has(location.key);
   const [radial, setRadial] = useState(fromUrl);
   const [pin, setPin] = useState(false);
@@ -55,7 +65,7 @@ export function HomeScreen({ variant = 'today' }: { variant?: 'today' | 'free-da
 
   return (
     <Screen
-      figma={freeDay ? '692:6804' : done ? '675:4839' : '674:4748'}
+      figma={free ? '692:6804' : cards[0].kind === 'done' ? '675:4839' : '674:4748'}
       header={<HomeHeader />}
       footer={
         <div className={s.tabWrap}>
@@ -72,11 +82,11 @@ export function HomeScreen({ variant = 'today' }: { variant?: 'today' | 'free-da
       <Text variant="caption-1" color="tertiary" as="p" className={s.dateLine}>
         {freeDay ? DATE_LINE.free : DATE_LINE.today}
       </Text>
-      {freeDay ? <FreeDayCard /> : <ClassCarousel onAttend={() => setPin(true)} />}
+      {free ? <FreeDayCard free={free} /> : <ClassCarousel cards={cards} onAttend={() => setPin(true)} />}
 
       {blocks.map((id, i) => (
         <div key={id} className={s.block} data-tight={i === 0 && id === 'notice'}>
-          <Block id={id} freeDay={freeDay} />
+          <Block id={id} now={now} />
         </div>
       ))}
 
@@ -89,22 +99,22 @@ export function HomeScreen({ variant = 'today' }: { variant?: 'today' | 'free-da
   );
 }
 
-function Block({ id, freeDay }: { id: BlockId; freeDay: boolean }) {
+function Block({ id, now }: { id: BlockId; now: Date }) {
   switch (id) {
     case 'notice':
       return <NoticeLine />;
     case 'todo':
-      return <TodoBlock freeDay={freeDay} />;
+      return <TodoBlock now={now} />;
     case 'deadline':
-      return <DeadlineBlock freeDay={freeDay} />;
+      return <DeadlineBlock now={now} />;
     case 'menu':
       return <MyMenuBlock />;
     case 'meal':
-      return <MealBlock />;
+      return <MealBlock now={now} />;
     case 'nextRoom':
-      return <NextRoomBlock freeDay={freeDay} />;
+      return <NextRoomBlock now={now} />;
     case 'library':
-      return <LibraryBlock />;
+      return <LibraryBlock now={now} />;
   }
 }
 
@@ -133,15 +143,15 @@ function HomeHeader() {
 type SheetAct = { label: string; icon: IconName; run: () => void };
 type MoreSheet = { title: string; subtitle: string; actions: SheetAct[] };
 
-function ClassCarousel({ onAttend }: { onAttend: () => void }) {
+function ClassCarousel({ cards, onAttend }: { cards: ClassCard[]; onAttend: () => void }) {
   const nav = useNav();
-  const done = useApp((st) => st.attendanceComplete);
-  const time = useApp((st) => st.attendanceTime);
-  const method = useApp((st) => st.attendanceMethod);
   const [page, setPage] = useState(0);
   const [sheet, setSheet] = useState<MoreSheet | null>(null);
   const timer = useRef(0);
   useEffect(() => () => clearTimeout(timer.current), []);
+  // 수업이 끝나 카드가 빠지면 페이지 점도 줄어든다
+  const current = Math.min(page, cards.length - 1);
+  const single = cards.length === 1;
 
   const openMore = (c: ClassCard) =>
     setSheet({
@@ -157,11 +167,13 @@ function ClassCarousel({ onAttend }: { onAttend: () => void }) {
     setSheet(null);
     timer.current = window.setTimeout(a.run, 200);
   };
+  const go = (a: NonNullable<ClassCard['action']>) => (a.mode === 'tab' ? nav.tab(a.to) : nav.push(a.to));
 
   return (
     <>
       <div
         className={`${s.carousel} no-scrollbar`}
+        data-single={single || undefined}
         aria-label="오늘 수업"
         role="region"
         onScroll={(e) => {
@@ -169,7 +181,7 @@ function ClassCarousel({ onAttend }: { onAttend: () => void }) {
           const card = el.firstElementChild as HTMLElement | null;
           if (!card) return;
           const p = Math.round(el.scrollLeft / (card.offsetWidth + 12));
-          setPage(Math.max(0, Math.min(CLASS_CARDS.length - 1, p)));
+          setPage(Math.max(0, Math.min(cards.length - 1, p)));
         }}
         onFocus={(e) => {
           // 키보드로 화면 밖 카드의 버튼에 포커스가 가면 그 카드를 통째로 보여준다
@@ -181,73 +193,95 @@ function ClassCarousel({ onAttend }: { onAttend: () => void }) {
           if (Math.abs(left - el.scrollLeft) > 1) el.scrollTo({ left, behavior: reduce ? 'auto' : 'smooth' });
         }}
       >
-        {CLASS_CARDS.map((c, i) => {
-          if (i > 0) {
-            return (
-              <article key={c.id} className={s.classCard} data-tone="later" aria-label={`${c.badge} ${c.name}`}>
-                <CardStatus badge={<Chip tone="neutral">{c.badge}</Chip>} status={c.status} statusColor="secondary" onMore={() => openMore(c)} name={c.name} />
-                <CardTitle name={c.name} meta={c.meta} />
-                <AuthWindow c={c} />
-                {c.action && (
-                  <Button variant="secondary" block className={s.whiteBtn} onClick={() => (c.action!.mode === 'tab' ? nav.tab(c.action!.to) : nav.push(c.action!.to))}>
-                    {c.action.label}
-                  </Button>
-                )}
-              </article>
-            );
+        {cards.map((c) => {
+          switch (c.kind) {
+            case 'later':
+              return (
+                <article key={c.key} className={s.classCard} data-tone="later" aria-label={`${c.badge} ${c.name}`}>
+                  <CardStatus badge={<Chip tone="neutral">{c.badge}</Chip>} status={c.status} statusColor="secondary" onMore={() => openMore(c)} name={c.name} />
+                  <CardTitle name={c.name} meta={c.meta} />
+                  <AuthWindow c={c} />
+                  {c.action && (
+                    <Button variant="secondary" block className={s.whiteBtn} onClick={() => go(c.action!)}>
+                      {c.action.label}
+                    </Button>
+                  )}
+                </article>
+              );
+            case 'closed':
+              /* 새 상태: 인증 창이 닫혔는데 기록 없음 — 창 전 카드 틀 + 인증 마감(빨강 soft) + 이의 신청 */
+              return (
+                <article key={c.key} className={s.classCard} data-tone="later" aria-label={`인증 마감 ${c.name}`}>
+                  <CardStatus badge={<Chip tone="dangerSoft">{c.badge}</Chip>} status={c.status} statusColor="secondary" onMore={() => openMore(c)} name={c.name} />
+                  <CardTitle name={c.name} meta={c.meta} />
+                  <Text variant="body-3" color="secondary" as="p" className={s.doneNote}>
+                    출석 인증 시간이 지났어요
+                  </Text>
+                  <Text variant="caption-2" color="tertiary" as="p" className={s.closedWindow} tnum>
+                    {c.opens} 인증 시작 · {c.closes} 마감
+                  </Text>
+                  {c.action && (
+                    <Button variant="secondary" block className={s.whiteBtn} onClick={() => go(c.action!)}>
+                      {c.action.label}
+                    </Button>
+                  )}
+                </article>
+              );
+            case 'done':
+              return (
+                <article key={c.key} className={s.classCard} data-tone="done" aria-label={`출석 완료 ${c.name}`}>
+                  <CardStatus
+                    badge={
+                      <Chip tone="white" className={s.doneBadge}>
+                        {c.badge}
+                      </Chip>
+                    }
+                    status={c.status}
+                    statusColor="on-brand"
+                    onMore={() => openMore(c)}
+                    name={c.name}
+                    light
+                  />
+                  <CardTitle name={c.name} meta={c.meta} light />
+                  <Text variant="body-3" color="on-brand" as="p" className={s.doneNote}>
+                    출석이 교수님께 전달됐어요
+                  </Text>
+                  <div className={s.cardActions}>
+                    <Button variant="onBrand" grow onClick={() => nav.tab(P.attendance)}>
+                      오늘 출석 기록 보기
+                    </Button>
+                    <Button variant="onBrandGhost" onClick={() => nav.modal(P.studentId)}>
+                      학생증
+                    </Button>
+                  </div>
+                </article>
+              );
+            case 'now':
+              return (
+                <article key={c.key} className={s.classCard} data-tone="now" aria-label={`출석 가능 ${c.name}`}>
+                  <CardStatus badge={<Chip tone="brand">{c.badge}</Chip>} status={c.status} statusColor="brand" onMore={() => openMore(c)} name={c.name} />
+                  <CardTitle name={c.name} meta={c.meta} />
+                  <AuthWindow c={c} />
+                  <div className={s.cardActions}>
+                    <Button variant="primary" grow onClick={onAttend}>
+                      출석 인증하기
+                    </Button>
+                    <Button variant="secondary" onClick={() => nav.modal(P.studentId)}>
+                      학생증
+                    </Button>
+                  </div>
+                </article>
+              );
           }
-          if (done) {
-            return (
-              <article key={c.id} className={s.classCard} data-tone="done" aria-label={`출석 완료 ${c.name}`}>
-                <CardStatus
-                  badge={
-                    <Chip tone="white" className={s.doneBadge}>
-                      출석 완료
-                    </Chip>
-                  }
-                  status={`${time ?? '09:52'} ${method ?? 'PIN'} 인증`}
-                  statusColor="on-brand"
-                  onMore={() => openMore(c)}
-                  name={c.name}
-                  light
-                />
-                <CardTitle name={c.name} meta={c.meta} light />
-                <Text variant="body-3" color="on-brand" as="p" className={s.doneNote}>
-                  출석이 교수님께 전달됐어요
-                </Text>
-                <div className={s.cardActions}>
-                  <Button variant="onBrand" grow onClick={() => nav.tab(P.attendance)}>
-                    오늘 출석 기록 보기
-                  </Button>
-                  <Button variant="onBrandGhost" onClick={() => nav.modal(P.studentId)}>
-                    학생증
-                  </Button>
-                </div>
-              </article>
-            );
-          }
-          return (
-            <article key={c.id} className={s.classCard} data-tone="now" aria-label={`출석 가능 ${c.name}`}>
-              <CardStatus badge={<Chip tone="brand">{c.badge}</Chip>} status={c.status} statusColor="brand" onMore={() => openMore(c)} name={c.name} />
-              <CardTitle name={c.name} meta={c.meta} />
-              <AuthWindow c={c} />
-              <div className={s.cardActions}>
-                <Button variant="primary" grow onClick={onAttend}>
-                  출석 인증하기
-                </Button>
-                <Button variant="secondary" onClick={() => nav.modal(P.studentId)}>
-                  학생증
-                </Button>
-              </div>
-            </article>
-          );
         })}
       </div>
-      <div className={s.dots} aria-hidden>
-        {CLASS_CARDS.map((c, i) => (
-          <span key={c.id} data-on={i === page} />
-        ))}
-      </div>
+      {!single && (
+        <div className={s.dots} aria-hidden>
+          {cards.map((c, i) => (
+            <span key={c.key} data-on={i === current} />
+          ))}
+        </div>
+      )}
       <BottomSheet open={!!sheet} onClose={() => setSheet(null)} label={sheet?.title}>
         {sheet && (
           <>
@@ -310,8 +344,8 @@ function AuthWindow({ c }: { c: ClassCard }) {
   );
 }
 
-/* ── 공강 카드 (692:6804) ─────────────────────────────────────── */
-function FreeDayCard() {
+/* ── 공강 카드 (692:6804) — 목·주말 공강 · 휴강일 · 오늘 수업 끝 ─────────────── */
+function FreeDayCard({ free }: { free: FreeCard }) {
   const nav = useNav();
   const [sheet, setSheet] = useState(false);
   const timer = useRef(0);
@@ -320,28 +354,31 @@ function FreeDayCard() {
     setSheet(false);
     timer.current = window.setTimeout(fn, 200);
   };
+  const next = free.next;
   return (
     <div className={s.freeWrap}>
-      <article className={s.classCard} data-tone="free" aria-label="오늘은 공강">
-        <CardStatus badge={<Chip tone="neutral">오늘은 공강</Chip>} status="" statusColor="brand" onMore={() => setSheet(true)} name="공강" />
+      <article className={s.classCard} data-tone="free" aria-label={free.badge}>
+        <CardStatus badge={<Chip tone="neutral">{free.badge}</Chip>} status="" statusColor="brand" onMore={() => setSheet(true)} name={free.badge.replace(/^오늘(은)? /, '')} />
         <Text variant="title-2" as="h2" className={s.cardTitle}>
-          오늘은 수업이 없어요
+          {free.title}
         </Text>
-        <Text variant="body-3" color="secondary" as="p" className="truncate" tnum>
-          <Text variant="body-3" color="tertiary">
-            {FREE_NEXT.label}
+        {next && (
+          <Text variant="body-3" color="secondary" as="p" className="truncate" tnum>
+            <Text variant="body-3" color="tertiary">
+              다음 수업
+            </Text>
+            {'  '}
+            {next.text}
           </Text>
-          {'  '}
-          {FREE_NEXT.text}
-        </Text>
+        )}
         <Button variant="secondary" block className={`${s.whiteBtn} ${s.freeBtn}`} onClick={() => nav.tab(P.timetable)}>
-          내일 시간표 보기
+          {free.button}
         </Button>
       </article>
-      <BottomSheet open={sheet} onClose={() => setSheet(false)} label="공강">
-        <SheetHead title="오늘은 공강" subtitle={`${FREE_NEXT.label} · ${FREE_NEXT.text}`} onClose={() => setSheet(false)} />
+      <BottomSheet open={sheet} onClose={() => setSheet(false)} label={free.badge}>
+        <SheetHead title={free.badge} subtitle={next ? `다음 수업 · ${next.text} · ${next.auth}` : free.title} onClose={() => setSheet(false)} />
         <div className={s.sheetBody}>
-          <SheetAction label="내일 첫 수업 과목 상세" icon="courses" chevron onPress={() => go(() => nav.push(P.course('service-design')))} />
+          {next && <SheetAction label={next.tomorrow ? '내일 첫 수업 과목 상세' : '다음 수업 과목 상세'} icon="courses" chevron onPress={() => go(() => nav.push(P.course(next.courseId)))} />}
           <SheetAction label="캘린더에서 이번 주 보기" icon="calendar" chevron onPress={() => go(() => nav.tab(P.calendar))} />
         </div>
       </BottomSheet>
@@ -365,19 +402,26 @@ function NoticeLine() {
   );
 }
 
-/* ── 오늘 할 일 ───────────────────────────────────────────── */
-function TodoBlock({ freeDay }: { freeDay: boolean }) {
+/* ── 오늘 할 일 — 시나리오 금·목은 Figma 목록, 그 밖은 실제 수업·일정·마감 (주말·휴강 = 이번 주 할 일) ── */
+function TodoBlock({ now }: { now: Date }) {
   const nav = useNav();
   const [expanded, setExpanded] = useState(false);
-  const items = freeDay ? TODO_FREE : expanded ? [...TODO_TODAY, ...TODO_TOMORROW] : TODO_TODAY;
+  const events = useSchedule((st) => st.events);
+  const plan = todoPlan(now, events);
+  const items = plan.kind === 'day' && expanded ? [...plan.items, ...plan.tomorrow] : plan.items;
   return (
     <Section title="오늘 할 일" more="전체보기" onMore={() => nav.tab(P.calendar)} padded={false}>
       <div className={s.pad}>
         <div className={s.box} data-list>
           {items.map((it) => (
-            <TodoRow key={it.time + it.title} it={it} />
+            <TodoRow key={it.key ?? it.time + it.title} it={it} now={now} />
           ))}
-          {freeDay ? (
+          {!items.length && (
+            <Text variant="body-3" color="tertiary" as="p" className={s.todoEmpty}>
+              {plan.kind === 'week' ? '이번 주 마감·일정이 없어요' : '오늘 할 일이 없어요'}
+            </Text>
+          )}
+          {plan.kind === 'week' ? (
             <button type="button" className={s.expand} onClick={() => nav.tab(P.calendar)}>
               <Text variant="caption-1" color="secondary">
                 이번 주 할 일 전체 보기
@@ -385,12 +429,14 @@ function TodoBlock({ freeDay }: { freeDay: boolean }) {
               <Icon name="chevron-down" size={16} color="secondary" />
             </button>
           ) : (
-            <button type="button" className={s.expand} aria-expanded={expanded} onClick={() => setExpanded((v) => !v)}>
-              <Text variant="caption-1" color="secondary">
-                {expanded ? '접기' : `내일 할 일 ${TODO_TOMORROW.length}개 더보기`}
-              </Text>
-              <Icon name={expanded ? 'chevron-up' : 'chevron-down'} size={16} color="secondary" />
-            </button>
+            plan.tomorrow.length > 0 && (
+              <button type="button" className={s.expand} aria-expanded={expanded} onClick={() => setExpanded((v) => !v)}>
+                <Text variant="caption-1" color="secondary">
+                  {expanded ? '접기' : `내일 할 일 ${plan.tomorrow.length}개 더보기`}
+                </Text>
+                <Icon name={expanded ? 'chevron-up' : 'chevron-down'} size={16} color="secondary" />
+              </button>
+            )
           )}
         </div>
       </div>
@@ -398,21 +444,22 @@ function TodoBlock({ freeDay }: { freeDay: boolean }) {
   );
 }
 
-function TodoRow({ it }: { it: TodoItem }) {
+function TodoRow({ it, now }: { it: TodoItem; now: Date }) {
   const nav = useNav();
-  const attended = useApp((st) => st.attendanceComplete);
+  const attended = useApp((st) => st.attended);
   const isSubmitted = useIsSubmitted();
   const applied = useSchedule((st) => st.applied);
   const submitted = it.assignment ? isSubmitted(it.assignment.courseId, it.assignment.aid) : false;
+  const mark = it.attend ? attendMark(it.attend, now, attended) : null;
 
   let meta: ReactNode = it.meta;
   let metaColor: 'tertiary' | 'error' = 'tertiary';
-  if (it.attendCourse && attended) {
+  if (mark) {
     meta = (
       <>
         {it.meta}{' '}
-        <Text variant="caption-1" color="brand">
-          · 출석 완료
+        <Text variant="caption-1" color={mark === '결석' ? 'error' : 'brand'}>
+          · {mark}
         </Text>
       </>
     );
@@ -446,30 +493,40 @@ function TodoRow({ it }: { it: TodoItem }) {
   );
 }
 
-/* ── 마감 임박 과제 (가로 카드) ───────────────────────────── */
-function DeadlineBlock({ freeDay }: { freeDay: boolean }) {
+/* ── 마감 임박 과제 (가로 카드) — 지금 이후 마감만 · 배지는 지금 기준 ── */
+function DeadlineBlock({ now }: { now: Date }) {
   const nav = useNav();
   const isSubmitted = useIsSubmitted();
-  const base = freeDay ? FREE_DAY : NOW;
+  const list = upcomingDeadlines(now);
   return (
     <Section title="마감 임박 과제" more="전체보기" onMore={() => nav.tab(P.courses)} padded={false}>
-      <div className={`${s.hscroll} no-scrollbar`}>
-        {DEADLINES.map((d) => {
-          const done = isSubmitted(d.courseId, d.aid);
-          const b = done ? { label: '제출 완료', tone: 'brand' as const } : dueBadge(d.due, base);
-          return (
-            <button key={d.courseId + d.aid} type="button" className={s.dueCard} onClick={() => nav.push(d.to)}>
-              <Chip tone={b.tone}>{b.label}</Chip>
-              <Text variant="body-2-strong" className="truncate">
-                {d.title}
-              </Text>
-              <Text variant="caption-1" color="tertiary" className="truncate">
-                {d.course} · {done ? '제출 완료' : d.meta}
-              </Text>
-            </button>
-          );
-        })}
-      </div>
+      {list.length ? (
+        <div className={`${s.hscroll} no-scrollbar`}>
+          {list.map((d) => {
+            const done = isSubmitted(d.courseId, d.aid);
+            const b = done ? { label: '제출 완료', tone: 'brand' as const } : dueBadge(d.due, now);
+            return (
+              <button key={d.courseId + d.aid} type="button" className={s.dueCard} onClick={() => nav.push(d.to)}>
+                <Chip tone={b.tone}>{b.label}</Chip>
+                <Text variant="body-2-strong" className="truncate">
+                  {d.title}
+                </Text>
+                <Text variant="caption-1" color="tertiary" className="truncate">
+                  {d.course} · {done ? '제출 완료' : d.meta}
+                </Text>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className={s.pad}>
+          <div className={s.box}>
+            <Text variant="body-3" color="tertiary" as="p">
+              마감이 가까운 과제가 없어요
+            </Text>
+          </div>
+        </div>
+      )}
     </Section>
   );
 }
@@ -518,9 +575,32 @@ function PressBox({ onPress, className, label, children }: { onPress: () => void
   );
 }
 
-/* ── 오늘의 학식 (메뉴·가격 + 시간대별 혼잡도) ───────────── */
-function MealBlock() {
+/* ── 오늘의 학식 (메뉴·가격 + 시간대별 혼잡도) — 주말은 운영 안 함 ───────────── */
+function MealBlock({ now }: { now: Date }) {
   const nav = useNav();
+  if (isWeekend(now)) {
+    return (
+      <Section title="오늘의 학식" more="전체 식단" onMore={() => nav.push(P.meal)} padded={false}>
+        <div className={s.pad}>
+          <PressBox onPress={() => nav.push(P.meal)}>
+            <div className={s.infoRow}>
+              <div className={s.infoText}>
+                <Text variant="body-1-strong" as="p">
+                  {MEAL_CLOSED.title}
+                </Text>
+                <Text variant="caption-1" color="tertiary" as="p" className="truncate" tnum>
+                  {MEAL_CLOSED.meta}
+                </Text>
+              </div>
+              <span className={s.thumb} aria-hidden>
+                <Icon name="meal" size={24} color="tertiary" />
+              </span>
+            </div>
+          </PressBox>
+        </div>
+      </Section>
+    );
+  }
   return (
     <Section title="오늘의 학식" more="전체 식단" onMore={() => nav.push(P.meal)} padded={false}>
       <div className={s.pad}>
@@ -567,9 +647,9 @@ function MealBlock() {
 }
 
 /* ── (기본 꺼짐) 다음 강의실 · 도서관 좌석 — v5 홈 편집에만 있는 블록, 같은 블록 문법으로 구성 ── */
-function NextRoomBlock({ freeDay }: { freeDay: boolean }) {
+function NextRoomBlock({ now }: { now: Date }) {
   const nav = useNav();
-  const r = freeDay ? NEXT_ROOM.free : NEXT_ROOM.today;
+  const r = nextRoom(now);
   return (
     <Section title="다음 강의실" more="지도 보기" onMore={() => nav.push(P.campusMap)} padded={false}>
       <div className={s.pad}>
@@ -579,9 +659,11 @@ function NextRoomBlock({ freeDay }: { freeDay: boolean }) {
               <Text variant="body-1-strong" as="p" className="truncate">
                 {r.room}
               </Text>
-              <Text variant="caption-1" color="tertiary" as="p" className="truncate" tnum>
-                {r.meta}
-              </Text>
+              {r.meta && (
+                <Text variant="caption-1" color="tertiary" as="p" className="truncate" tnum>
+                  {r.meta}
+                </Text>
+              )}
             </div>
             <span className={s.thumb} aria-hidden>
               <Icon name="map" size={24} color="primary" />
@@ -593,9 +675,9 @@ function NextRoomBlock({ freeDay }: { freeDay: boolean }) {
   );
 }
 
-function LibraryBlock() {
+function LibraryBlock({ now }: { now: Date }) {
   return (
-    <Section title="도서관 좌석" aside="09:40 기준" padded={false}>
+    <Section title="도서관 좌석" aside={libraryAsOf(now)} padded={false}>
       <div className={s.pad}>
         <PressBox onPress={() => toast('도서관 좌석 연동은 다음 버전에서 열려요')} className={s.libraryBox}>
           {LIBRARY_ROOMS.map((r) => (

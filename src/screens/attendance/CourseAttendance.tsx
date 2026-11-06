@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'react-router';
 import { BottomSheet, Button, Icon, OptionRow, Screen, SheetHead, Text, TopNav, toast } from '@/ui';
 import { P } from '@/app/paths';
 import { useApp } from '@/store/app';
+import { useNow } from '@/data/clock';
 import { courseById, type Course, type CourseId } from '@/data/core';
 import { AttendanceSheetHost } from './AttendanceSheetHost';
 import { appealMeta, courseSessions, courseStats, isAttendanceCourse, type Session, type TodayState } from './data';
@@ -15,6 +16,8 @@ import s from './Attendance.module.css';
  * 머리(과목·교수·시간·강의실 + 출석률) → 안내(결석 있으면 오류 톤 · 지각만 있으면 주의 톤) → 4칸 요약 → 회차별 기록 → 하단 버튼.
  * 하단 버튼: 오늘 인증 가능한 수업이면 [출석 인증하기](출석 인증 시트), 결석·지각이 있으면 [출석 이의 신청](v5 692:7904 시트).
  * 이의 신청 시트 바로 열기: ?sheet=appeal
+ * 실시간(11-06): 회차 상태·숫자는 지금(useNow) 기준 (data.ts 규칙 4). 오늘 인증 창이 닫혔는데 기록이 없으면
+ *   그 회차는 '인증 마감'(결석으로 셈) → 하단 [출석 이의 신청]으로 이어진다.
  */
 export function CourseAttendance() {
   const { id = 'service-design' } = useParams();
@@ -24,12 +27,14 @@ export function CourseAttendance() {
   const complete = useApp((st) => st.attendanceComplete);
   const method = useApp((st) => st.attendanceMethod);
   const time = useApp((st) => st.attendanceTime);
-  const today: TodayState = { complete, method, time };
+  const attended = useApp((st) => st.attended);
+  const now = useNow();
+  const today: TodayState = { complete, method, time, attended };
   const appeals = useAttendanceLocal((st) => st.appeals);
   const [pin, setPin] = useState(false);
 
-  const st = courseStats(courseId, today);
-  const sessions = courseSessions(courseId, today);
+  const st = courseStats(courseId, today, now);
+  const sessions = courseSessions(courseId, today, now);
   const contestable = sessions.filter((r) => r.status === '결석' || r.status === '지각');
   const pending = contestable.filter((r) => appeals[appealKey(courseId, r.date)]);
   const allPending = contestable.length > 0 && pending.length === contestable.length;
@@ -45,7 +50,8 @@ export function CourseAttendance() {
       header={<TopNav title="출석 상세" fallback={P.attendance} />}
       overlay={
         <>
-          {canAttend && <AttendanceSheetHost open={pin} onClose={() => setPin(false)} />}
+          {/* 시트는 늘 둔다 — 열려 있는 동안 인증 창이 닫히면 시트가 '인증할 수업 없음'으로 바뀜 */}
+          <AttendanceSheetHost open={pin} onClose={() => setPin(false)} />
           {contestable.length > 0 && <AppealSheet open={appealOpen} onClose={() => setAppealOpen(false)} courseId={courseId} sessions={contestable} />}
         </>
       }

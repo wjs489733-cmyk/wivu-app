@@ -48,6 +48,10 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
 }
+/* 주말: 이번 주 월–일 7칸 (토·일 = 운영 안 함 빈 상태) */
+.days[data-cols='7'] {
+  grid-template-columns: repeat(7, 1fr);
+}
 .day {
   display: flex;
   flex-direction: column;

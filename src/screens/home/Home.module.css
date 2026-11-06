@@ -164,6 +164,17 @@
 .classCard .freeBtn {
   margin-top: var(--wivu-space-16);
 }
+/* 남은 수업이 한 개면 공강 카드처럼 꽉 채움 (옆 카드 노출·페이지 점 없음) */
+.carousel[data-single='true'] .classCard {
+  flex-basis: 100%;
+}
+.carousel[data-single='true']::after {
+  display: none;
+}
+/* 인증 마감 카드: '출석 인증 시간이 지났어요' 아래 창 시각 */
+.closedWindow {
+  margin-top: var(--wivu-space-4);
+}
 .dots {
   display: flex;
   justify-content: center;
@@ -244,6 +255,9 @@
   gap: 2px;
   min-width: 0;
   flex: 1;
+}
+.todoEmpty {
+  padding: 12px 0 10px;
 }
 .expand {
   display: flex;

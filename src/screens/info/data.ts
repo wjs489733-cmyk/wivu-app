@@ -1,16 +1,25 @@
-import { NOW } from '@/data/core';
+import { DOW_KO, LOAD_NOW, dayDiff, fmtHM, fmtMD, sameDay, shiftDate, shiftDeep } from '@/data/clock';
+import { COURSES, NOW, SCENARIO_DAY, type Course } from '@/data/core';
+import { classesOn, nextSession, phaseOf, relDayLabel, type ClassSession } from '@/data/today';
 
 /* ────────────────────────────────────────────────────────────
  * 홈 › 알림·정보 데이터 (v5 · 피드백 반영)
  *   학식 681:5684 · 알림함 681:5798(+ 모두 읽음 701:8991)
  *   학사 공지 목록 688:6810 · 상세 688:6925 · 강의실 지도 688:6715(+ 안내 중 702:8726 · 도착 702:8831)
  * Figma 문구 그대로. n2–n7 공지 본문·월–목 식단·지도 건물 정보는 '가상' 데이터(실제 규정·수치 아님).
+ *
+ * 11-06 실시간 전환: 날짜는 시나리오 주(10/5–10/11) → 이번 주로 옮김(shiftDeep · shiftDate).
+ *   · 알림: 시나리오 시각(금 09:57 …)을 옮긴 뒤 지금 기준으로 '오늘/어제/이번 주' 묶음·시각을 계산, 아직 안 온 알림은 숨김.
+ *     출석 인증 알림은 실제 수업(data/today classesOn)의 인증 창이 열린 시각에 생김.
+ *   · 학식: 이번 주 월–금(주말이면 토·일까지) · 식단은 요일 기준.
+ *   · 지도: 다음 수업(nextSession)·오늘 수업(classesOn) 기준으로 칩·강조 건물·바로가기를 계산.
  * ──────────────────────────────────────────────────────────── */
 
 /* ── 알림함 ─────────────────────────────────────────────── */
 export type NotiFilter = 'all' | 'attendance' | 'assignment' | 'notice' | 'board';
 export type NotiTarget =
-  | { kind: 'attendance' }
+  /** key = 그 수업 회차(data/today sessionKey) — 인증 창이 열려 있고 아직 출석 전이면 PIN으로 */
+  | { kind: 'attendance'; key?: string }
   | { kind: 'assignment' }
   | { kind: 'boardPost'; id: string }
   | { kind: 'courseNotice' }
@@ -18,11 +27,16 @@ export type NotiTarget =
   | { kind: 'board' }
   | { kind: 'calendarEvent' };
 
+export type NotiGroup = '오늘' | '어제' | '이번 주';
 export type Noti = {
   id: string;
-  group: '오늘' | '어제' | '이번 주';
+  /** 알림이 온 시각 (시나리오 날짜를 이번 주로 옮긴 실제 Date) */
+  at: Date;
+  /** 지금 기준 묶음 — notificationsAt(now)가 계산 */
+  group: NotiGroup;
   category: string;
   filter: Exclude<NotiFilter, 'all'> | null;
+  /** 오늘·어제 = 'HH:MM', 이번 주 = 'MM.DD' (Figma 681:5798) — notificationsAt(now)가 계산 */
   time: string;
   title: string;
   body: string;
@@ -42,16 +56,75 @@ export const NOTI_FILTERS: { value: NotiFilter; label: string }[] = [
   { value: 'board', label: '게시판' },
 ];
 
-/* 시각은 Figma 681:5798 그대로. (댓글 09:57은 상태바 9:41보다 뒤 — 게시판 상대 시각 '12분 전' 기준과 맞춘 값이라 유지, 보고) */
-export const NOTIFICATIONS: Noti[] = [
-  { id: 'nt-comment', group: '오늘', category: '게시판', filter: 'board', time: '09:57', title: '내 글에 댓글 2개가 달렸어요', body: '“서비스 분석 리포트, 분석 대상 겹쳐도…”', unread: true, highlight: true, to: { kind: 'boardPost', id: 'p1' } },
-  { id: 'nt-attend', group: '오늘', category: '출석', filter: 'attendance', time: '09:40', title: '서비스디자인 출석 인증이 열렸어요', body: '디자인관 302호 · 10:10까지', unread: true, highlight: true, to: { kind: 'attendance' } },
-  { id: 'nt-assign', group: '오늘', category: '과제', filter: 'assignment', time: '09:00', title: '서비스 분석 리포트 오늘 마감', body: '23:59까지 · 아직 제출하지 않았어요', unread: true, highlight: true, to: { kind: 'assignment' } },
-  { id: 'nt-course-notice', group: '오늘', category: '공지', filter: 'notice', time: '08:30', title: '서비스디자인 새 공지', body: '오늘 수업 진행 방식 안내', unread: false, to: { kind: 'courseNotice' } },
-  { id: 'nt-academic', group: '어제', category: '학사', filter: 'notice', time: '18:20', title: '2학기 중간고사 시행 안내', body: '10.19(월)–10.23(금) 시험 기간', unread: false, to: { kind: 'academicNotice', id: 'n1' } },
-  { id: 'nt-team', group: '어제', category: '팀플', filter: 'board', time: '13:05', title: 'UX 리서치 팀플 모집이 곧 마감돼요', body: '사용자 인터뷰 팀원 · D-2', unread: false, to: { kind: 'board' } },
-  { id: 'nt-fair', group: '이번 주', category: '일정', filter: null, time: '10.05', title: '취업박람회가 캘린더에 추가됐어요', body: '10.12(월) 14:00 · 학생회관 대강당', unread: false, to: { kind: 'calendarEvent' } },
-];
+type NotiSrc = Omit<Noti, 'group' | 'time'>;
+/** 시나리오 시각 (2026-10-DD HH:MM) — shiftDeep으로 이번 주로 옮김 */
+const at = (d: number, hm: string) => new Date(2026, 9, d, +hm.slice(0, 2), +hm.slice(3, 5));
+
+/* 시각은 Figma 681:5798 그대로 = 시나리오 금 10/9 기준 '오늘'(금) · '어제'(목 10/8) · '이번 주'(월 10/5).
+ * (댓글 09:57은 상태바 9:41보다 뒤 — 게시판 상대 시각 '12분 전' 기준과 맞춘 값이라 Figma 그대로 둠: 9:41 고정 화면에서도 보임)
+ * 취업박람회 알림은 Figma에 날짜만 있어 시각은 09:00으로 둠(그날이 오늘일 때만 시각이 보임).
+ * 출석 알림(Figma nt-attend 09:40 서비스디자인)은 아래 attendanceNotis가 실제 수업에서 만든다. */
+const NOTI_SRC: NotiSrc[] = shiftDeep<NotiSrc[]>([
+  { id: 'nt-comment', at: at(9, '09:57'), category: '게시판', filter: 'board' as const, title: '내 글에 댓글 2개가 달렸어요', body: '“서비스 분석 리포트, 분석 대상 겹쳐도…”', unread: true, highlight: true, to: { kind: 'boardPost' as const, id: 'p1' } },
+  { id: 'nt-assign', at: at(9, '09:00'), category: '과제', filter: 'assignment' as const, title: '서비스 분석 리포트 오늘 마감', body: '23:59까지 · 아직 제출하지 않았어요', unread: true, highlight: true, to: { kind: 'assignment' as const } },
+  { id: 'nt-course-notice', at: at(9, '08:30'), category: '공지', filter: 'notice' as const, title: '서비스디자인 새 공지', body: '오늘 수업 진행 방식 안내', unread: false, to: { kind: 'courseNotice' as const } },
+  { id: 'nt-academic', at: at(8, '18:20'), category: '학사', filter: 'notice' as const, title: '2학기 중간고사 시행 안내', body: '10.19(월)–10.23(금) 시험 기간', unread: false, to: { kind: 'academicNotice' as const, id: 'n1' } },
+  { id: 'nt-team', at: at(8, '13:05'), category: '팀플', filter: 'board' as const, title: 'UX 리서치 팀플 모집이 곧 마감돼요', body: '사용자 인터뷰 팀원 · D-2', unread: false, to: { kind: 'board' as const } },
+  { id: 'nt-fair', at: at(5, '09:00'), category: '일정', filter: null, title: '취업박람회가 캘린더에 추가됐어요', body: '10.12(월) 14:00 · 학생회관 대강당', unread: false, to: { kind: 'calendarEvent' as const } },
+]);
+
+/** 인증 창이 열린 시각 */
+const opensAt = (s: ClassSession) => new Date(s.day.getFullYear(), s.day.getMonth(), s.day.getDate(), 0, s.opensMin);
+/** Figma 681:5798 '서비스디자인 출석 인증이 열렸어요'(시나리오 금) — 읽음 기록 키를 Figma 때와 같게 */
+const FIGMA_ATTEND_KEY = classesOn(SCENARIO_DAY).find((s) => s.courseId === 'service-design')?.key;
+
+/**
+ * 출석 인증 알림 — 실제 수업의 인증 창이 열린 시각(시작 20분 전)에 생김.
+ * 대상: 오늘 · 어제 수업 + (주말이면) 이번 주 금요일 수업 — 금요일 시나리오 알림(댓글·과제…)과 같이 지난 알림으로 남김.
+ * 오늘 것만 안 읽음·강조(Figma: 오늘 확인할 알림), 지난 날 것은 Figma '어제' 묶음처럼 읽은 상태.
+ */
+function attendanceNotis(now: Date): NotiSrc[] {
+  const days = [now, new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)];
+  if (dayDiff(SCENARIO_DAY, now) > 1) days.push(SCENARIO_DAY);
+  return days
+    .flatMap((d) => classesOn(d))
+    .filter((s) => opensAt(s).getTime() <= now.getTime())
+    .map((s) => {
+      const today = sameDay(s.day, now);
+      return {
+        id: s.key === FIGMA_ATTEND_KEY ? 'nt-attend' : `nt-attend:${s.key}`,
+        at: opensAt(s),
+        category: '출석',
+        filter: 'attendance' as const,
+        title: `${s.course.name} 출석 인증이 열렸어요`,
+        body: `${s.course.room} · ${s.closes}까지`,
+        unread: today,
+        highlight: today,
+        to: { kind: 'attendance' as const, key: s.key },
+      };
+    });
+}
+
+const groupOf = (d: Date, now: Date): NotiGroup => {
+  const n = dayDiff(d, now);
+  return n <= 0 ? '오늘' : n === 1 ? '어제' : '이번 주';
+};
+
+/**
+ * 지금 기준 알림함 — 이미 온 알림만(최신순), 묶음·시각 글자는 지금 기준으로 계산.
+ * 강조(파랑·굵게)는 오늘 온 알림만 (Figma '오늘 확인이 필요한 알림').
+ */
+export function notificationsAt(now: Date): Noti[] {
+  return [...NOTI_SRC, ...attendanceNotis(now)]
+    .filter((n) => n.at.getTime() <= now.getTime())
+    .sort((a, b) => b.at.getTime() - a.at.getTime())
+    .map((n) => {
+      const group = groupOf(n.at, now);
+      return { ...n, group, time: group === '이번 주' ? fmtMD(n.at) : fmtHM(n.at), highlight: !!n.highlight && group === '오늘' };
+    });
+}
+/** 앱을 연 순간 기준 알림 — 탭 헤더 종 점(app/useUnread) 호환용. 화면은 notificationsAt(useNow()) */
+export const NOTIFICATIONS: Noti[] = notificationsAt(LOAD_NOW);
 export const NOTI_GROUPS = ['오늘', '어제', '이번 주'] as const;
 
 /* ── 학식 ───────────────────────────────────────────────── */
@@ -62,16 +135,22 @@ export const CAFETERIAS: { value: CafeteriaId; label: string; place: string }[] 
   { value: 'dorm', label: '기숙사식당', place: '기숙사 1층' },
 ];
 
-/** 이번 주 월–금 (10/5 – 10/9) · 오늘 금 9 */
-export const MEAL_DAYS = [
-  { d: 5, dow: '월' },
-  { d: 6, dow: '화' },
-  { d: 7, dow: '수' },
-  { d: 8, dow: '목' },
-  { d: 9, dow: '금' },
-] as const;
-export const MEAL_TODAY = NOW.getDate(); // 9
-export const MEAL_MONTH = NOW.getMonth() + 1; // 10
+export type MealDow = '월' | '화' | '수' | '목' | '금';
+export type MealDay = { date: Date; m: number; d: number; dow: (typeof DOW_KO)[number] };
+const mealDay = (scenD: number): MealDay => {
+  const date = shiftDate(new Date(2026, 9, scenD));
+  return { date, m: date.getMonth() + 1, d: date.getDate(), dow: DOW_KO[date.getDay()] };
+};
+/** 이번 주 월–금 (시나리오 10/5 – 10/9 → 이번 주로 옮김) */
+export const MEAL_DAYS: MealDay[] = [5, 6, 7, 8, 9].map(mealDay);
+/** 이번 주 토·일 — 주말에만 요일 줄에 붙음(운영 안 함) */
+export const MEAL_WEEKEND: MealDay[] = [10, 11].map(mealDay);
+/** 실제 오늘 날짜·월 (시나리오 9 · 10) */
+export const MEAL_TODAY = NOW.getDate();
+export const MEAL_MONTH = NOW.getMonth() + 1;
+/** 주말 빈 상태 문구 (홈 학식 카드와 같은 문구) */
+export const MEAL_CLOSED_WEEKEND = '주말에는 학생식당을 운영하지 않아요';
+export const mealClosedText = (cafeLabel: string) => `주말에는 ${cafeLabel}을 운영하지 않아요`;
 
 export type MealKind = '중식' | '석식';
 export type Meal = {
@@ -101,34 +180,39 @@ const L = (main: string, sides: string, crowd = LUNCH_CROWD, peak = '12:10–12:
 const D = (main: string, sides: string, crowd = DINNER_CROWD, peak = '17:20–17:50'): Meal => ({ kind: '석식', main, sides, price: DINNER_PRICE, crowd, peak });
 const SL = (main: string, sides: string) => L(main, sides, STAFF_CROWD, '12:00–12:30');
 
-/** 식단[날짜][식당] — 금(9) 학생식당은 Figma 681:5684 그대로, 나머지는 가상 식단 */
-export const MENUS: Record<number, Record<CafeteriaId, Meal[]>> = {
-  5: {
+/** 식단[요일][식당] — 금 학생식당은 Figma 681:5684 그대로, 나머지는 가상 식단 (이번 주 = 시나리오 주라 요일로 찾음) */
+export const MENUS: Record<MealDow, Record<CafeteriaId, Meal[]>> = {
+  월: {
     student: [L('제육덮밥', '미소된장국 · 단무지 · 배추김치'), D('짜장면', '군만두 · 단무지 · 양파')],
     staff: [SL('갈비탕', '잡곡밥 · 깍두기 · 숙주나물'), D('비빔밥', '된장찌개 · 계란후라이')],
     dorm: [L('카레라이스', '미니돈까스 · 샐러드 · 배추김치'), D('닭갈비덮밥', '어묵국 · 깍두기')],
   },
-  6: {
+  화: {
     student: [L('치킨마요덮밥', '유부장국 · 단무지 · 배추김치'), D('순두부찌개', '쌀밥 · 계란말이 · 김구이')],
     staff: [SL('생선구이 정식', '된장국 · 시금치나물 · 깍두기'), D('김치찌개', '쌀밥 · 두부조림')],
     dorm: [L('돈부리', '미소된장국 · 샐러드'), D('떡볶이', '튀김 · 순대 · 어묵국')],
   },
-  7: {
+  수: {
     student: [L('함박스테이크', '크림스프 · 양배추 샐러드 · 피클'), D('콩나물국밥', '깍두기 · 김구이')],
     staff: [SL('불고기 정식', '미역국 · 잡채 · 배추김치'), D('잔치국수', '김밥 · 단무지')],
     dorm: [L('오므라이스', '미니우동 · 단무지'), D('부대찌개', '쌀밥 · 계란찜')],
   },
-  8: {
+  목: {
     student: [L('비빔국수', '군만두 · 단무지 · 요구르트', [14, 20, 28, 42, 46, 38, 22, 14].map((h) => h / 64), '12:15–12:40'), D('돼지국밥', '부추무침 · 깍두기')],
     staff: [SL('닭볶음탕', '쌀밥 · 계란말이 · 깍두기'), D('냉모밀', '유부초밥 · 단무지')],
     dorm: [L('참치김치볶음밥', '계란국 · 깍두기'), D('치킨까스', '양배추 샐러드 · 크림스프')],
   },
-  9: {
+  금: {
     student: [L('돈까스', '우동 · 단무지 · 깍두기 · 요구르트'), D('김치볶음밥', '미역국 · 계란후라이 · 깍두기')],
     staff: [SL('소고기무국 정식', '잡곡밥 · 고등어구이 · 배추김치'), D('제육쌈밥', '된장국 · 쌈채소')],
     dorm: [L('마파두부덮밥', '계란국 · 단무지'), D('쫄면', '김밥 · 어묵국')],
   },
 };
+/** 그날 식단 — 주말(토·일)은 null = 운영 안 함 ('주말에는 학생식당을 운영하지 않아요'). 홈 학식 카드도 이걸로 읽으면 됨 */
+export function mealsOn(date: Date, cafe: CafeteriaId = 'student'): Meal[] | null {
+  const dow = DOW_KO[date.getDay()];
+  return dow in MENUS ? MENUS[dow as MealDow][cafe] : null;
+}
 
 /* ── 학사 공지 ──────────────────────────────────────────── */
 export type NoticeCategory = '학사' | '장학' | '행사';
@@ -164,8 +248,9 @@ export const NOTICE_FILTERS: { value: 'all' | NoticeCategory; label: string }[] 
   { value: '행사', label: '행사' },
 ];
 
-/** 이번 학기 최근 공지 3건 — 다른 섹션(학교 연동 카운트 SYNC_COUNTS)이 개수를 읽으므로 3건 유지 */
-export const ACADEMIC_NOTICES: AcademicNotice[] = [
+/** 이번 학기 최근 공지 3건 — 다른 섹션(학교 연동 카운트 SYNC_COUNTS)이 개수를 읽으므로 3건 유지
+ *  날짜(목록·메타·한눈에 보기·본문)는 시나리오 날짜 → 이번 주로 옮김(shiftDeep, 요일 글자는 주 단위라 그대로 맞음) */
+export const ACADEMIC_NOTICES: AcademicNotice[] = shiftDeep<AcademicNotice[]>([
   {
     id: 'n1',
     category: '학사',
@@ -220,7 +305,7 @@ export const ACADEMIC_NOTICES: AcademicNotice[] = [
     inCalendar: true,
     secondary: { label: '참가 신청하기', doneLabel: '신청 완료', action: 'apply' },
   },
-];
+]);
 
 /** 지난 공지 (Figma 688:6810 목록 4–7행) — 상세는 같은 템플릿의 가상 안내, 원문은 학교 포털로 */
 const portalNotice = (n: Omit<AcademicNotice, 'secondary' | 'body'> & { lead: string }): AcademicNotice => ({
@@ -228,7 +313,7 @@ const portalNotice = (n: Omit<AcademicNotice, 'secondary' | 'body'> & { lead: st
   body: `${n.lead}\n\n· 자세한 일정과 기준은 학교 포털 원문 공지를 확인해 주세요.\n· 내용이 바뀌면 WivU 알림으로 다시 안내됩니다.`,
   secondary: { label: '원문 보기', action: 'portal' },
 });
-export const PAST_NOTICES: AcademicNotice[] = [
+export const PAST_NOTICES: AcademicNotice[] = shiftDeep([
   portalNotice({
     id: 'n4',
     category: '학사',
@@ -290,7 +375,7 @@ export const PAST_NOTICES: AcademicNotice[] = [
     lead: '가을 축제에서 부스를 운영할 동아리를 모집해요. 부스 위치와 운영 시간은 신청한 동아리끼리 함께 정합니다.',
     calendarLabel: '축제 부스 모집',
   }),
-];
+]);
 
 /** 학사 공지 목록(688:6810) 전체 — 최신순 */
 export const NOTICE_LIST: AcademicNotice[] = [...ACADEMIC_NOTICES, ...PAST_NOTICES];
@@ -322,7 +407,10 @@ export type Building = {
   floors: { floor: string; desc: string; mine?: boolean }[];
   /** 다음 수업 건물 */
   next?: boolean;
+  /** 강의실이 여럿인 건물 — 강의실별 핀·시트·안내 문구 (키 = core Course.room). 기본 필드 = 첫 강의실(Figma) */
+  rooms?: Record<string, RoomInfo>;
 };
+type RoomInfo = Pick<Building, 'pin' | 'title' | 'sub' | 'guide' | 'arrive'>;
 
 export const ME: Pt = [80, 470];
 /** 도로 중심선: 가로 y311 · y609, 세로 x161 · x299 */
@@ -344,6 +432,11 @@ export const BUILDINGS: Building[] = [
     guide: '정문으로 들어가 엘리베이터로 4층',
     arrive: '엘리베이터로 4층 · 오른쪽 세 번째 강의실',
     next: true,
+    // 다음 수업이 302호(서비스디자인)·B103(모션그래픽스)일 때 — 401호(Figma)와 같은 구성의 가상 안내
+    rooms: {
+      '디자인관 302호': { pin: '302호 · 3층', title: '디자인관 302호', sub: '3층 · 엘리베이터에서 왼쪽 첫 번째 강의실', guide: '정문으로 들어가 엘리베이터로 3층', arrive: '엘리베이터로 3층 · 왼쪽 첫 번째 강의실' },
+      '디자인관 B103': { pin: 'B103 · 지하 1층', title: '디자인관 B103', sub: '지하 1층 · 엘리베이터 앞 촬영 스튜디오 옆', guide: '정문으로 들어가 엘리베이터로 지하 1층', arrive: '엘리베이터로 지하 1층 · 촬영 스튜디오 옆 강의실' },
+    },
     floors: [
       { floor: '4층', desc: '401호 브랜드디자인 · 디자인 스튜디오', mine: true },
       { floor: '3층', desc: '302호 서비스디자인 · 세미나실', mine: true },
@@ -435,7 +528,41 @@ export const BUILDINGS: Building[] = [
     floors: [{ floor: '1층', desc: '기숙사식당 · 택배 보관실' }],
   },
 ];
+/** 기본 '다음 수업' 건물 (시나리오 금 9:41 = 디자인관) — 화면은 nextBuildingId(now) */
 export const NEXT_BUILDING = 'design';
+
+/* ── 지도 실시간 (11-06): 다음 수업 = data/today nextSession(인증 창이 아직 안 열린 가장 가까운 수업) ── */
+/** 수업 건물 → 지도 건물 id */
+export const buildingIdOf = (c: Course) => BUILDINGS.find((b) => b.name === c.building)?.id;
+const roomInfo = (b: Building, room: string): RoomInfo => b.rooms?.[room] ?? { pin: b.pin, title: b.title, sub: b.sub, guide: b.guide, arrive: b.arrive };
+/** 시간표 칩 '월·수 10:30 디자인경영' (같은 시각 요일끼리 묶음) */
+const scheduleChip = (c: Course) => {
+  const byStart = new Map<string, string[]>();
+  for (const sl of c.slots) byStart.set(sl.start, [...(byStart.get(sl.start) ?? []), sl.day]);
+  return `${[...byStart].map(([st, ds]) => `${ds.join('·')} ${st}`).join(', ')} ${c.name}`;
+};
+/** 다음 수업 '13:00 브랜드디자인'(오늘) · '내일 10:00 서비스디자인' · '월 10:30 디자인경영' */
+const whenLabel = (s: ClassSession, now: Date) => `${sameDay(s.day, now) ? '' : `${relDayLabel(s.day, now)} `}${s.start} ${s.course.name}`;
+
+/**
+ * 지금 기준 건물 시트·핀 — Figma 9:41: 디자인관 '다음 수업 · 13:00 브랜드디자인' · 정보관 '오늘 15:00 UX 리서치' · 인문관 '월·수 10:30 디자인경영'
+ *  다음 수업 건물 → '다음 수업 · …' + 그 강의실 안내 / 오늘 남은 수업이 있는 건물 → '오늘 HH:MM 과목' / 그 밖 → 시간표 칩
+ */
+export function buildingView(b: Building, now: Date): Building {
+  const mine = COURSES.filter((c) => !c.online && c.building === b.name);
+  if (!mine.length) return { ...b, next: false };
+  const next = nextSession(now);
+  if (next && next.course.building === b.name) return { ...b, ...roomInfo(b, next.course.room), chip: `다음 수업 · ${whenLabel(next, now)}`, next: true };
+  const today = classesOn(now).find((s) => s.course.building === b.name && phaseOf(s, now) !== 'ended');
+  if (today) return { ...b, ...roomInfo(b, today.course.room), chip: `오늘 ${today.start} ${today.course.name}`, next: false };
+  const def = mine.find((c) => c.room === b.title) ?? mine[0];
+  return { ...b, ...roomInfo(b, def.room), chip: scheduleChip(def), next: false };
+}
+/** 지금 '다음 수업' 건물 id */
+export const nextBuildingId = (now: Date) => {
+  const n = nextSession(now);
+  return (n && buildingIdOf(n.course)) || NEXT_BUILDING;
+};
 
 /** 경로 길이(px · 지도 1px ≈ 1m) */
 export const routeLength = (pts: Pt[]) => pts.slice(1).reduce((a, p, i) => a + Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1]), 0);
@@ -455,9 +582,29 @@ export const arrivePoint = (pts: Pt[]): Pt => {
   return [x1 - ((x1 - x0) / len) * 8, y1 - ((y1 - y0) / len) * 8];
 };
 
-/** 검색 바로가기 (오늘 수업 순) */
+/** 검색 바로가기 (오늘 수업 순) — Figma 9:41 기준 값. 화면은 mapShortcuts(now) */
 export const MAP_SHORTCUTS = [
   { label: '디자인관 401호', meta: '13:00 브랜드디자인 · 다음 수업', building: 'design' },
   { label: '정보관 210호', meta: '15:00 UX 리서치', building: 'info' },
   { label: '디자인관 302호', meta: '10:00 서비스디자인', building: 'design' },
 ];
+export type MapShortcut = (typeof MAP_SHORTCUTS)[number];
+/**
+ * 검색 바로가기 (지금 기준) — 오늘 수업: 아직 안 열린 수업(시작 순, 첫 칸 '다음 수업') → 지금·지난 수업 순 (Figma 9:41 순서와 같음).
+ * 오늘 수업이 없는 날(목·주말·휴강)은 '다음 수업 강의실' = 다음 수업 날의 수업.
+ */
+export function mapShortcuts(now: Date): { head: string; items: MapShortcut[] } {
+  const next = nextSession(now);
+  const row = (s: ClassSession, when: string): MapShortcut => ({
+    label: s.course.room,
+    meta: `${when}${next && s.key === next.key ? ' · 다음 수업' : ''}`,
+    building: buildingIdOf(s.course) ?? NEXT_BUILDING,
+  });
+  const today = classesOn(now);
+  if (today.length) {
+    const up = today.filter((s) => phaseOf(s, now) === 'upcoming');
+    const rest = today.filter((s) => phaseOf(s, now) !== 'upcoming');
+    return { head: '오늘 수업 강의실', items: [...up, ...rest].map((s) => row(s, `${s.start} ${s.course.name}`)) };
+  }
+  return { head: '다음 수업 강의실', items: next ? classesOn(next.day).map((s) => row(s, whenLabel(s, now))) : [] };
+}

@@ -1,5 +1,7 @@
 import { P } from '@/app/paths';
-import { COURSES, courseById, type CourseId } from '@/data/core';
+import { dayDiff, DOW_KO, fmtHM, mdToDate, sameDay, shiftDeep } from '@/data/clock';
+import { COURSES, NOW, courseById, type CourseId } from '@/data/core';
+import { ASSIGNMENT_LIST } from '@/screens/courses/data';
 import type { ChipTone, IconName } from '@/ui';
 
 /* ────────────────────────────────────────────────────────────
@@ -7,6 +9,12 @@ import type { ChipTone, IconName } from '@/ui';
  * 기준 시각 2026-10-09(금) 9:41 · 6주차. 작성자는 익명·학과명·김OO 패턴 가상 인물만.
  * 날짜 표기 글: 1주차 글(OT 정리·'1주차 …')은 9월 날짜 그대로, 최근 글은 6주차(10.03–10.07) 날짜.
  * 학교 규정·수치처럼 보이는 정보는 쓰지 않는다.
+ *
+ * 11-06 실시간 전환 (data/clock.ts)
+ *  · POSTS의 날짜 글자('10.07' · '10.19(월)' · 모집 마감 until)는 shiftDeep으로 이번 주로 옮김 (요일 유지)
+ *  · '12분 전'·'어제' 같은 시드 상대 시각은 그대로 (지금 기준으로 읽힘)
+ *  · 모집 마감 D-day · 과제 마감 표기 · 내가 쓴 글/댓글 시각은 실제 오늘·지금 기준으로 계산 (아래 도우미)
+ *  · 옮긴 날짜가 오늘 이후인 시드 글(월·화에 보는 수·목 글)은 아직 안 쓴 글 → 목록에서 뺌 (store SEED_POSTS)
  * ──────────────────────────────────────────────────────────── */
 
 export type CampusBoardId = 'free' | 'info' | 'team' | 'dept' | 'market' | 'lost';
@@ -105,8 +113,10 @@ export const tagTone = (tag: string): ChipTone => TAG_TONE[tag] ?? 'neutral';
 
 /* ── 글 ─────────────────────────────────────────────────────── */
 export type Attachment = { name: string; size: string; kind: 'pdf' | 'image' | 'file'; url?: string };
-/** when: 카드 한 줄 요약('금 15:00 수업') · note: 신청 시트의 상세 한 줄 */
-export type Recruit = { current: number; max: number; deadline?: string; note: string; when?: string; courseId?: CourseId };
+/** when: 카드 한 줄 요약('금 15:00 수업') · note: 신청 시트의 상세 한 줄
+ *  until: 모집 마감일 'MM.DD' (시나리오 날짜 → shiftDeep으로 이번 주) — 표기('오늘 마감'·'D-2 마감')는 recruitDeadline()이 실제 오늘 기준으로 */
+export type Recruit = { current: number; max: number; until?: string; note: string; when?: string; courseId?: CourseId };
+/** due: 연결할 때의 마감 표기 (수강과목 과제를 못 찾을 때만 씀 — 보통은 linkedDue()가 과제 마감일로 다시 계산) */
 export type LinkedAssignment = { courseId: CourseId; aid: string; title: string; due: string };
 
 export type Post = {
@@ -133,8 +143,10 @@ export type Post = {
   recruit?: Recruit;
   mine?: boolean;
   pinned?: boolean;
-  /** 이번 세션에 쓴 글 (피드 하이라이트용 타임스탬프) */
+  /** 이번 세션에 쓴 글 (피드 하이라이트용 타임스탬프 — 실제 경과 시간) */
   createdAt?: number;
+  /** 이번 세션에 쓴 글의 작성 시각 (clock now() 기준 ms) — '방금'·'n분 전' 표기 */
+  postedAt?: number;
 };
 
 export type Comment = {
@@ -148,11 +160,13 @@ export type Comment = {
   parent?: string;
   isAuthor?: boolean;
   mine?: boolean;
+  /** 내가 단 댓글의 작성 시각 (clock now() 기준 ms) — '방금'·'n분 전' 표기 */
+  at?: number;
 };
 
 const A1: LinkedAssignment = { courseId: 'service-design', aid: 'a1', title: '서비스 분석 리포트', due: '오늘 23:59' };
 
-export const POSTS: Post[] = [
+export const POSTS: Post[] = shiftDeep<Post[]>([
   /* 서비스디자인 — Figma v5 687:6661 (피드) · 687:6783 (p1 상세) · 698:7597 (p2 상세)
    * p1은 '내 글'(알림 '내 글에 댓글 2개가 달렸어요') → mine: true · 내 공감 없음(공감 4는 다른 사람들) */
   {
@@ -186,7 +200,7 @@ export const POSTS: Post[] = [
     likes: 7,
     comments: 3,
     isNew: true,
-    recruit: { current: 2, max: 4, deadline: '오늘 마감', note: '다음 주 수업 블루프린트 워크숍 · 화요일 저녁 오프라인', when: '화 저녁 오프라인', courseId: 'service-design' },
+    recruit: { current: 2, max: 4, until: '10.09', note: '다음 주 수업 블루프린트 워크숍 · 화요일 저녁 오프라인', when: '화 저녁 오프라인', courseId: 'service-design' },
   },
   {
     id: 'p3',
@@ -229,7 +243,7 @@ export const POSTS: Post[] = [
     likes: 7,
     comments: 4,
     isNew: true,
-    recruit: { current: 3, max: 5, deadline: 'D-2 마감', note: '금 15:00 수업 · 인터뷰 대상 섭외 경험 있으면 좋아요', when: '금 15:00 수업', courseId: 'ux-research' },
+    recruit: { current: 3, max: 5, until: '10.11', note: '금 15:00 수업 · 인터뷰 대상 섭외 경험 있으면 좋아요', when: '금 15:00 수업', courseId: 'ux-research' },
   },
   {
     id: 'u2',
@@ -244,7 +258,7 @@ export const POSTS: Post[] = [
     likes: 2,
     comments: 1,
     isNew: true,
-    recruit: { current: 1, max: 3, deadline: 'D-5 마감', note: '정량 조사 파트 · 온라인 회의 위주', when: '온라인 회의 위주', courseId: 'ux-research' },
+    recruit: { current: 1, max: 3, until: '10.14', note: '정량 조사 파트 · 온라인 회의 위주', when: '온라인 회의 위주', courseId: 'ux-research' },
   },
   {
     id: 'u3',
@@ -538,7 +552,7 @@ export const POSTS: Post[] = [
     views: 176,
     likes: 18,
     comments: 9,
-    recruit: { current: 2, max: 4, deadline: 'D-4 마감', note: '주 1회 화요일 저녁 · 중앙도서관', when: '화 저녁 · 중앙도서관' },
+    recruit: { current: 2, max: 4, until: '10.13', note: '주 1회 화요일 저녁 · 중앙도서관', when: '화 저녁 · 중앙도서관' },
   },
   {
     id: 't2',
@@ -552,7 +566,7 @@ export const POSTS: Post[] = [
     views: 82,
     likes: 6,
     comments: 3,
-    recruit: { current: 2, max: 3, deadline: 'D-6 마감', note: '포스터 부문 · 주 1회 회의', when: '포스터 부문' },
+    recruit: { current: 2, max: 3, until: '10.15', note: '포스터 부문 · 주 1회 회의', when: '포스터 부문' },
   },
   {
     id: 't3',
@@ -566,7 +580,7 @@ export const POSTS: Post[] = [
     views: 64,
     likes: 4,
     comments: 2,
-    recruit: { current: 3, max: 6, deadline: 'D-3 마감', note: '월·수·금 08:30 · 학생회관', when: '월·수·금 08:30' },
+    recruit: { current: 3, max: 6, until: '10.12', note: '월·수·금 08:30 · 학생회관', when: '월·수·금 08:30' },
   },
 
   /* 시각디자인과 */
@@ -709,7 +723,7 @@ export const POSTS: Post[] = [
     comments: 0,
     pinned: true,
   },
-];
+]);
 
 /* ── 탭 루트 ────────────────────────────────────────────────── */
 export const TEAM_FEATURED = 'u1';
@@ -828,3 +842,43 @@ export const boardLabel = (boardId: BoardId) => {
   const b = boardById(boardId);
   return b.kind === 'course' ? courseById(b.id).name : b.name;
 };
+
+/* ── 실시간 표기 도우미 (실제 오늘·지금 기준) ───────────────────
+ * 날짜 단위는 NOW(앱을 연 날 — 날짜가 바뀌면 새로고침), 분 단위는 컴포넌트가 useNow()로 받은 now를 넘긴다. */
+
+/** 과제 마감 표기 (699:8424): 오늘이면 '오늘 23:59', 아니면 '10.15 (목)' */
+export const dueLabel = (due: Date, today: Date = NOW) => (sameDay(due, today) ? `오늘 ${fmtHM(due)}` : `${due.getMonth() + 1}.${String(due.getDate()).padStart(2, '0')} (${DOW_KO[due.getDay()]})`);
+
+/** 글에 붙은 과제의 마감 표기 — 수강과목 과제 목록(단일 기준)의 마감일로 다시 계산 */
+export function linkedDue(l: LinkedAssignment, today: Date = NOW): string {
+  const a = ASSIGNMENT_LIST.find((x) => x.courseId === l.courseId && x.id === l.aid);
+  return a ? dueLabel(a.due, today) : l.due;
+}
+
+const MD_ONLY = /^\d{1,2}\.\d{1,2}$/;
+const daysUntil = (r: Recruit, today: Date) => (r.until && MD_ONLY.test(r.until) ? dayDiff(today, mdToDate(r.until, today)) : null);
+/** 모집 마감 표기: '오늘 마감' · 'D-2 마감' · 지난 모집은 '마감' */
+export function recruitDeadline(r: Recruit, today: Date = NOW): string | undefined {
+  const n = daysUntil(r, today);
+  if (n === null) return undefined;
+  return n < 0 ? '마감' : n === 0 ? '오늘 마감' : `D-${n} 마감`;
+}
+/** 마감일이 지난 모집 (참여 신청 불가 · '모집 중' 필터에서 뺌) */
+export const recruitClosed = (r: Recruit | undefined, today: Date = NOW) => {
+  const n = r ? daysUntil(r, today) : null;
+  return n !== null && n < 0;
+};
+
+/** 시드 글 날짜('MM.DD', 옮긴 값)가 오늘 이후 → 아직 안 쓴 글 */
+export const isFuturePost = (p: Post, today: Date = NOW) => MD_ONLY.test(p.time) && dayDiff(today, mdToDate(p.time, today)) > 0;
+
+/** 이번 세션에 쓴 글·댓글: '방금' → 'n분 전' → 'n시간 전' (날짜가 바뀌면 새로고침되어 그 전에 사라짐) */
+export function agoLabel(at: number, now: Date): string {
+  const min = Math.floor((now.getTime() - at) / 60000);
+  if (min < 1) return '방금';
+  if (min < 60) return `${min}분 전`;
+  return `${Math.floor(min / 60)}시간 전`;
+}
+/** 글 시각 표기 (피드는 feedTime 우선) */
+export const postTime = (p: Post, now: Date, feed = false) => (p.postedAt !== undefined ? agoLabel(p.postedAt, now) : (feed ? p.feedTime : undefined) ?? p.time);
+export const commentTime = (c: Comment, now: Date) => (c.at !== undefined ? agoLabel(c.at, now) : c.time);

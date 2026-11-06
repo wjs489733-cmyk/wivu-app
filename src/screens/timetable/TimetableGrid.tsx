@@ -1,13 +1,17 @@
 import type { CSSProperties } from 'react';
 import { Text } from '@/ui';
-import { NOW, WEEK_LABEL } from '@/data/core';
-import { DAYS, NOW_MIN, toMin, type TTCourse } from './data';
+import { WEEK_LABEL } from '@/data/core';
+import { minOfDay, useNow } from '@/data/clock';
+import { isHoliday } from '@/data/today';
+import { DAYS, toMin, type TTCourse } from './data';
 import { RemoveBadge } from './parts';
 import s from './Timetable.module.css';
 
-/* 이번 주 월~금 날짜 (core NOW 기준: 10월 2주차 10/5–10/9, 오늘 금 9) */
-const WEEK_DATES = Array.from({ length: 5 }, (_, i) => new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate() - NOW.getDay() + 1 + i).getDate());
-const TODAY_COL = NOW.getDay() - 1;
+/** 이번 주(월요일 시작) 월~금 날짜 숫자 — 일요일도 지난 월~금 (예: 11/15 일 → 9·10·11·12·13). 월이 바뀌는 주는 '월 30 화 1 …' */
+const weekDates = (now: Date) => {
+  const mon = now.getDate() - ((now.getDay() + 6) % 7);
+  return Array.from({ length: 5 }, (_, i) => new Date(now.getFullYear(), now.getMonth(), mon + i).getDate());
+};
 /* Figma 685:6192 timetable grid: 352×442 · 시간 열 28 · 요일 머리 28 · 1시간 46 */
 const HOUR_H = 46;
 const HEAD_H = 28;
@@ -22,11 +26,18 @@ type Props = {
 };
 
 /**
- * 주간 시간표 그리드 v5 — core COURSES slots(+직접 추가)에서 블록 생성
- * 오늘(금) 수업 = 연파랑 면 + 파란 이름, 다른 요일 = 회색 면, 직접 추가 = 연파랑 면 + 파란 점선.
+ * 주간 시간표 그리드 v5 — core COURSES slots(+직접 추가)에서 블록 생성 (정규 주간 시간표 · 보강 회차는 수업 시트·캘린더에서)
+ * 오늘(실제 요일) 수업 = 연파랑 면 + 파란 이름, 다른 요일 = 회색 면, 직접 추가 = 연파랑 면 + 파란 점선.
+ * 주말엔 강조 열 없음 · 휴강일(이번 주 월)은 요일 이름만 강조. 지금 시각 선은 평일에만, 매 분 갱신(useNow).
  * 기본 9~18시, 범위 밖 수업이 있으면 자동으로 늘어남.
  */
 export function TimetableGrid({ courses, editing, onBlock, onRemove }: Props) {
+  const now = useNow();
+  const WEEK_DATES = weekDates(now);
+  // 월=0 … 금=4, 주말 = -1 (강조 없음)
+  const TODAY_COL = now.getDay() >= 1 && now.getDay() <= 5 ? now.getDay() - 1 : -1;
+  const todayOff = isHoliday(now);
+  const NOW_MIN = minOfDay(now);
   const slots = courses.flatMap((c) => c.slots);
   const startH = Math.min(9, ...slots.map((sl) => Math.floor(toMin(sl.start) / 60)));
   const endH = Math.max(18, ...slots.map((sl) => Math.ceil(toMin(sl.end) / 60)));
@@ -52,14 +63,16 @@ export function TimetableGrid({ courses, editing, onBlock, onRemove }: Props) {
         </Text>
       ))}
 
-      {NOW_MIN >= startH * 60 && NOW_MIN <= endH * 60 && <span className={s.nowLine} style={{ top: y(NOW_MIN) - 1 }} aria-label="현재 시각 9:41" />}
+      {TODAY_COL >= 0 && NOW_MIN >= startH * 60 && NOW_MIN <= endH * 60 && (
+        <span className={s.nowLine} style={{ top: y(NOW_MIN) - 1 }} aria-label={`현재 시각 ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`} />
+      )}
 
       {courses.flatMap((c) =>
         c.slots.map((sl) => {
           const col = DAYS.indexOf(sl.day);
           const top = y(toMin(sl.start)) + 1;
           const h = ((toMin(sl.end) - toMin(sl.start)) / 60) * HOUR_H - 2;
-          const tone = !c.core ? 'extra' : col === TODAY_COL ? 'today' : 'plain';
+          const tone = !c.core ? 'extra' : col === TODAY_COL && !todayOff ? 'today' : 'plain';
           const style: CSSProperties = { top, height: h, left: `calc(${colLeft(col)} + 1px)`, width: 'calc(var(--col) - 3px)' };
           const label = `${c.name} ${sl.day} ${sl.start}–${sl.end} ${c.room}${c.core ? '' : ' · 직접 추가'}`;
           return (

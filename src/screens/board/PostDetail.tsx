@@ -3,7 +3,8 @@ import { useParams, useSearchParams } from 'react-router';
 import { BottomSheet, Button, Chip, Dialog, Icon, IconButton, OptionRow, Screen, SheetAction, SheetHead, Text, TopNav, toast } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
-import { boardById, boardTitle, REPORT_REASONS, verifiedLabel, type Comment, type Post } from './data';
+import { now as clockNow, useNow } from '@/data/clock';
+import { boardById, boardTitle, commentTime, linkedDue, postTime, REPORT_REASONS, verifiedLabel, type Comment, type Post } from './data';
 import { useBoard, usePost, usePostStats, useThread } from './store';
 import { EmptyState, LocalSheetAction, TagChip } from './parts';
 import { LocalIcon } from './icons';
@@ -55,6 +56,8 @@ function PostView({ post }: { post: Post }) {
   const toggleScrap = useBoard((st) => st.toggleScrap);
   const addComment = useBoard((st) => st.addComment);
   const hide = useBoard((st) => st.hide);
+  // 내가 쓴 글·댓글의 '방금' → 'n분 전' 매 분 갱신
+  const now = useNow();
 
   const [sheet, setSheet] = useState<SheetKind>(() => {
     const q = params.get('sheet');
@@ -98,6 +101,7 @@ function PostView({ post }: { post: Post }) {
     const c = addComment(post.id, {
       author: post.mine ? '작성자' : myAnonName(),
       time: '방금',
+      at: clockNow().getTime(),
       body,
       likes: 0,
       parent: replyTo ? (replyTo.parent ?? replyTo.id) : undefined,
@@ -147,7 +151,7 @@ function PostView({ post }: { post: Post }) {
 
   const images = post.files?.filter((f) => f.kind === 'image' && f.url) ?? [];
   const docs = post.files?.filter((f) => !(f.kind === 'image' && f.url)) ?? [];
-  const meta = [post.author, post.time, `조회 ${post.views}`, official ? '운영팀' : verifiedLabel(board)].join(' · ');
+  const meta = [post.author, postTime(post, now), `조회 ${post.views}`, official ? '운영팀' : verifiedLabel(board)].join(' · ');
 
   return (
     <Screen
@@ -288,7 +292,7 @@ function PostView({ post }: { post: Post }) {
           <button type="button" className={s.linkRow} style={{ marginTop: 16 }} onClick={() => nav.push(P.assignment(post.linked!.courseId, post.linked!.aid))}>
             <Icon name="assignment" size={18} />
             <Text variant="body-3" className="truncate">
-              {post.linked.title} · {post.linked.due} 마감
+              {post.linked.title} · {linkedDue(post.linked)} 마감
             </Text>
             <Icon name="chevron-right" size={16} color="secondary" />
           </button>
@@ -369,7 +373,7 @@ function PostView({ post }: { post: Post }) {
                   {c.author}
                 </Text>
                 <Text variant="caption-2" color="tertiary">
-                  {c.time}
+                  {commentTime(c, now)}
                 </Text>
               </div>
               <Text variant="body-3" as="p" className={s.body}>

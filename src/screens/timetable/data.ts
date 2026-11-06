@@ -1,10 +1,14 @@
 import { P } from '@/app/paths';
-import { COURSES, NOW, courseById, type CourseId, type Weekday } from '@/data/core';
+import { COURSES, NOW, SCENARIO_DAY, courseById, type CourseId, type Weekday } from '@/data/core';
+import { SHIFT_DAYS, fmtISO, minOfDay, shiftDeep, shiftText } from '@/data/clock';
+import { isHoliday } from '@/data/today';
 import { ASSIGNMENT_LIST } from '@/screens/courses/data';
 
 /* ────────────────────────────────────────────────────────────
  * 시간표 · 캘린더 섹션 데이터 — Figma v5 07 시간표(685:6192 …) · 08 캘린더(686:6385 …)
- * 기준 시각: core NOW (2026-10-09 금 9:41 · 6주차). 과목은 core COURSES가 기준, 검색 카탈로그는 가상 과목.
+ * 기준: 실제 오늘(core NOW = 앱을 연 날) · 시각은 컴포넌트에서 useNow(). 과목은 core COURSES가 기준, 검색 카탈로그는 가상 과목.
+ * 일정·학기 날짜는 시나리오(2026-10-09 금 = 6주차) 기준으로 적고 shiftDeep/shiftText로 이번 주에 옮겨 붙인다 (data/clock.ts).
+ * 오늘 수업·출석 인증 창은 data/today.ts (이번 주 월요일 휴강 · 화요일 디자인경영 보강 포함).
  * ──────────────────────────────────────────────────────────── */
 
 export const DAYS: Weekday[] = ['월', '화', '수', '목', '금'];
@@ -15,7 +19,6 @@ export const toMin = (t: string) => {
   const [h, m] = t.split(':').map(Number);
   return h * 60 + m;
 };
-export const NOW_MIN = NOW.getHours() * 60 + NOW.getMinutes(); // 9:41 → 581
 
 /* ── 날짜 유틸 (YYYY-MM-DD 문자열, 로컬 시간) ───────────────── */
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -24,7 +27,8 @@ export const parseIso = (s: string) => {
   const [y, m, d] = s.split('-').map(Number);
   return new Date(y, m - 1, d);
 };
-export const TODAY = iso(NOW); // '2026-10-09'
+/** 실제 오늘 'YYYY-MM-DD' (날짜가 바뀌면 앱이 새로고침됨 — data/clock tick) */
+export const TODAY = iso(NOW);
 export const addDays = (s: string, n: number) => {
   const d = parseIso(s);
   d.setDate(d.getDate() + n);
@@ -76,7 +80,7 @@ const BLOCK: Record<CourseId, { name: string; room: string; note?: string }> = {
   'ux-research': { name: 'UX 리서치', room: '정보관\n210' },
   'design-management': { name: '디자인경영', room: '인문관\n305' },
   'motion-graphics': { name: '모션\n그래픽스', room: '디자인관\nB103' },
-  writing: { name: '글쓰기와\n소통', room: '', note: '시간 무관 · 7주차 강의 10.12 오픈' },
+  writing: { name: '글쓰기와\n소통', room: '', note: shiftText('시간 무관 · 7주차 강의 10.12 오픈') },
 };
 
 export const CORE_COURSES: TTCourse[] = COURSES.map((c) => ({
@@ -141,13 +145,14 @@ export function findConflicts(target: TTCourse, existing: TTCourse[]): Conflict[
   return out;
 }
 
-/** 해당 요일의 다음 수업 날짜 (오늘 이후 첫 날) */
-export function nextClassDate(c: TTCourse): { date: string; slot: Slot } | null {
+/** 해당 요일의 다음 수업 날짜 (지금 이후 첫 날 · 휴강일 건너뜀) — 직접 추가한 수업용. 수강신청 과목은 data/today.ts */
+export function nextClassDate(c: TTCourse, now: Date): { date: string; slot: Slot } | null {
+  const today = iso(now);
   for (let i = 0; i < 14; i++) {
-    const d = addDays(TODAY, i);
+    const d = addDays(today, i);
     const sl = c.slots.find((x) => x.day === dowOf(d));
-    if (!sl) continue;
-    if (i === 0 && toMin(sl.end) <= NOW_MIN) continue;
+    if (!sl || isHoliday(parseIso(d))) continue;
+    if (i === 0 && toMin(sl.end) <= minOfDay(now)) continue;
     return { date: d, slot: sl };
   }
   return null;
@@ -223,18 +228,24 @@ export const ASSIGNMENT_EVENTS: CalEvent[] = ASSIGNMENT_LIST.map((a) => {
     to: P.assignment(a.courseId, a.id),
     source: `${course.name} · 과제 공지`,
     description: a.desc.split('\n\n')[0],
-    alarm: a.closed ? undefined : date === iso(NOW) ? '3시간 전' : '하루 전 18:00',
+    // 기본 알림: 시나리오 금요일(이번 주 금) 마감 과제는 '3시간 전' — 날짜가 바뀌어도 같은 값 (Figma 686:6658)
+    alarm: a.closed ? undefined : date === fmtISO(SCENARIO_DAY) ? '3시간 전' : '하루 전 18:00',
   };
 });
 
-export const SEED_EVENTS: CalEvent[] = [
+/** 시드 일정 — 시나리오 날짜로 적고 이번 주로 옮긴다 (shiftDeep). 옮기면 실제 공휴일 이름은 '휴강'으로 */
+const SEED_SCENARIO: CalEvent[] = [
   { id: 'e5', title: '시각디자인과 개강총회', category: 'academic', date: '2026-09-10', start: '18:00', end: '20:00', place: '디자인관 세미나실', onCampus: true, meta: '18:00 · 디자인관 세미나실', source: '학과 공지 · 09.03 등록', description: '2학기 학과 개강총회예요. 학기 일정 안내와 학생회 소개가 이어져요.', alarm: '1시간 전' },
   { id: 'e1', title: '2026 하반기 교내 취업박람회', short: '교내 취업박람회', category: 'academic', date: '2026-10-12', start: '14:00', end: '17:00', place: '학생회관 대강당', onCampus: true, note: '사전 신청 10.11(일)까지', source: '학사 공지 · 10.03 등록', noticeId: 'n3', apply: true, alarm: '하루 전 09:00', description: '40여 개 기업이 참여하는 교내 취업박람회예요. 사전 신청하면 현장 상담을 먼저 받을 수 있어요.\n\n· 대상: 재학생·졸업 예정자\n· 준비물: 이력서 1부(선택)' },
   { id: 'e2', title: '중간고사 기간', category: 'academic', date: '2026-10-19', span: ['2026-10-19', '2026-10-23'], allDay: true, meta: '10.19 – 10.23 · 학사 공지', note: '시험 시간표는 과목별 공지 확인', source: '학사 공지 · 10.08 등록', noticeId: 'n1', alarm: '하루 전 18:00', description: '2학기 중간고사 기간이에요. 과목별 시험 시간과 장소는 각 과목 공지에서 확인해 주세요. 시험을 대체하는 과제·발표가 있는 과목도 있어요.' },
   { id: 'e7', title: '포트폴리오 스터디', category: 'personal', date: '2026-10-20', start: '19:00', end: '21:00', place: '중앙도서관 스터디룸 3', onCampus: true, alarm: '30분 전', repeat: '매주', user: true, description: '졸업전시 포트폴리오 서로 봐주는 모임이에요. 각자 작업 3개씩 준비해 오기.' },
-  { id: 'e8', title: '추석 연휴', category: 'academic', date: '2026-09-24', span: ['2026-09-24', '2026-09-26'], allDay: true, holiday: true, meta: '공휴일 · 9.24 – 9.26', source: '학사 일정', description: '추석 연휴예요. 연휴 중 수업 운영은 각 과목 공지를 확인해 주세요.' },
-  ...ASSIGNMENT_EVENTS,
+  SHIFT_DAYS
+    ? // 옮긴 날짜에 실제 공휴일 이름이 붙지 않게 (브리프 규칙: '휴강'으로만 표기)
+      { id: 'e8', title: '휴강', category: 'academic', date: '2026-09-24', span: ['2026-09-24', '2026-09-26'], allDay: true, holiday: true, meta: '휴강 · 9.24 – 9.26', source: '학사 일정', description: '학사 일정에 따른 휴강이에요. 휴강 중 수업 운영은 각 과목 공지를 확인해 주세요.' }
+    : { id: 'e8', title: '추석 연휴', category: 'academic', date: '2026-09-24', span: ['2026-09-24', '2026-09-26'], allDay: true, holiday: true, meta: '공휴일 · 9.24 – 9.26', source: '학사 일정', description: '추석 연휴예요. 연휴 중 수업 운영은 각 과목 공지를 확인해 주세요.' },
 ];
+/** 과제 일정은 수강과목 ASSIGNMENT_LIST(이미 실제 날짜)에서 파생하므로 다시 옮기지 않는다 */
+export const SEED_EVENTS: CalEvent[] = [...shiftDeep(SEED_SCENARIO), ...ASSIGNMENT_EVENTS];
 
 /** 일정 일시 한 줄 — Figma 표기를 일정 종류별로 따른다
  *  학사·과제 등(686:6658): '10.12 (월) 14:00–17:00' · 여러 날 '10.19 (월) – 10.23 (금)'
@@ -250,11 +261,11 @@ export function eventWhen(e: Pick<CalEvent, 'date' | 'span' | 'start' | 'end' | 
   return e.start ? `${d} ${e.start}` : d;
 }
 
-/** 수업이 열리는 기간 (학기 시작 ~ 연말) */
-export const SEMESTER_START = '2026-09-01';
-export const SEMESTER_END = '2026-12-31';
-/** 열람 가능한 달 */
-export const MONTHS = ['2026-08', '2026-09', '2026-10', '2026-11', '2026-12'];
+/** 수업이 열리는 기간 (학기 시작 ~ 연말 · 시나리오 날짜를 이번 주 기준으로 옮김) */
+export const SEMESTER_START = shiftText('2026-09-01');
+export const SEMESTER_END = shiftText('2026-12-31');
+/** 열람 가능한 달 — 이번 달 앞뒤 2달씩 (시나리오 10월 기준 8–12월과 같은 폭) */
+export const MONTHS = Array.from({ length: 5 }, (_, i) => iso(new Date(NOW.getFullYear(), NOW.getMonth() - 2 + i, 1)).slice(0, 7));
 
 /** 일정 추가 폼 선택지 */
 export const ALARM_OPTIONS = ['없음', '정시', '10분 전', '30분 전', '1시간 전', '하루 전'];

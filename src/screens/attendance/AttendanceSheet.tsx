@@ -4,6 +4,8 @@ import { BottomSheet, Button, Keypad, Text } from '@/ui';
 import { useNav } from '@/nav/nav';
 import { P } from '@/app/paths';
 import { useApp, type PinDigits } from '@/store/app';
+import { useNow } from '@/data/clock';
+import { attendTarget, NO_OPEN_TEXT, nextClassLine } from './data';
 import { AttendDoneBody } from './parts';
 import s from './Attendance.module.css';
 
@@ -26,6 +28,9 @@ const DEMO_WRONG = '4821';
  *   전부 0('00'·'0000') 또는 이미 틀린 번호면 오류(남은 시도 차감). forceError(?error=1)는 오류 상태(4821 · 2번 남음)로 시작.
  *   남은 시도 0회면 입력을 잠그고 QR · NFC로 안내.
  * 어느 화면에서든 overlay로 띄울 수 있다 (홈 히어로, 출석 탭, 과목 출석 상세, 시간표 수업 시트, /attendance/pin 라우트).
+ * 실시간(11-06): 대상 = today.ts openSession(now) — 매 분 다시 봄. 완료는 completeAttendance('PIN', 그 수업 key).
+ *   열린 수업이 없으면 '지금 인증할 수 있는 수업이 없어요' + 다음 수업 안내로 입력을 막은 상태(?error=1 · ?digits=2도 같음).
+ *   열린 수업을 이미 출석했으면 그 기록의 '출석 완료'를 보여 준다.
  */
 export function AttendanceSheet({
   open,
@@ -45,6 +50,9 @@ export function AttendanceSheet({
   const nav = useNav();
   const { pathname } = useLocation();
   const complete = useApp((st) => st.completeAttendance);
+  const attended = useApp((st) => st.attended);
+  const now = useNow();
+  const target = attendTarget(now, attended);
   const sessionDigits = useApp((st) => st.pinDigits);
   const exact = digitsProp ?? sessionDigits;
   const maxLen = exact ?? 4;
@@ -54,6 +62,8 @@ export function AttendanceSheet({
     forceError
       ? { value: DEMO_WRONG.slice(0, maxLen), status: 'error' as Status, left: MAX_TRIES - 1, wrong: [DEMO_WRONG.slice(0, maxLen)] }
       : { value: '', status: 'idle' as Status, left: MAX_TRIES, wrong: [] as string[] };
+  /** 인증을 보낸 수업 (확인 중에 창이 닫혀도 그 수업으로 기록) */
+  const [sentKey, setSentKey] = useState<string | undefined>(undefined);
   const [st, setSt] = useState(initial);
   const [wasOpen, setWasOpen] = useState(open);
   const timers = useRef<number[]>([]);
@@ -61,7 +71,10 @@ export function AttendanceSheet({
   // 열릴 때마다 처음 상태로 (렌더 중 이전 값 비교 — effect 안 setState 대신)
   if (open !== wasOpen) {
     setWasOpen(open);
-    if (open) setSt(initial());
+    if (open) {
+      setSt(initial());
+      setSentKey(undefined);
+    }
   }
   // 예약된 이동(QR 화면)은 시트가 닫혀도 실행돼야 하므로 언마운트 때만 정리
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
@@ -70,11 +83,17 @@ export function AttendanceSheet({
   const inPinRoute = pathname === P.attendancePin;
   const origin: AttendOrigin = from ?? (pathname.startsWith(P.attendance) ? 'attendance' : 'home');
   const { value, status, left } = st;
+  const sending = status === 'checking' || status === 'done';
+  /** 인증할 수업이 없음 (보내는 중·완료 뒤에는 보낸 수업 유지) */
+  const none = !sending && !target.session;
+  /** 열린 수업을 이미 출석함 → 그 기록의 완료 화면 */
+  const already = !sending && !!target.rec;
   const locked = left === 0;
-  const busy = status === 'checking' || status === 'done';
+  const busy = sending || none;
 
   const submit = () => {
     const pin = value;
+    setSentKey(target.session?.key);
     setSt((x) => ({ ...x, status: 'checking' }));
     later(() => {
       setSt((x) => {
@@ -89,10 +108,10 @@ export function AttendanceSheet({
   useEffect(() => {
     if (status === 'done' && !recorded.current) {
       recorded.current = true;
-      complete('PIN');
+      complete('PIN', sentKey);
     }
     if (status !== 'done') recorded.current = false;
-  }, [status, complete]);
+  }, [status, complete, sentKey]);
 
   const onDigit = (d: string) => {
     if (busy || locked) return;
@@ -107,7 +126,7 @@ export function AttendanceSheet({
     if (busy || locked) return;
     setSt((x) => ({ ...x, value: x.value.slice(0, -1), status: 'idle' }));
   };
-  const canConfirm = value.length >= minLen && (status === 'idle' || status === 'error') && !locked;
+  const canConfirm = !none && value.length >= minLen && (status === 'idle' || status === 'error') && !locked;
   const onConfirm = () => {
     if (canConfirm) submit();
   };
@@ -120,7 +139,7 @@ export function AttendanceSheet({
   // 하드웨어 키보드: 숫자 · Backspace · Enter (시트가 열려 있는 동안)
   const keyRef = useRef({ onDigit, onDelete, onConfirm, done: false, close: () => {} });
   useEffect(() => {
-    keyRef.current = { onDigit, onDelete, onConfirm, done: status === 'done', close: () => onClose('done') };
+    keyRef.current = { onDigit, onDelete, onConfirm, done: status === 'done' || already, close: () => onClose('done') };
   });
   useEffect(() => {
     if (!open) return;
@@ -144,20 +163,24 @@ export function AttendanceSheet({
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
 
-  const sub = exact ? `서비스디자인 · 이 수업은 ${exact}자리 번호를 써요` : '서비스디자인 · 디자인관 302호';
+  const cls = target.session?.course;
+  const sub = !cls ? NO_OPEN_TEXT : exact ? `${cls.name} · 이 수업은 ${exact}자리 번호를 써요` : `${cls.name} · ${cls.room}`;
+  const next = none ? nextClassLine(now) : null;
   const placeholder = exact ? `출석번호 ${exact}자리` : '출석번호 2~4자리';
-  const error = locked
+  const error = none
+    ? null
+    : locked
     ? '번호를 3번 틀렸어요. QR · NFC로 인증해 주세요.'
     : status === 'error'
       ? `번호가 맞지 않아요. ${left}번 더 시도할 수 있어요.`
       : null;
   // 입력칸 상태: 오류(빨강) · 입력 완료(자리 다 채움 = 회색 면) · 입력 중(흰 면 + 파란 테두리 + 커서)
-  const field = error ? 'error' : value.length >= maxLen || status === 'checking' ? 'filled' : 'focused';
+  const field = none ? 'filled' : error ? 'error' : value.length >= maxLen || status === 'checking' ? 'filled' : 'focused';
 
   return (
-    <BottomSheet open={open} onClose={() => onClose(status === 'done' ? 'done' : 'dismiss')} label="출석 인증">
-      {status === 'done' ? (
-        <AttendDoneBody onConfirm={() => onClose('done')} />
+    <BottomSheet open={open} onClose={() => onClose(status === 'done' || already ? 'done' : 'dismiss')} label="출석 인증">
+      {status === 'done' || already ? (
+        <AttendDoneBody onConfirm={() => onClose('done')} recordKey={status === 'done' ? sentKey : target.session?.key} />
       ) : (
         <>
           <div className={s.pinHead}>
@@ -172,7 +195,7 @@ export function AttendanceSheet({
           <div className={s.pinForm}>
             <div className={s.pinFieldWrap}>
               <div className={s.pinField} data-state={field} role="textbox" aria-readonly="true" aria-label={placeholder} aria-invalid={!!error}>
-                {value ? (
+                {value && !none ? (
                   <span className="t-body-1 tnum">{value}</span>
                 ) : (
                   <span className="t-body-1" style={{ color: 'var(--wivu-color-text-placeholder)' }}>
@@ -186,6 +209,11 @@ export function AttendanceSheet({
                   {error}
                 </Text>
               )}
+              {next && (
+                <Text variant="caption-1" color="tertiary" as="p" tnum>
+                  {next}
+                </Text>
+              )}
             </div>
             <Button block disabled={!canConfirm} loading={status === 'checking'} onClick={onConfirm} className={s.disabledLabel}>
               인증하기
@@ -193,7 +221,7 @@ export function AttendanceSheet({
           </div>
 
           <div className={s.pinAlt}>
-            <Button variant="tertiary" size="m" onClick={toQr} disabled={status === 'checking'}>
+            <Button variant="tertiary" size="m" onClick={toQr} disabled={status === 'checking' || none}>
               QR · NFC로 인증하기
             </Button>
           </div>
